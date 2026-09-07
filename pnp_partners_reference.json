@@ -1,0 +1,21 @@
+{
+  "SUSTAINABILITY": ["A2A", "Ayuntamiento de Jerez", "Alliance To End Plastic Waste", "Arizona Commerce Authority", "edotco Group"],
+  "SMART CITIES": ["Abu Dhabi Ports", "AUPP", "CDP", "CenterPoint Energy", "Chiesi Farmaceutici", "City of Sugar Land", "European Space Agency"],
+  "ENERGY": ["Acario Innovation LLC/Tokyo Gas Co., Ltd.", "Chiyoda Corporation", "Dentsu", "Duke Energy", "Electric Power Development", "ENEOS Corporation", "Eneva SA", "Eni"],
+  "DEEPTECH": ["Acea", "Asahi Kasei Corporation", "Carbon Recycling Fund Inst.", "Dell Technologies", "DENKA", "Dexerials", "Doosan Bobcat"],
+  "MOBILITY & PHYSICAL AI": ["ACN - Agenzia Cybersicurezza Nazionale", "Agrati", "AISIN", "Aspire", "Atlas SGR", "Audi", "BMW Group", "BNP Paribas", "BorgWarner", "Brightstar Lottery", "Dallara", "DXC Technology", "Eberspächer"],
+  "TRAVEL & HOSPITALITY": ["Advanced Propulsion Centre", "Amex GBT", "Bentley Motors", "Cathay Pacific Airways", "Edmonton International Airport"],
+  "INSURTECH": ["Aeroporti di Roma", "American Family Ventures", "AUPP Technology Center (ATC)", "Auto & General Insurance Company", "CMG Networks", "CNO Financial Group", "Daido Life", "EXL Services"],
+  "FINTECH": ["Amazon", "American Family Ventures", "Ameriprise Financial", "Brave Connective", "Bremer Bank", "CoBank", "Creand", "Daiwa Capital Management", "EA Ventures", "Farm Credit East"],
+  "ENTERPRISE & AI": ["Amex GBT", "ASUSTeK Computer, Inc.", "Bosch Germany", "Brisa Group", "BRIDG", "City of San Jose", "DivcoWest"],
+  "SUPPLY CHAIN": ["ArcBest", "Arkansas Economic Development Commission", "CHEP / Brambles", "Crowley Maritime", "Cummins", "Daimler Truck North America", "Dell Technologies", "Dot Foods", "DSV - Global Transport and Logistics", "Equatorial Coca-Cola Bottling Company"],
+  "AEROSPACE & DEFENSE": ["Armaereo", "Auto & General Insurance Company (adj.)", "Avio", "CMG Networks", "European Commission DG DEFIS"],
+  "HEALTH": ["ART-ER Attractiveness Research Territory", "Astemo, Ltd.", "Bayer", "Brunel", "Eli Lilly and Company"],
+  "ADVANCED MANUFACTURING": ["Cirrus Logic", "City of Cedar Park"],
+  "REAL ESTATE & CONSTRUCTION": ["Daikin Industries"],
+  "SEMICONDUCTORS": ["Bremer Bank (adj. ecosystem)"],
+  "FOOD & BEVERAGE": ["CAAS Venture Network LLP", "Ezaki Glico", "PepsiCo"],
+  "CRYPTO & DIGITAL ASSETS": ["XDC Network"],
+  "BRAND & RETAIL": ["Aflac"],
+  "GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)": ["AADF - Albanian American Development Foundation", "AstraZeneca", "ASBIS", "Enterprise Singapore"]
+}

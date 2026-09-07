@@ -1,5 +1,17 @@
 .DS_Store
 *.DS_Store
+.env
 lleida-landing.html
 lleida-landing-share.html
 Plug and Play Design System (1)/
+
+# Startup sourcing pipeline — contains real founder names/emails, never push to this public repo
+Blanks - Startup Aereoports.xlsx
+Apollo enrich/
+FINAL REACH OUT LLEIDA/
+Aeroporto - croos check/
+n8n_workflow_backups/
+leads_cache.json
+seen_bounces.json
+seen_replies.json
+*.log
