@@ -1,0 +1,700 @@
+{
+    "updatedAt": "2026-09-17T16:29:53.043Z",
+    "createdAt": "2026-09-17T16:16:41.858Z",
+    "id": "1D0Q5agDQFAsVtFd",
+    "name": "Sourcing - Daily Harvest",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 12 * * *"
+                        }
+                    ]
+                }
+            },
+            "id": "schedule-1",
+            "name": "Daily Harvest Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.2,
+            "position": [
+                0,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "url": "https://feeds.feedburner.com/BetaList",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "text"
+                        }
+                    },
+                    "headers": {}
+                },
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "User-Agent",
+                            "value": "Mozilla/5.0 (compatible; SourcingBot/1.0)"
+                        }
+                    ]
+                }
+            },
+            "id": "http-betalist-feed",
+            "name": "BetaList - Fetch Feed",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                220,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "function decodeEntities(s) {\n  return s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&amp;/g, '&');\n}\nconst raw = typeof $json.data === 'string' ? $json.data : ($json.body || JSON.stringify($json));\nconst entries = [];\nconst entryRe = /<entry>([\\s\\S]*?)<\\/entry>/g;\nlet m;\nwhile ((m = entryRe.exec(raw)) !== null) {\n  const block = m[1];\n  const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/.exec(block);\n  const idMatch = /<id>([\\s\\S]*?)<\\/id>/.exec(block);\n  const contentMatch = /<content[^>]*>([\\s\\S]*?)<\\/content>/.exec(block);\n  let title = titleMatch ? decodeEntities(titleMatch[1]) : '';\n  const idUrl = idMatch ? idMatch[1].trim() : '';\n  const slug = idUrl.split('/').filter(Boolean).pop() || '';\n  let content = contentMatch ? decodeEntities(contentMatch[1]) : '';\n  content = content.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n  let name = title;\n  let tagline = '';\n  const sepMatch = title.match(/^(.*?)\\s+[\\u2013\\u2014-]\\s+(.*)$/);\n  if (sepMatch) {\n    name = sepMatch[1].trim();\n    tagline = sepMatch[2].trim();\n  }\n  if (!name || !slug) continue;\n  entries.push({ json: { name, tagline, description: content || tagline, slug, listingUrl: idUrl } });\n}\nreturn entries;"
+            },
+            "id": "code-betalist-parse",
+            "name": "BetaList - Parse Entries",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                440,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "search",
+                "base": {
+                    "__rl": true,
+                    "value": "appKs6UmJX4w6GEp0",
+                    "mode": "id"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "tblFzRunGJHbNHoyf",
+                    "mode": "id"
+                },
+                "returnAll": true,
+                "options": {}
+            },
+            "id": "airtable-get-sourcing",
+            "name": "Sourcing - Get Existing",
+            "type": "n8n-nodes-base.airtable",
+            "typeVersion": 2.1,
+            "position": [
+                220,
+                0
+            ],
+            "credentials": {
+                "airtableTokenApi": {
+                    "id": "QbFL5zfsc0H2Pcs5",
+                    "name": "Airtable Token"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "function normalizeDomain(url) {\n  if (!url) return '';\n  try {\n    let u = url.trim().toLowerCase();\n    u = u.replace(/^https?:\\/\\//, '').replace(/^www\\./, '');\n    u = u.split('/')[0].split('?')[0];\n    return u;\n  } catch (e) { return url; }\n}\n\nconst existing = $('Sourcing - Get Existing').all().map(item => normalizeDomain(item.json['Website'] || ''));\nconst existingSet = new Set(existing.filter(Boolean));\nconst existingListingUrls = new Set($('Sourcing - Get Existing').all().map(item => item.json['Organization Name URL'] || ''));\n\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  if (existingListingUrls.has(j.listingUrl)) continue;\n  out.push({ json: j });\n}\nreturn out;"
+            },
+            "id": "code-betalist-filter",
+            "name": "BetaList - Filter New",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                660,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "url": "=https://betalist.com/startups/{{ $json.slug }}/visit",
+                "options": {
+                    "redirect": {
+                        "redirect": {
+                            "followRedirects": false
+                        }
+                    },
+                    "response": {
+                        "response": {
+                            "fullResponse": true,
+                            "neverError": true
+                        }
+                    }
+                }
+            },
+            "id": "http-betalist-resolve",
+            "name": "BetaList - Resolve Real URL",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                880,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const originals = $('BetaList - Filter New').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const headers = item.json.headers || {};\n  const location = headers.location || headers.Location || '';\n  const orig = (originals[i] && originals[i].json) || {};\n  out.push({ json: { ...orig, resolvedWebsite: location || '' } });\n});\nreturn out;"
+            },
+            "id": "code-betalist-extract-location",
+            "name": "BetaList - Extract Location Header",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1100,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  out.push({ json: {\n    'Organization Name': j.name,\n    'Organization Name URL': j.listingUrl,\n    'Website': j.resolvedWebsite || j.listingUrl,\n    'Description': j.description,\n    'Source': 'BetaList',\n    'Move to Pipeline?': false\n  }});\n}\nreturn out;"
+            },
+            "id": "code-betalist-build-row",
+            "name": "BetaList - Build Row",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1320,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "create",
+                "base": {
+                    "__rl": true,
+                    "value": "appKs6UmJX4w6GEp0",
+                    "mode": "id"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "tblFzRunGJHbNHoyf",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "autoMapInputData",
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": []
+                },
+                "options": {}
+            },
+            "id": "airtable-append-betalist",
+            "name": "Sourcing - Append (BetaList)",
+            "type": "n8n-nodes-base.airtable",
+            "typeVersion": 2.1,
+            "position": [
+                1540,
+                -200
+            ],
+            "credentials": {
+                "airtableTokenApi": {
+                    "id": "QbFL5zfsc0H2Pcs5",
+                    "name": "Airtable Token"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.apollo.io/api/v1/mixed_companies/search",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "{\"q_organization_keyword_tags\": [\"robotics\", \"hardware\", \"industrial automation\", \"iot\", \"sensors\", \"deep tech\", \"medical devices\", \"energy hardware\", \"manufacturing automation\", \"aerospace\", \"materials science\", \"logistics automation\"], \"organization_locations\": [\"Europe\", \"United States\", \"United Kingdom\", \"Middle East\"], \"organization_num_employees_ranges\": [\"1,50\"], \"sort_by_field\": \"organization_founded_year\", \"sort_ascending\": false, \"page\": 1, \"per_page\": 50}",
+                "options": {}
+            },
+            "id": "http-apollo-search",
+            "name": "Apollo - Search Companies",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                220,
+                200
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "tsTg37ICmuv8HBpC",
+                    "name": "Apollo Header Auth"
+                }
+            },
+            "onError": "continueRegularOutput",
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "if ($input.all().length && $input.all()[0].json.error) { return []; }\nfunction normalizeDomain(url) {\n  if (!url) return '';\n  let u = String(url).trim().toLowerCase();\n  u = u.replace(/^https?:\\/\\//, '').replace(/^www\\./, '');\n  u = u.split('/')[0].split('?')[0];\n  return u;\n}\nconst body = $json;\nconst orgs = body.organizations || body.accounts || [];\nconst existing = $('Sourcing - Get Existing').all().map(it => normalizeDomain(it.json['Website'] || ''));\nconst existingSet = new Set(existing.filter(Boolean));\nconst MIN_FOUNDED_YEAR = new Date().getFullYear() - 1;\nconst MAX_NEW = 30;\nconst out = [];\nfor (const o of orgs) {\n  if (out.length >= MAX_NEW) break;\n  const founded = o.founded_year;\n  const domain = o.primary_domain || '';\n  if (!founded || founded < MIN_FOUNDED_YEAR || !domain) continue;\n  if (existingSet.has(normalizeDomain(domain))) continue;\n  const website = (o.website_url || ('https://' + domain)).split('?')[0].replace(/\\/$/, '');\n  out.push({ json: {\n    name: (o.name || '').trim(),\n    domain,\n    website,\n    orgUrl: o.linkedin_url || website,\n    founded,\n    apolloDescription: o.short_description || ''\n  }});\n}\nreturn out;"
+            },
+            "id": "code-apollo-filter",
+            "name": "Apollo - Filter Candidates",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                440,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.website }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "text",
+                            "neverError": true
+                        }
+                    },
+                    "timeout": 10000
+                }
+            },
+            "id": "http-apollo-scrape",
+            "name": "Apollo - Scrape Homepage",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                660,
+                200
+            ],
+            "onError": "continueRegularOutput",
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "function stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Apollo - Filter Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  const raw = typeof item.json.data === 'string' ? item.json.data : '';\n  let summary = '';\n  if (raw) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(raw);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(raw);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    summary = parts.join(' \\u2014 ').slice(0, 500);\n  }\n  if (!summary) summary = orig.apolloDescription || '';\n  out.push({ json: {\n    'Organization Name': orig.name,\n    'Organization Name URL': orig.orgUrl,\n    'Website': orig.website,\n    'Description': summary,\n    'Source': 'Apollo',\n    'Move to Pipeline?': false\n  }});\n});\nreturn out;"
+            },
+            "id": "code-apollo-build-row",
+            "name": "Apollo - Build Row",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                880,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "create",
+                "base": {
+                    "__rl": true,
+                    "value": "appKs6UmJX4w6GEp0",
+                    "mode": "id"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "tblFzRunGJHbNHoyf",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "autoMapInputData",
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": []
+                },
+                "options": {}
+            },
+            "id": "airtable-append-apollo",
+            "name": "Sourcing - Append (Apollo)",
+            "type": "n8n-nodes-base.airtable",
+            "typeVersion": 2.1,
+            "position": [
+                1100,
+                200
+            ],
+            "credentials": {
+                "airtableTokenApi": {
+                    "id": "QbFL5zfsc0H2Pcs5",
+                    "name": "Airtable Token"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "url": "https://tech.eu/feed",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "User-Agent",
+                            "value": "Mozilla/5.0 (compatible; SourcingBot/1.0)"
+                        }
+                    ]
+                },
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "text"
+                        }
+                    }
+                }
+            },
+            "id": "http-techeu-feed",
+            "name": "TechEU - Fetch Feed",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                220,
+                420
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "function decodeEntities(s) {\n  return (s||'').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&amp;/g, '&');\n}\nfunction stripTags(s) {\n  return decodeEntities(s).replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst FX_TO_USD = {'$': 1.0, '\\u20ac': 1.08, '\\u00a3': 1.27};\nconst SUFFIX_MULT = {k:1e3, thousand:1e3, m:1e6, million:1e6, b:1e9, billion:1e9};\nconst AMOUNT_RE = /([$\\u20ac\\u00a3])\\s?(\\d+(?:\\.\\d+)?)\\s*(M|m|K|k|B|b|million|billion|thousand)?/g;\nfunction parseFundingUsd(title) {\n  let best = null; let m;\n  AMOUNT_RE.lastIndex = 0;\n  while ((m = AMOUNT_RE.exec(title)) !== null) {\n    const [, symbol, number, suffix] = m;\n    const mult = SUFFIX_MULT[(suffix||'').toLowerCase()] || 1e6;\n    const usd = parseFloat(number) * mult * (FX_TO_USD[symbol] || 1.0);\n    if (best === null || usd > best) best = usd;\n  }\n  return best;\n}\nconst MAX_FUNDING_USD = 1500000;\nconst SOURCE = \"tech.eu\";\nconst existingLinks = new Set($('Sourcing - Get Existing').all().map(it => it.json['Organization Name URL'] || ''));\nconst raw = typeof $json.data === 'string' ? $json.data : ($json.body || '');\nconst out = [];\nconst itemRe = /<item>([\\s\\S]*?)<\\/item>/g;\nlet m;\nwhile ((m = itemRe.exec(raw)) !== null) {\n  const block = m[1];\n  const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/.exec(block);\n  const linkMatch = /<link[^>]*>([\\s\\S]*?)<\\/link>/.exec(block);\n  const descMatch = /<description[^>]*>([\\s\\S]*?)<\\/description>/.exec(block);\n  const title = titleMatch ? decodeEntities(titleMatch[1]).replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '') : '';\n  const link = linkMatch ? linkMatch[1].trim().replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '') : '';\n  const desc = descMatch ? stripTags(descMatch[1].replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '')) : '';\n  if (!title || !link) continue;\n  if (existingLinks.has(link)) continue;\n  const fundingUsd = parseFundingUsd(title);\n  if (fundingUsd !== null && fundingUsd > MAX_FUNDING_USD) continue;\n  const name = title.split(/[\\u2013\\u2014:-]/)[0].trim().slice(0, 80);\n  out.push({ json: {\n    'Organization Name': name || title.slice(0,80),\n    'Organization Name URL': link,\n    'Website': link,\n    'Description': desc || title,\n    'Source': SOURCE,\n    'Move to Pipeline?': false,\n    'Funding USD (parsed)': fundingUsd !== null ? Math.round(fundingUsd) : null\n  }});\n}\nreturn out;"
+            },
+            "id": "code-techeu-parse",
+            "name": "TechEU - Parse + Filter",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                440,
+                420
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "create",
+                "base": {
+                    "__rl": true,
+                    "value": "appKs6UmJX4w6GEp0",
+                    "mode": "id"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "tblFzRunGJHbNHoyf",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "autoMapInputData",
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": []
+                },
+                "options": {}
+            },
+            "id": "airtable-append-techeu",
+            "name": "Sourcing - Append (TechEU)",
+            "type": "n8n-nodes-base.airtable",
+            "typeVersion": 2.1,
+            "position": [
+                660,
+                420
+            ],
+            "credentials": {
+                "airtableTokenApi": {
+                    "id": "QbFL5zfsc0H2Pcs5",
+                    "name": "Airtable Token"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "url": "https://www.wamda.com/feed",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "User-Agent",
+                            "value": "Mozilla/5.0 (compatible; SourcingBot/1.0)"
+                        }
+                    ]
+                },
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "text"
+                        }
+                    }
+                }
+            },
+            "id": "http-wamda-feed",
+            "name": "Wamda - Fetch Feed",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                220,
+                620
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "function decodeEntities(s) {\n  return (s||'').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&amp;/g, '&');\n}\nfunction stripTags(s) {\n  return decodeEntities(s).replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst FX_TO_USD = {'$': 1.0, '\\u20ac': 1.08, '\\u00a3': 1.27};\nconst SUFFIX_MULT = {k:1e3, thousand:1e3, m:1e6, million:1e6, b:1e9, billion:1e9};\nconst AMOUNT_RE = /([$\\u20ac\\u00a3])\\s?(\\d+(?:\\.\\d+)?)\\s*(M|m|K|k|B|b|million|billion|thousand)?/g;\nfunction parseFundingUsd(title) {\n  let best = null; let m;\n  AMOUNT_RE.lastIndex = 0;\n  while ((m = AMOUNT_RE.exec(title)) !== null) {\n    const [, symbol, number, suffix] = m;\n    const mult = SUFFIX_MULT[(suffix||'').toLowerCase()] || 1e6;\n    const usd = parseFloat(number) * mult * (FX_TO_USD[symbol] || 1.0);\n    if (best === null || usd > best) best = usd;\n  }\n  return best;\n}\nconst MAX_FUNDING_USD = 1500000;\nconst SOURCE = \"Wamda\";\nconst existingLinks = new Set($('Sourcing - Get Existing').all().map(it => it.json['Organization Name URL'] || ''));\nconst raw = typeof $json.data === 'string' ? $json.data : ($json.body || '');\nconst out = [];\nconst itemRe = /<item>([\\s\\S]*?)<\\/item>/g;\nlet m;\nwhile ((m = itemRe.exec(raw)) !== null) {\n  const block = m[1];\n  const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/.exec(block);\n  const linkMatch = /<link[^>]*>([\\s\\S]*?)<\\/link>/.exec(block);\n  const descMatch = /<description[^>]*>([\\s\\S]*?)<\\/description>/.exec(block);\n  const title = titleMatch ? decodeEntities(titleMatch[1]).replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '') : '';\n  const link = linkMatch ? linkMatch[1].trim().replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '') : '';\n  const desc = descMatch ? stripTags(descMatch[1].replace(/^<!\\[CDATA\\[|\\]\\]>$/g, '')) : '';\n  if (!title || !link) continue;\n  if (existingLinks.has(link)) continue;\n  const fundingUsd = parseFundingUsd(title);\n  if (fundingUsd !== null && fundingUsd > MAX_FUNDING_USD) continue;\n  const name = title.split(/[\\u2013\\u2014:-]/)[0].trim().slice(0, 80);\n  out.push({ json: {\n    'Organization Name': name || title.slice(0,80),\n    'Organization Name URL': link,\n    'Website': link,\n    'Description': desc || title,\n    'Source': SOURCE,\n    'Move to Pipeline?': false,\n    'Funding USD (parsed)': fundingUsd !== null ? Math.round(fundingUsd) : null\n  }});\n}\nreturn out;"
+            },
+            "id": "code-wamda-parse",
+            "name": "Wamda - Parse + Filter",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                440,
+                620
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "create",
+                "base": {
+                    "__rl": true,
+                    "value": "appKs6UmJX4w6GEp0",
+                    "mode": "id"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "tblFzRunGJHbNHoyf",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "autoMapInputData",
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": []
+                },
+                "options": {}
+            },
+            "id": "airtable-append-wamda",
+            "name": "Sourcing - Append (Wamda)",
+            "type": "n8n-nodes-base.airtable",
+            "typeVersion": 2.1,
+            "position": [
+                660,
+                620
+            ],
+            "credentials": {
+                "airtableTokenApi": {
+                    "id": "QbFL5zfsc0H2Pcs5",
+                    "name": "Airtable Token"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "BetaList - Fetch Feed": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Parse Entries",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "BetaList - Parse Entries": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Filter New",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Sourcing - Get Existing": {
+            "main": [
+                []
+            ]
+        },
+        "BetaList - Filter New": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Resolve Real URL",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "BetaList - Resolve Real URL": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Extract Location Header",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "BetaList - Extract Location Header": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Build Row",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "BetaList - Build Row": {
+            "main": [
+                [
+                    {
+                        "node": "Sourcing - Append (BetaList)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Daily Harvest Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "BetaList - Fetch Feed",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Sourcing - Get Existing",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Apollo - Search Companies",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "TechEU - Fetch Feed",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Wamda - Fetch Feed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Apollo - Search Companies": {
+            "main": [
+                [
+                    {
+                        "node": "Apollo - Filter Candidates",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Apollo - Filter Candidates": {
+            "main": [
+                [
+                    {
+                        "node": "Apollo - Scrape Homepage",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Apollo - Scrape Homepage": {
+            "main": [
+                [
+                    {
+                        "node": "Apollo - Build Row",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Apollo - Build Row": {
+            "main": [
+                [
+                    {
+                        "node": "Sourcing - Append (Apollo)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "TechEU - Fetch Feed": {
+            "main": [
+                [
+                    {
+                        "node": "TechEU - Parse + Filter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "TechEU - Parse + Filter": {
+            "main": [
+                [
+                    {
+                        "node": "Sourcing - Append (TechEU)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Wamda - Fetch Feed": {
+            "main": [
+                [
+                    {
+                        "node": "Wamda - Parse + Filter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Wamda - Parse + Filter": {
+            "main": [
+                [
+                    {
+                        "node": "Sourcing - Append (Wamda)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {},
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": null,
+    "versionId": "b910e1b5-f7ca-41d1-878c-51693d3dfae2",
+    "activeVersionId": null,
+    "versionCounter": 5,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "shared": [
+        {
+            "updatedAt": "2026-09-17T16:16:41.858Z",
+            "createdAt": "2026-09-17T16:16:41.858Z",
+            "role": "workflow:owner",
+            "workflowId": "1D0Q5agDQFAsVtFd",
+            "projectId": "0Xc2vqh3ay8XF9p7",
+            "project": {
+                "updatedAt": "2026-09-17T14:57:31.253Z",
+                "createdAt": "2026-09-17T14:56:30.296Z",
+                "id": "0Xc2vqh3ay8XF9p7",
+                "name": "Iacopo Bon <i.bon@pnptc.com>",
+                "type": "personal",
+                "icon": null,
+                "description": null,
+                "customTelemetryTags": [],
+                "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+            }
+        }
+    ],
+    "tags": [],
+    "activeVersion": null
+}

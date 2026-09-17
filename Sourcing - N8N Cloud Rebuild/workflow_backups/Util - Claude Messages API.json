@@ -1,0 +1,131 @@
+{
+    "updatedAt": "2026-09-17T15:54:40.220Z",
+    "createdAt": "2026-09-17T15:50:43.259Z",
+    "id": "V5wGQ55LdYLhSCmf",
+    "name": "Util - Claude Messages API",
+    "description": null,
+    "active": false,
+    "isArchived": false,
+    "nodes": [
+        {
+            "parameters": {
+                "workflowInputs": {
+                    "values": [
+                        {
+                            "name": "prompt"
+                        },
+                        {
+                            "name": "max_tokens"
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-1",
+            "name": "When Executed by Another Workflow",
+            "type": "n8n-nodes-base.executeWorkflowTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                0,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.anthropic.com/v1/messages",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpCustomAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({ model: \"claude-haiku-4-5-20251001\", max_tokens: $json.max_tokens || 1024, messages: [{ role: \"user\", content: $json.prompt }] }) }}",
+                "options": {}
+            },
+            "id": "http-1",
+            "name": "Call Claude",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                224,
+                0
+            ],
+            "credentials": {
+                "httpCustomAuth": {
+                    "id": "5Nk0gwk1gXo8HRaS",
+                    "name": "Anthropic Custom Auth"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const raw = ($json.content && $json.content[0] && $json.content[0].text) || '';\nconst cleaned = raw.replace(/```json\\n?/g, '').replace(/```/g, '').trim();\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  return [{ json: { error: 'parse_failed', raw } }];\n}\nreturn [{ json: Array.isArray(parsed) ? { result: parsed } : parsed }];"
+            },
+            "id": "code-1",
+            "name": "Parse Claude JSON",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                448,
+                0
+            ]
+        }
+    ],
+    "connections": {
+        "When Executed by Another Workflow": {
+            "main": [
+                [
+                    {
+                        "node": "Call Claude",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Call Claude": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Claude JSON",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1",
+        "binaryMode": "separate"
+    },
+    "staticData": null,
+    "meta": null,
+    "nodeGroups": [],
+    "pinData": {},
+    "versionId": "21a8f4f5-9072-4ee2-92b5-817b37c82a10",
+    "activeVersionId": null,
+    "versionCounter": 4,
+    "triggerCount": 0,
+    "sourceWorkflowId": null,
+    "shared": [
+        {
+            "updatedAt": "2026-09-17T15:50:43.259Z",
+            "createdAt": "2026-09-17T15:50:43.259Z",
+            "role": "workflow:owner",
+            "workflowId": "V5wGQ55LdYLhSCmf",
+            "projectId": "0Xc2vqh3ay8XF9p7",
+            "project": {
+                "updatedAt": "2026-09-17T14:57:31.253Z",
+                "createdAt": "2026-09-17T14:56:30.296Z",
+                "id": "0Xc2vqh3ay8XF9p7",
+                "name": "Iacopo Bon <i.bon@pnptc.com>",
+                "type": "personal",
+                "icon": null,
+                "description": null,
+                "customTelemetryTags": [],
+                "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+            }
+        }
+    ],
+    "tags": [],
+    "activeVersion": null
+}
