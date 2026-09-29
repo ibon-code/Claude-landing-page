@@ -25,7 +25,9 @@ PIPELINE = {"__rl": True, "value": "114224284", "mode": "id"}
 GS_CRED = {"googleSheetsOAuth2Api": {"id": "gRSPd8YEw5iadWsy", "name": "Google Sheets (Iacopo Bon)"}}
 APOLLO_CRED = {"httpHeaderAuth": {"id": "tsTg37ICmuv8HBpC", "name": "Apollo Header Auth"}}
 BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-MAX_PER_RUN = 3 if TEST else 10
+# Requests go out 5 at a time so a large backlog doesn't trip Apollo's rate limit.
+BATCHING = {"batching": {"batch": {"batchSize": 5, "batchInterval": 1000}}}
+MAX_PER_RUN = 3 if TEST else 1000  # effectively "all pending rows"
 
 
 def code(name, pos, js):
@@ -37,7 +39,7 @@ def apollo(name, pos, url, body_expr):
     return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
             "parameters": {"method": "POST", "url": url, "authentication": "genericCredentialType",
                            "genericAuthType": "httpHeaderAuth", "sendBody": True, "specifyBody": "json",
-                           "jsonBody": body_expr, "options": {}},
+                           "jsonBody": body_expr, "options": BATCHING},
             "credentials": APOLLO_CRED, "continueOnFail": True, "onError": "continueRegularOutput"}
 
 
@@ -45,7 +47,7 @@ def fetch_page(name, pos, url_expr):
     return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
             "parameters": {"url": url_expr, "sendHeaders": True,
                            "headerParameters": {"parameters": [{"name": "User-Agent", "value": BROWSER_UA}]},
-                           "options": {"timeout": 15000,
+                           "options": {**BATCHING, "timeout": 15000,
                                        "response": {"response": {"responseFormat": "text", "neverError": True}}}},
             "continueOnFail": True, "onError": "continueRegularOutput"}
 
@@ -110,7 +112,8 @@ return $input.all().map((item, i) => {
   const withEmail = people.filter(p => p.has_email).sort(byRank);
   // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.
   const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;
-  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length } };
+  const apolloError = !!(row.domain && item.json.error);
+  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length, apolloError } };
 });
 """
 
@@ -121,6 +124,7 @@ return $input.all().map((item, i) => {
   // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.
   const email = /not_unlocked|@domain\.com$/i.test(p.email || '') ? '' : (p.email || '');
   return { json: { ...row,
+    apolloError: row.apolloError || !!(row.candidateId && item.json.error),
     email,
     fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),
     jobTitle: p.title || p.headline || '',
@@ -155,8 +159,11 @@ function siteEmail(html, domain) {
   });
   return list[0] || '';
 }
-return $input.all().map((item, i) => {
+const out = [];
+$input.all().forEach((item, i) => {
   const row = rows[i].json;
+  // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.
+  if (row.apolloError && !row.email) return;
   const upd = { row_number: row.row_number };
   if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;
   if (!row.domain) {
@@ -178,8 +185,9 @@ return $input.all().map((item, i) => {
       upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;
     }
   }
-  return { json: upd };
+  out.push({ json: upd });
 });
+return out;
 """.replace("__TODAY__", TODAY)
 
 nodes = [

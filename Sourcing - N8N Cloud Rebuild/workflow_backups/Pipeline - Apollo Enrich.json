@@ -19,7 +19,7 @@
           ]
         }
       },
-      "id": "e78b6f70-e7dd-4418-b721-f0363474b2f8"
+      "id": "3d9dc332-7dd8-4026-ace6-ff05a6fa5753"
     },
     {
       "name": "Pipeline - Get Rows",
@@ -50,7 +50,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "133cb56b-05b9-4dbc-9b8c-bcef0557354a"
+      "id": "075245d9-430d-4beb-a64e-bdfac887b693"
     },
     {
       "name": "Select Rows to Enrich",
@@ -61,9 +61,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "const MAX_PER_RUN = 10;\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction domainOf(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const name = String(j['Startup name'] || '').trim();\n  if (!name) continue;\n  if (String(j['Email'] || '').trim()) continue;  // already has a contact\n  const status = String(j['Apollo Enrich'] || '').trim();\n  // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.\n  if (status && !status.startsWith('No contact in Apollo')) continue;\n  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });\n  if (out.length >= MAX_PER_RUN) break;\n}\nreturn out;\n"
+        "jsCode": "const MAX_PER_RUN = 1000;\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction domainOf(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const name = String(j['Startup name'] || '').trim();\n  if (!name) continue;\n  if (String(j['Email'] || '').trim()) continue;  // already has a contact\n  const status = String(j['Apollo Enrich'] || '').trim();\n  // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.\n  if (status && !status.startsWith('No contact in Apollo')) continue;\n  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });\n  if (out.length >= MAX_PER_RUN) break;\n}\nreturn out;\n"
       },
-      "id": "6d062c5c-2e3e-4fd1-8110-90159551b802"
+      "id": "42ddbe81-689e-438b-8b95-c5a36c9cb5c2"
     },
     {
       "name": "Apollo - Find Company",
@@ -81,7 +81,14 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify($json.domain ? { q_organization_domains_list: [$json.domain], per_page: 1 } : { q_organization_name: $json.name, per_page: 5 }) }}",
-        "options": {}
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          }
+        }
       },
       "credentials": {
         "httpHeaderAuth": {
@@ -91,7 +98,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "746e805c-2898-4628-af2e-a727e63d6c37"
+      "id": "339f718f-5712-43aa-a945-2f6f18bce1f3"
     },
     {
       "name": "Resolve Domain",
@@ -104,7 +111,7 @@
       "parameters": {
         "jsCode": "// Rows that already had a real domain pass through; the others take the domain of the\n// Apollo company whose name matches exactly (never a fuzzy match, to avoid wrong contacts).\nconst norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nconst rows = $('Select Rows to Enrich').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  let domain = row.domain, resolvedWebsite = '';\n  if (!domain) {\n    const orgs = item.json.organizations || item.json.accounts || [];\n    const hit = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain);\n    if (hit) { domain = hit.primary_domain; resolvedWebsite = 'https://' + hit.primary_domain; }\n  }\n  return { json: { ...row, domain, resolvedWebsite } };\n});\n"
       },
-      "id": "8d0c1a85-5b4b-49e6-83ae-4b060e34676d"
+      "id": "317a0fe9-322d-4fad-ba53-8bc8dc04885a"
     },
     {
       "name": "Apollo - Search People",
@@ -122,7 +129,14 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ q_organization_domains_list: [$json.domain || 'invalid.invalid'], per_page: 10 }) }}",
-        "options": {}
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          }
+        }
       },
       "credentials": {
         "httpHeaderAuth": {
@@ -132,7 +146,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "c7ee3a63-ef26-408a-ba80-188277e103ee"
+      "id": "9a6ccc22-008e-4a0f-8cf4-20f5b9a2144e"
     },
     {
       "name": "Pick Best Contact",
@@ -143,9 +157,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "const RANKS = [\n  ['ceo', 'chief executive'],\n  ['founder'],\n  ['president', 'managing director', 'general manager', 'owner'],\n  ['coo', 'cto', 'cfo', 'cpo', 'cmo', 'chief'],\n  ['vp', 'vice president', 'head of', 'director', 'partner', 'principal'],\n];\nfunction titleRank(t) {\n  t = String(t || '').toLowerCase();\n  for (let r = 0; r < RANKS.length; r++) if (RANKS[r].some(k => t.includes(k))) return r;\n  return 99;\n}\nconst byRank = (a, b) => titleRank(a.title) - titleRank(b.title);\nconst rows = $('Resolve Domain').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const people = row.domain ? (item.json.people || []).filter(p => p.id) : [];\n  const withEmail = people.filter(p => p.has_email).sort(byRank);\n  // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.\n  const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;\n  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length } };\n});\n"
+        "jsCode": "const RANKS = [\n  ['ceo', 'chief executive'],\n  ['founder'],\n  ['president', 'managing director', 'general manager', 'owner'],\n  ['coo', 'cto', 'cfo', 'cpo', 'cmo', 'chief'],\n  ['vp', 'vice president', 'head of', 'director', 'partner', 'principal'],\n];\nfunction titleRank(t) {\n  t = String(t || '').toLowerCase();\n  for (let r = 0; r < RANKS.length; r++) if (RANKS[r].some(k => t.includes(k))) return r;\n  return 99;\n}\nconst byRank = (a, b) => titleRank(a.title) - titleRank(b.title);\nconst rows = $('Resolve Domain').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const people = row.domain ? (item.json.people || []).filter(p => p.id) : [];\n  const withEmail = people.filter(p => p.has_email).sort(byRank);\n  // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.\n  const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;\n  const apolloError = !!(row.domain && item.json.error);\n  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length, apolloError } };\n});\n"
       },
-      "id": "96e06c90-458f-4915-aa2f-4722069d40ad"
+      "id": "f3b33f61-4f36-4ff3-b7cf-8d0fc223507d"
     },
     {
       "name": "Apollo - Reveal Email",
@@ -163,7 +177,14 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ id: $json.candidateId || 'none' }) }}",
-        "options": {}
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          }
+        }
       },
       "credentials": {
         "httpHeaderAuth": {
@@ -173,7 +194,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "3c17ceda-2d85-4c44-aafd-f52ae1561dfc"
+      "id": "b19e87d7-5c4b-4d7a-bd55-d2558c1805ba"
     },
     {
       "name": "Apollo Reveal Result",
@@ -184,9 +205,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "const rows = $('Pick Best Contact').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const p = (row.candidateId && item.json.person) || {};\n  // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.\n  const email = /not_unlocked|@domain\\.com$/i.test(p.email || '') ? '' : (p.email || '');\n  return { json: { ...row,\n    email,\n    fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),\n    jobTitle: p.title || p.headline || '',\n  }};\n});\n"
+        "jsCode": "const rows = $('Pick Best Contact').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const p = (row.candidateId && item.json.person) || {};\n  // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.\n  const email = /not_unlocked|@domain\\.com$/i.test(p.email || '') ? '' : (p.email || '');\n  return { json: { ...row,\n    apolloError: row.apolloError || !!(row.candidateId && item.json.error),\n    email,\n    fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),\n    jobTitle: p.title || p.headline || '',\n  }};\n});\n"
       },
-      "id": "1b5bbd62-59d2-4917-899f-720cb0d505b7"
+      "id": "d55410c7-8a29-4cc5-a33d-2f91a3b1e5b2"
     },
     {
       "name": "Fetch Homepage",
@@ -208,6 +229,12 @@
           ]
         },
         "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          },
           "timeout": 15000,
           "response": {
             "response": {
@@ -219,7 +246,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "e6aa724a-9b68-4e47-b29c-8d6484bfa556"
+      "id": "3437707e-8b68-44d1-a2db-51bc6032db69"
     },
     {
       "name": "Fetch Contact Page",
@@ -241,6 +268,12 @@
           ]
         },
         "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          },
           "timeout": 15000,
           "response": {
             "response": {
@@ -252,7 +285,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "f357b9a3-3d8b-448a-a5f3-12aa5d665811"
+      "id": "431f3ff1-19d8-4d41-b137-7a0690355622"
     },
     {
       "name": "Build Row Update",
@@ -263,9 +296,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Final outcome per row. Website emails are only accepted on the startup's own domain,\n// to avoid picking up agency, CDN or tracking addresses.\nconst rows = $('Apollo Reveal Result').all();\nconst homes = $('Fetch Homepage').all();\nconst TODAY = new Date().toISOString().slice(0, 10);\nconst PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];\nfunction siteEmail(html, domain) {\n  if (!html || !domain) return '';\n  const base = domain.replace(/^www\\./, '');\n  const found = new Set();\n  for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/g)) {\n    const e = m[0].toLowerCase().replace(/^mailto:/, '');\n    const host = e.split('@')[1];\n    if (/\\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;\n    if (host === base || host.endsWith('.' + base)) found.add(e);\n  }\n  const list = [...found];\n  list.sort((a, b) => {\n    const ra = PREFERRED.indexOf(a.split('@')[0]), rb = PREFERRED.indexOf(b.split('@')[0]);\n    return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);\n  });\n  return list[0] || '';\n}\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const upd = { row_number: row.row_number };\n  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;\n  if (!row.domain) {\n    upd['Apollo Enrich'] = 'No website found - ' + TODAY;\n  } else if (row.email) {\n    upd['Email'] = row.email;\n    upd['Full Name'] = row.fullName;\n    upd['Job title'] = row.jobTitle;\n    upd['Apollo Enrich'] = 'Found - ' + TODAY;\n  } else {\n    const home = homes[i] && typeof homes[i].json.data === 'string' ? homes[i].json.data : '';\n    const contact = typeof item.json.data === 'string' ? item.json.data : '';\n    const email = siteEmail(home, row.domain) || siteEmail(contact, row.domain);\n    if (email) {\n      upd['Email'] = email;\n      upd['Job title'] = 'Generic contact (website)';\n      upd['Apollo Enrich'] = 'Email from website - ' + TODAY;\n    } else {\n      upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;\n    }\n  }\n  return { json: upd };\n});\n"
+        "jsCode": "// Final outcome per row. Website emails are only accepted on the startup's own domain,\n// to avoid picking up agency, CDN or tracking addresses.\nconst rows = $('Apollo Reveal Result').all();\nconst homes = $('Fetch Homepage').all();\nconst TODAY = new Date().toISOString().slice(0, 10);\nconst PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];\nfunction siteEmail(html, domain) {\n  if (!html || !domain) return '';\n  const base = domain.replace(/^www\\./, '');\n  const found = new Set();\n  for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/g)) {\n    const e = m[0].toLowerCase().replace(/^mailto:/, '');\n    const host = e.split('@')[1];\n    if (/\\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;\n    if (host === base || host.endsWith('.' + base)) found.add(e);\n  }\n  const list = [...found];\n  list.sort((a, b) => {\n    const ra = PREFERRED.indexOf(a.split('@')[0]), rb = PREFERRED.indexOf(b.split('@')[0]);\n    return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);\n  });\n  return list[0] || '';\n}\nconst out = [];\n$input.all().forEach((item, i) => {\n  const row = rows[i].json;\n  // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.\n  if (row.apolloError && !row.email) return;\n  const upd = { row_number: row.row_number };\n  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;\n  if (!row.domain) {\n    upd['Apollo Enrich'] = 'No website found - ' + TODAY;\n  } else if (row.email) {\n    upd['Email'] = row.email;\n    upd['Full Name'] = row.fullName;\n    upd['Job title'] = row.jobTitle;\n    upd['Apollo Enrich'] = 'Found - ' + TODAY;\n  } else {\n    const home = homes[i] && typeof homes[i].json.data === 'string' ? homes[i].json.data : '';\n    const contact = typeof item.json.data === 'string' ? item.json.data : '';\n    const email = siteEmail(home, row.domain) || siteEmail(contact, row.domain);\n    if (email) {\n      upd['Email'] = email;\n      upd['Job title'] = 'Generic contact (website)';\n      upd['Apollo Enrich'] = 'Email from website - ' + TODAY;\n    } else {\n      upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;\n    }\n  }\n  out.push({ json: upd });\n});\nreturn out;\n"
       },
-      "id": "8f94f294-c3bf-4657-865c-16ecd676fc8a"
+      "id": "b1933b8e-1c8b-4590-9524-b49747f9fa61"
     },
     {
       "name": "Pipeline - Write Enrichment",
@@ -307,7 +340,7 @@
           "handlingExtraData": "insertInNewColumn"
         }
       },
-      "id": "1b927af6-0959-40b1-b9d1-129ed3c05b61"
+      "id": "81b9a3e0-87a3-46bd-b737-c98697a303a6"
     }
   ],
   "connections": {
