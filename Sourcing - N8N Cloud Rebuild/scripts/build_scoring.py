@@ -36,13 +36,14 @@ for (let b = 0; b < unscored.length && out.length < MAX_BATCHES; b += BATCH_SIZE
     + JSON.stringify(candidates)
     + '\n\nReturn ONLY a JSON array (no prose, no markdown fences), one object per candidate, in this exact shape:\n'
     + '[{"id": 0, "company_name": "...", "pass": true|false, "enterprise_fit": true|false, "is_ai_agent": true|false, '
-    + '"has_physical_component": true|false, "is_space_or_drone": true|false, "moat_score": 1-5, "geography_guess": "...", "reasoning": "one short sentence covering enterprise fit, physical component, and moat"}]\n'
+    + '"has_physical_component": true|false, "is_excluded_space_or_defence": true|false, "moat_score": 1-5, "geography_guess": "...", "reasoning": "one short sentence covering enterprise fit, physical component, and moat"}]\n'
     + '"id" must be echoed back EXACTLY as given in the input so results can be matched. "company_name" is the '
     + 'clean startup name only (e.g. from a news headline like "Acme raises $2M", company_name is "Acme") - '
     + 'strip any funding/news phrasing.\n'
     + 'moat_score reflects how defensible the product looks (5 = strong moat, 1 = trivially replicable). '
-    + 'is_space_or_drone is true for any space, satellite, aerospace, drone, UAV or counter-drone company (including defence drones). '
-    + 'pass must be false whenever enterprise_fit is false, is_ai_agent is true or is_space_or_drone is true, regardless of moat_score.';
+    + 'is_excluded_space_or_defence is true for space/satellite/aerospace companies, consumer/hobby drones, and purely military products '
+    + '(weapons, strike drones); it is FALSE for dual-use drone/UAV/counter-drone/defence tech with credible civil or industrial buyers. '
+    + 'pass must be false whenever enterprise_fit is false, is_ai_agent is true or is_excluded_space_or_defence is true, regardless of moat_score.';
   out.push({ json: { prompt, max_tokens: 4000, rows } });
 }
 return out;
@@ -66,8 +67,8 @@ $input.all().forEach((item, i) => {
     const r = byId[String(row.row_number)];
     if (!r) continue; // missing/malformed -> left unscored, retried next run
     const moat = Number(r.moat_score) || 0;
-    // Hard rules enforced in code too: the model sometimes passes a drone company despite the criteria.
-    const pass = r.pass === true && r.enterprise_fit !== false && r.is_ai_agent !== true && r.is_space_or_drone !== true;
+    // Hard rules enforced in code too: the model sometimes passes an excluded space/defence company despite the criteria.
+    const pass = r.pass === true && r.enterprise_fit !== false && r.is_ai_agent !== true && r.is_excluded_space_or_defence !== true;
     const upd = {
       row_number: row.row_number,
       'AI Moat Score': pass ? moat : 0,

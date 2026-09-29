@@ -9,8 +9,12 @@ You are screening early-stage startups for a B2B-focused VC investor. Criteria, 
    agents, autonomous-agent tooling, or generic LLM/GPT wrapper products. This category is explicitly
    excluded no matter how good it looks otherwise.
 
-2b. REJECT aerospace, space, satellite, and drone-based startups entirely — not an area of interest for
-   this investor, regardless of moat or enterprise fit.
+2b. REJECT space, satellite and aerospace startups, consumer/hobby drones, and purely military products
+   (weapons, strike drones) — not an area of interest for this investor, regardless of moat or enterprise fit.
+   EXCEPTION: DUAL-USE drone, UAV, counter-drone and defence-tech startups ARE in scope — technology with credible
+   civil / industrial / critical-infrastructure buyers as well as defence (e.g. counter-drone for airports and
+   utilities, inspection or heavy-lift UAVs for industry, sensing for critical infrastructure). Judge these on
+   criteria 1 and 4 like any other startup.
 
 3. A tangible link to the physical world (hardware, robotics, sensors, IoT, industrial/manufacturing
    equipment, energy infrastructure, materials science, logistics/physical operations) is a BONUS, not a
