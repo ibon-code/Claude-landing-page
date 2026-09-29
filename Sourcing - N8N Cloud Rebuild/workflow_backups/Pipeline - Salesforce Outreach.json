@@ -1,0 +1,360 @@
+{
+  "name": "Pipeline - Salesforce Outreach",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "trigger",
+      "name": "Pipeline Outreach Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "read",
+      "name": "Pipeline - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        420,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const email = j['Email'];\n  if (!email) continue;\n  if (!isChecked(j['Salesforce'])) continue;\n  if (isChecked(j['Contacted'])) continue;\n  if (isChecked(j['Playbook'])) continue;\n  if (j['Meeting']) continue;\n  const outreachCount = Number(j['Outreach Count'] || 0);\n  if (outreachCount >= 3) continue;\n  out.push({ json: j });\n}\nreturn out;"
+      },
+      "id": "filter",
+      "name": "Filter - Eligible for Outreach",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "maxItems": 20
+      },
+      "id": "limit",
+      "name": "Cap 20 per run",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        860,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['Website'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "fetchhome",
+      "name": "Fetch Startup Homepage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        200
+      ],
+      "onError": "continueRegularOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\", \"European Space Agency\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"Cirrus Logic\", \"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nfunction stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Filter - Eligible for Outreach').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  const html = typeof item.json.data === 'string' ? item.json.data : '';\n  let siteSummary = '';\n  if (html) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(html);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    siteSummary = parts.join(' — ').slice(0, 400);\n  }\n  const name = orig['Startup name'];\n  const website = orig['Website'];\n  const jobTitle = orig['Job title'];\n  const founderName = orig['Full Name'];\n  const prompt = \"You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\\n\\n\"\n    + JSON.stringify(PARTNERS)\n    + \"\\n\\nStartup: \" + name + \"\\nWebsite: \" + website + \"\\n\"\n    + \"What the startup's own homepage says about itself: \" + (siteSummary || 'not available') + \"\\n\"\n    + \"Founder/contact title: \" + (jobTitle || 'unknown') + \"\\n\"\n    + \"Founder/contact name on file: \" + (founderName || 'unknown') + \"\\n\\n\"\n    + \"Base the industry classification primarily on what the homepage says, not on the company name alone.\\n\"\n    + 'Return ONLY JSON (no prose, no markdown fences): {\"greeting\": \"...\", \"industry\": \"...\", \"partners\": \"...\"}\\n'\n    + \"greeting: the founder's first name if founder_name looks like a real person's name, otherwise \\\"\" + name + \"'s team\\\".\\n\"\n    + \"industry: a natural, human-readable phrase for the vertical (e.g. \\\"mobility and physical AI\\\"), not the all-caps category label.\\n\"\n    + 'partners: 1-2 partner names joined naturally, e.g. \"BMW Group and Bosch\" or \"PepsiCo\".';\n  out.push({ json: { ...orig, prompt, max_tokens: 300 } });\n});\nreturn out;"
+      },
+      "id": "buildprompt",
+      "name": "Build Personalization Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "V5wGQ55LdYLhSCmf",
+          "mode": "list",
+          "cachedResultName": "Util - Claude Messages API"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "id": "callclaude",
+      "name": "Call Claude",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        200
+      ],
+      "onError": "continueRegularOutput",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const CALENDLY_LINK = \"https://calendly.com/i-bon\";\nconst SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst originals = $('Build Personalization Prompt').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  const info = item.json;\n  if (!info || info.error || !info.greeting || !info.industry || !info.partners) return;\n  const name = orig['Startup name'];\n  const email = orig['Email'];\n  const text = \"Hi \" + info.greeting + \",\\nI came across \" + name + \" while mapping out startups in the \" + info.industry + \" space.\\nI'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + info.industry + \" that includes \" + info.partners + \".\\nEven if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.\\nAre you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: \" + CALENDLY_LINK + \"\\n\\nBest,\\n\\nIacopo Bon\";\n  const html = \"<p>Hi \" + info.greeting + \",</p><p>I came across \" + name + \" while mapping out startups in the \" + info.industry + \" space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + info.industry + \" that includes \" + info.partners + \".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\\\"\" + CALENDLY_LINK + \"\\\">\" + CALENDLY_LINK + \"</a></p><p>Best,</p>\" + SIGNATURE_HTML;\n  out.push({ json: {\n    'Email': email,\n    'Startup name': name,\n    sendTo: email,\n    subject: \"Plug and Play <> \" + name,\n    htmlBody: html\n  }});\n});\nreturn out;"
+      },
+      "id": "buildemail",
+      "name": "Build Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.sendTo }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.htmlBody }}",
+        "options": {}
+      },
+      "id": "gmailsend",
+      "name": "Send Outreach Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1960,
+        200
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "webhookId": "824af330-45c8-463d-abd1-c14a74b02f38"
+    },
+    {
+      "parameters": {
+        "jsCode": "const originals = $('Build Email').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  out.push({ json: {\n    'Email': orig['Email'],\n    'Contacted': true,\n    'Date Contacted': new Date().toISOString().slice(0, 10),\n    'Followed Up': false\n  }});\n});\nreturn out;"
+      },
+      "id": "prepupdate",
+      "name": "Prepare Sheet Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2180,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheetupdate",
+      "name": "Pipeline - Mark Contacted",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2400,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Pipeline Outreach Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Get Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Get Rows": {
+      "main": [
+        [
+          {
+            "node": "Filter - Eligible for Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter - Eligible for Outreach": {
+      "main": [
+        [
+          {
+            "node": "Cap 20 per run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cap 20 per run": {
+      "main": [
+        [
+          {
+            "node": "Fetch Startup Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Startup Homepage": {
+      "main": [
+        [
+          {
+            "node": "Build Personalization Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Personalization Prompt": {
+      "main": [
+        [
+          {
+            "node": "Call Claude",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude": {
+      "main": [
+        [
+          {
+            "node": "Build Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email": {
+      "main": [
+        [
+          {
+            "node": "Send Outreach Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Outreach Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Sheet Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Update": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Mark Contacted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}
