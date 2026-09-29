@@ -1,13 +1,18 @@
 """Generates 'Pipeline - Apollo Enrich' (every 15 min, offset 5 min after Move to Pipeline).
 
-For each Pipeline row without an email and not yet attempted:
+For each Pipeline row without an email and not yet attempted, in one linear pass
+(every node emits exactly one item per row, so later nodes zip results by index):
   1. Resolve the company domain. If Website is a source-site URL (BetaList/tech.eu/Wamda),
      look the company up in Apollo by exact name and use its real domain.
-  2. Search people at that domain (free) and pick the best title with has_email.
-  3. Reveal that one person via people/match (1 Apollo credit).
-Every attempted row gets 'Apollo Enrich' filled in (found / not found / no website), so it
-is never retried automatically and you can see at a glance whether a contact exists.
-Clear that cell to force a retry.
+  2. Search people at that domain (free) and rank by title: CEO > founder > president/MD >
+     other C-level > VP/head/director. Prefer people Apollo flags has_email; if none, still
+     try the best-ranked person.
+  3. Reveal that one person via people/match (1 Apollo credit when an email comes back).
+  4. No email from Apollo -> read the startup's homepage and /contact page and take a public
+     contact address on the startup's own domain (e.g. hello@, founders@).
+Every attempted row gets 'Apollo Enrich' filled in, so it is never retried automatically.
+Rows marked 'No contact in Apollo' by the first version are retried once with this logic.
+Clear the cell to force a retry.
 """
 import json, sys
 out_dir = sys.argv[1]
@@ -19,6 +24,7 @@ DOC = {"__rl": True, "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc", "m
 PIPELINE = {"__rl": True, "value": "114224284", "mode": "id"}
 GS_CRED = {"googleSheetsOAuth2Api": {"id": "gRSPd8YEw5iadWsy", "name": "Google Sheets (Iacopo Bon)"}}
 APOLLO_CRED = {"httpHeaderAuth": {"id": "tsTg37ICmuv8HBpC", "name": "Apollo Header Auth"}}
+BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
 MAX_PER_RUN = 3 if TEST else 10
 
 
@@ -35,6 +41,15 @@ def apollo(name, pos, url, body_expr):
             "credentials": APOLLO_CRED, "continueOnFail": True, "onError": "continueRegularOutput"}
 
 
+def fetch_page(name, pos, url_expr):
+    return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
+            "parameters": {"url": url_expr, "sendHeaders": True,
+                           "headerParameters": {"parameters": [{"name": "User-Agent", "value": BROWSER_UA}]},
+                           "options": {"timeout": 15000,
+                                       "response": {"response": {"responseFormat": "text", "neverError": True}}}},
+            "continueOnFail": True, "onError": "continueRegularOutput"}
+
+
 TODAY = "new Date().toISOString().slice(0, 10)"
 
 select_js = r"""const MAX_PER_RUN = __MAX__;
@@ -49,8 +64,10 @@ for (const item of $input.all()) {
   const j = item.json;
   const name = String(j['Startup name'] || '').trim();
   if (!name) continue;
-  if (String(j['Email'] || '').trim()) continue;          // already has a contact
-  if (String(j['Apollo Enrich'] || '').trim()) continue;  // already attempted
+  if (String(j['Email'] || '').trim()) continue;  // already has a contact
+  const status = String(j['Apollo Enrich'] || '').trim();
+  // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.
+  if (status && !status.startsWith('No contact in Apollo')) continue;
   out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });
   if (out.length >= MAX_PER_RUN) break;
 }
@@ -61,8 +78,7 @@ resolve_js = r"""// Rows that already had a real domain pass through; the others
 // Apollo company whose name matches exactly (never a fuzzy match, to avoid wrong contacts).
 const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const rows = $('Select Rows to Enrich').all();
-const out = [];
-$input.all().forEach((item, i) => {
+return $input.all().map((item, i) => {
   const row = rows[i].json;
   let domain = row.domain, resolvedWebsite = '';
   if (!domain) {
@@ -70,74 +86,101 @@ $input.all().forEach((item, i) => {
     const hit = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain);
     if (hit) { domain = hit.primary_domain; resolvedWebsite = 'https://' + hit.primary_domain; }
   }
-  out.push({ json: { ...row, domain, resolvedWebsite } });
+  return { json: { ...row, domain, resolvedWebsite } };
 });
-return out;
 """
 
-with_domain_js = "return $input.all().filter(it => it.json.domain);"
-
-no_domain_js = r"""return $input.all().filter(it => !it.json.domain).map(it => ({ json: {
-  row_number: it.json.row_number,
-  'Apollo Enrich': 'No website found - ' + __TODAY__,
-}}));
-""".replace("__TODAY__", TODAY)
-
-rank_js = r"""const PRIORITY_TITLES = [
-  ['ceo', 'chief executive officer', 'founder', 'co-founder', 'cofounder', 'owner', 'president',
-   'managing director', 'general manager'],
-  ['coo', 'cto', 'cfo', 'cpo', 'vp', 'vice president', 'head of', 'director', 'partner', 'principal'],
+rank_js = r"""const RANKS = [
+  ['ceo', 'chief executive'],
+  ['founder'],
+  ['president', 'managing director', 'general manager', 'owner'],
+  ['coo', 'cto', 'cfo', 'cpo', 'cmo', 'chief'],
+  ['vp', 'vice president', 'head of', 'director', 'partner', 'principal'],
 ];
 function titleRank(t) {
   t = String(t || '').toLowerCase();
-  for (let r = 0; r < PRIORITY_TITLES.length; r++) if (PRIORITY_TITLES[r].some(k => t.includes(k))) return r;
+  for (let r = 0; r < RANKS.length; r++) if (RANKS[r].some(k => t.includes(k))) return r;
   return 99;
 }
-const rows = $('With Domain').all();
-const out = [];
-$input.all().forEach((item, i) => {
-  const people = (item.json.people || []).filter(p => p.has_email && p.id);
-  people.sort((a, b) => titleRank(a.title) - titleRank(b.title));
-  out.push({ json: { ...rows[i].json, candidateId: people.length ? people[0].id : null, candidates: people.length } });
+const byRank = (a, b) => titleRank(a.title) - titleRank(b.title);
+const rows = $('Resolve Domain').all();
+return $input.all().map((item, i) => {
+  const row = rows[i].json;
+  const people = row.domain ? (item.json.people || []).filter(p => p.id) : [];
+  const withEmail = people.filter(p => p.has_email).sort(byRank);
+  // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.
+  const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;
+  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length } };
 });
-return out;
 """
 
-has_candidate_js = "return $input.all().filter(it => it.json.candidateId);"
+reveal_js = r"""const rows = $('Pick Best Contact').all();
+return $input.all().map((item, i) => {
+  const row = rows[i].json;
+  const p = (row.candidateId && item.json.person) || {};
+  // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.
+  const email = /not_unlocked|@domain\.com$/i.test(p.email || '') ? '' : (p.email || '');
+  return { json: { ...row,
+    email,
+    fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),
+    jobTitle: p.title || p.headline || '',
+  }};
+});
+"""
 
-no_candidate_js = r"""return $input.all().filter(it => !it.json.candidateId).map(it => {
-  const upd = { row_number: it.json.row_number, 'Apollo Enrich': 'No contact in Apollo - ' + __TODAY__ };
-  if (it.json.resolvedWebsite) upd['Website'] = it.json.resolvedWebsite;
+HOME_URL = "={{ $json.domain && !$json.email ? 'https://' + $json.domain : 'https://invalid.invalid' }}"
+CONTACT_URL = ("={{ $('Apollo Reveal Result').all()[$itemIndex].json.domain && !$('Apollo Reveal Result').all()[$itemIndex].json.email"
+               " ? 'https://' + $('Apollo Reveal Result').all()[$itemIndex].json.domain + '/contact' : 'https://invalid.invalid' }}")
+
+final_js = r"""// Final outcome per row. Website emails are only accepted on the startup's own domain,
+// to avoid picking up agency, CDN or tracking addresses.
+const rows = $('Apollo Reveal Result').all();
+const homes = $('Fetch Homepage').all();
+const TODAY = __TODAY__;
+const PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];
+function siteEmail(html, domain) {
+  if (!html || !domain) return '';
+  const base = domain.replace(/^www\./, '');
+  const found = new Set();
+  for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) {
+    const e = m[0].toLowerCase().replace(/^mailto:/, '');
+    const host = e.split('@')[1];
+    if (/\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;
+    if (host === base || host.endsWith('.' + base)) found.add(e);
+  }
+  const list = [...found];
+  list.sort((a, b) => {
+    const ra = PREFERRED.indexOf(a.split('@')[0]), rb = PREFERRED.indexOf(b.split('@')[0]);
+    return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);
+  });
+  return list[0] || '';
+}
+return $input.all().map((item, i) => {
+  const row = rows[i].json;
+  const upd = { row_number: row.row_number };
+  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;
+  if (!row.domain) {
+    upd['Apollo Enrich'] = 'No website found - ' + TODAY;
+  } else if (row.email) {
+    upd['Email'] = row.email;
+    upd['Full Name'] = row.fullName;
+    upd['Job title'] = row.jobTitle;
+    upd['Apollo Enrich'] = 'Found - ' + TODAY;
+  } else {
+    const home = homes[i] && typeof homes[i].json.data === 'string' ? homes[i].json.data : '';
+    const contact = typeof item.json.data === 'string' ? item.json.data : '';
+    const email = siteEmail(home, row.domain) || siteEmail(contact, row.domain);
+    if (email) {
+      upd['Email'] = email;
+      upd['Job title'] = 'Generic contact (website)';
+      upd['Apollo Enrich'] = 'Email from website - ' + TODAY;
+    } else {
+      upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;
+    }
+  }
   return { json: upd };
 });
 """.replace("__TODAY__", TODAY)
-
-found_js = r"""const rows = $('Has Candidate').all();
-const out = [];
-$input.all().forEach((item, i) => {
-  const row = rows[i].json;
-  const p = item.json.person || {};
-  const upd = { row_number: row.row_number };
-  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;
-  if (p.email) {
-    upd['Email'] = p.email;
-    upd['Full Name'] = p.name || [p.first_name, p.last_name].filter(Boolean).join(' ');
-    upd['Job title'] = p.title || p.headline || '';
-    upd['Apollo Enrich'] = 'Found - ' + __TODAY__;
-  } else {
-    upd['Apollo Enrich'] = 'Email not revealed - ' + __TODAY__;
-  }
-  out.push({ json: upd });
-});
-return out;
-""".replace("__TODAY__", TODAY)
-
-write = {"name": "Pipeline - Write Enrichment", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4.5,
-         "position": [2200, 0], "credentials": GS_CRED,
-         "parameters": {"operation": "update", "documentId": DOC, "sheetName": PIPELINE,
-                        "columns": {"mappingMode": "autoMapInputData", "value": {},
-                                    "matchingColumns": ["row_number"], "schema": []},
-                        "options": {"handlingExtraData": "insertInNewColumn"}}}
 
 nodes = [
     {"name": "Apollo Enrich Trigger", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1.2, "position": [0, 0],
@@ -149,34 +192,25 @@ nodes = [
            "={{ JSON.stringify($json.domain ? { q_organization_domains_list: [$json.domain], per_page: 1 } "
            ": { q_organization_name: $json.name, per_page: 5 }) }}"),
     code("Resolve Domain", [880, 0], resolve_js),
-    code("With Domain", [1100, -120], with_domain_js),
-    code("No Domain", [1100, 160], no_domain_js),
-    apollo("Apollo - Search People", [1320, -120], "https://api.apollo.io/api/v1/mixed_people/api_search",
-           "={{ JSON.stringify({ q_organization_domains_list: [$json.domain], per_page: 10 }) }}"),
-    code("Pick Best Contact", [1540, -120], rank_js),
-    code("Has Candidate", [1760, -240], has_candidate_js),
-    code("No Candidate", [1760, 0], no_candidate_js),
-    apollo("Apollo - Reveal Email", [1980, -240], "https://api.apollo.io/api/v1/people/match",
-           "={{ JSON.stringify({ id: $json.candidateId }) }}"),
-    code("Build Found Update", [2200, -240], found_js),
-    {**write, "position": [2420, 0]},
+    # A domain that can't exist returns 0 people, so rows without a domain never search all of Apollo.
+    apollo("Apollo - Search People", [1100, 0], "https://api.apollo.io/api/v1/mixed_people/api_search",
+           "={{ JSON.stringify({ q_organization_domains_list: [$json.domain || 'invalid.invalid'], per_page: 10 }) }}"),
+    code("Pick Best Contact", [1320, 0], rank_js),
+    apollo("Apollo - Reveal Email", [1540, 0], "https://api.apollo.io/api/v1/people/match",
+           "={{ JSON.stringify({ id: $json.candidateId || 'none' }) }}"),
+    code("Apollo Reveal Result", [1760, 0], reveal_js),
+    fetch_page("Fetch Homepage", [1980, 0], HOME_URL),
+    fetch_page("Fetch Contact Page", [2200, 0], CONTACT_URL),
+    code("Build Row Update", [2420, 0], final_js),
+    {"name": "Pipeline - Write Enrichment", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4.5,
+     "position": [2640, 0], "credentials": GS_CRED,
+     "parameters": {"operation": "update", "documentId": DOC, "sheetName": PIPELINE,
+                    "columns": {"mappingMode": "autoMapInputData", "value": {},
+                                "matchingColumns": ["row_number"], "schema": []},
+                    "options": {"handlingExtraData": "insertInNewColumn"}}},
 ]
-
-
-def link(a, b):
-    connections.setdefault(a, {"main": [[]]})["main"][0].append({"node": b, "type": "main", "index": 0})
-
-
-connections = {}
-for a, b in [("Apollo Enrich Trigger", "Pipeline - Get Rows"), ("Pipeline - Get Rows", "Select Rows to Enrich"),
-             ("Select Rows to Enrich", "Apollo - Find Company"), ("Apollo - Find Company", "Resolve Domain"),
-             ("Resolve Domain", "With Domain"), ("Resolve Domain", "No Domain"),
-             ("With Domain", "Apollo - Search People"), ("Apollo - Search People", "Pick Best Contact"),
-             ("Pick Best Contact", "Has Candidate"), ("Pick Best Contact", "No Candidate"),
-             ("Has Candidate", "Apollo - Reveal Email"), ("Apollo - Reveal Email", "Build Found Update"),
-             ("No Domain", "Pipeline - Write Enrichment"), ("No Candidate", "Pipeline - Write Enrichment"),
-             ("Build Found Update", "Pipeline - Write Enrichment")]:
-    link(a, b)
+names = [n["name"] for n in nodes]
+connections = {a: {"main": [[{"node": b, "type": "main", "index": 0}]]} for a, b in zip(names, names[1:])}
 
 json.dump({"name": "Pipeline - Apollo Enrich", "nodes": nodes, "connections": connections,
            "settings": {"executionOrder": "v1"}}, open(f"{out_dir}/enrich.json", "w"), indent=1)
