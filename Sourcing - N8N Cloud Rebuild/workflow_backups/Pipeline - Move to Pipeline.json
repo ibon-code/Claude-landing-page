@@ -19,7 +19,7 @@
           ]
         }
       },
-      "id": "b010b02a-b1a2-418e-8fe3-344d97d982bc"
+      "id": "0b11e2c5-1829-439f-ba77-3d35253ab8fd"
     },
     {
       "name": "Sourcing - Get Rows",
@@ -50,7 +50,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "47c86847-1bae-42e4-bcba-98a72b1b1dbc"
+      "id": "b557383c-26df-4709-8e2d-a8587e2e583b"
     },
     {
       "name": "Pipeline - Get Rows",
@@ -83,7 +83,7 @@
       },
       "alwaysOutputData": true,
       "executeOnce": true,
-      "id": "43321367-1359-4a7d-8799-3cd9a5d48c0b"
+      "id": "327e1fc4-9417-4657-843b-99852f8b6729"
     },
     {
       "name": "Select Rows to Move",
@@ -94,9 +94,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nfunction normalizeDomain(url) {\n  return String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n}\nconst pipeline = $('Pipeline - Get Rows').all().map(it => it.json);\nconst inPipelineDomains = new Set(pipeline.map(r => normalizeDomain(r['Website'])).filter(Boolean));\nconst inPipelineNames = new Set(pipeline.map(r => String(r['Startup name'] || '').trim().toLowerCase()).filter(Boolean));\nconst out = [];\nfor (const item of $('Sourcing - Get Rows').all()) {\n  const j = item.json;\n  if (!isChecked(j['Move to Pipeline?'])) continue;\n  const name = String(j['Organization Name'] || '').trim();\n  const domain = normalizeDomain(j['Website']);\n  if (!name) continue;\n  if (inPipelineNames.has(name.toLowerCase()) || (domain && inPipelineDomains.has(domain))) continue;\n  inPipelineNames.add(name.toLowerCase());\n  if (domain) inPipelineDomains.add(domain);\n  out.push({ json: { 'Startup name': name, 'Website': j['Website'] || '' } });\n}\nreturn out;\n"
+        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\n// Source sites (listing/article URLs used as a fallback Website) are shared by many\n// startups, so they can't identify one — dedup those rows by name only.\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction normalizeDomain(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst pipeline = $('Pipeline - Get Rows').all().map(it => it.json);\nconst inPipelineDomains = new Set(pipeline.map(r => normalizeDomain(r['Website'])).filter(Boolean));\nconst inPipelineNames = new Set(pipeline.map(r => String(r['Startup name'] || '').trim().toLowerCase()).filter(Boolean));\nconst out = [];\nfor (const item of $('Sourcing - Get Rows').all()) {\n  const j = item.json;\n  if (!isChecked(j['Move to Pipeline?'])) continue;\n  const name = String(j['Organization Name'] || '').trim();\n  const domain = normalizeDomain(j['Website']);\n  if (!name) continue;\n  if (inPipelineNames.has(name.toLowerCase()) || (domain && inPipelineDomains.has(domain))) continue;\n  inPipelineNames.add(name.toLowerCase());\n  if (domain) inPipelineDomains.add(domain);\n  out.push({ json: { 'Startup name': name, 'Website': j['Website'] || '' } });\n}\nreturn out;\n"
       },
-      "id": "f141c9f6-3d40-407e-8e85-efe9583656bf"
+      "id": "a1b382bc-45a2-48c0-b380-3a577508e79b"
     },
     {
       "name": "Pipeline - Append",
@@ -134,7 +134,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "db84a106-7d42-4485-ab75-62a060452229"
+      "id": "cf045988-3d08-4cc2-a7d5-fed2e2f700d9"
     }
   ],
   "connections": {
@@ -184,6 +184,10 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   }
 }

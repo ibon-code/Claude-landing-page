@@ -20,7 +20,7 @@ All'inizio Google Cloud era bloccato per l'account aziendale, quindi la build pa
 
 ## Stato attuale (aggiornato 2026-09-29)
 
-**Tutti i workflow sono INATTIVI** — nessun invio/scrittura automatica finché non li attivi tu.
+**ATTIVI dal 2026-09-29**: Util Claude, Daily Harvest, Weekly AI Scoring, Move to Pipeline. **Ancora spento**: Salesforce Outreach (invia email vere).
 
 | Workflow | ID | Stato |
 |---|---|---|

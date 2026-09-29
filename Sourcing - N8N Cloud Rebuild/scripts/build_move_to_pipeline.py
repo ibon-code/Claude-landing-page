@@ -39,9 +39,13 @@ select_js = r"""function isChecked(v) {
   if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';
   return false;
 }
+// Source sites (listing/article URLs used as a fallback Website) are shared by many
+// startups, so they can't identify one — dedup those rows by name only.
+const SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);
 function normalizeDomain(url) {
-  return String(url || '').trim().toLowerCase()
+  const d = String(url || '').trim().toLowerCase()
     .replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].split('?')[0];
+  return SOURCE_DOMAINS.has(d) ? '' : d;
 }
 const pipeline = $('Pipeline - Get Rows').all().map(it => it.json);
 const inPipelineDomains = new Set(pipeline.map(r => normalizeDomain(r['Website'])).filter(Boolean));
