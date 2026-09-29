@@ -70,6 +70,7 @@ $input.all().forEach((item, i) => {
       row_number: row.row_number,
       'AI Moat Score': pass ? moat : 0,
       'AI Notes': (pass ? 'PASS' : 'REJECT') + ' (moat ' + moat + '/5) - ' + (r.reasoning || ''),
+      'Move to Pipeline?': pass, // picked up by 'Pipeline - Move to Pipeline'
     };
     if (!row['Headquarters Location'] && r.geography_guess) upd['Headquarters Location'] = r.geography_guess;
     if (NEWS_SOURCES.some(s => String(row['Source'] || '').toLowerCase() === s.toLowerCase()) && r.company_name) {

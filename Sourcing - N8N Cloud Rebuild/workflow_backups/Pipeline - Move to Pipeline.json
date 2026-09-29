@@ -1,0 +1,189 @@
+{
+  "name": "Pipeline - Move to Pipeline",
+  "nodes": [
+    {
+      "name": "Move to Pipeline Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "b010b02a-b1a2-418e-8fe3-344d97d982bc"
+    },
+    {
+      "name": "Sourcing - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "0",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "id": "47c86847-1bae-42e4-bcba-98a72b1b1dbc"
+    },
+    {
+      "name": "Pipeline - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "id": "43321367-1359-4a7d-8799-3cd9a5d48c0b"
+    },
+    {
+      "name": "Select Rows to Move",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nfunction normalizeDomain(url) {\n  return String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n}\nconst pipeline = $('Pipeline - Get Rows').all().map(it => it.json);\nconst inPipelineDomains = new Set(pipeline.map(r => normalizeDomain(r['Website'])).filter(Boolean));\nconst inPipelineNames = new Set(pipeline.map(r => String(r['Startup name'] || '').trim().toLowerCase()).filter(Boolean));\nconst out = [];\nfor (const item of $('Sourcing - Get Rows').all()) {\n  const j = item.json;\n  if (!isChecked(j['Move to Pipeline?'])) continue;\n  const name = String(j['Organization Name'] || '').trim();\n  const domain = normalizeDomain(j['Website']);\n  if (!name) continue;\n  if (inPipelineNames.has(name.toLowerCase()) || (domain && inPipelineDomains.has(domain))) continue;\n  inPipelineNames.add(name.toLowerCase());\n  if (domain) inPipelineDomains.add(domain);\n  out.push({ json: { 'Startup name': name, 'Website': j['Website'] || '' } });\n}\nreturn out;\n"
+      },
+      "id": "f141c9f6-3d40-407e-8e85-efe9583656bf"
+    },
+    {
+      "name": "Pipeline - Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "operation": "append",
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "id": "db84a106-7d42-4485-ab75-62a060452229"
+    }
+  ],
+  "connections": {
+    "Move to Pipeline Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sourcing - Get Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sourcing - Get Rows": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Get Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Get Rows": {
+      "main": [
+        [
+          {
+            "node": "Select Rows to Move",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Rows to Move": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

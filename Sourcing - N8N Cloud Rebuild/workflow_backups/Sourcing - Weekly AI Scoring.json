@@ -19,7 +19,7 @@
           ]
         }
       },
-      "id": "a464681b-a4d9-4cce-ac8f-43c31de31b7c"
+      "id": "3e842d4b-98fb-458f-b594-4ada90bdd7ef"
     },
     {
       "name": "Sourcing - Get Rows",
@@ -50,7 +50,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "7ea94ff6-501c-408b-a704-29f49c11a8de"
+      "id": "cd1d7ffb-ca63-4a00-97e4-0f65c5ade308"
     },
     {
       "name": "Build Scoring Batches",
@@ -63,7 +63,7 @@
       "parameters": {
         "jsCode": "// Picks Sourcing rows that have never been scored (empty 'AI Moat Score') and\n// groups them into batches, one Claude call per batch.\nconst BATCH_SIZE = 15;\nconst MAX_BATCHES = 12; // safety cap on Claude calls per run\nconst CRITERIA = \"You are screening early-stage startups for a B2B-focused VC investor. Criteria, in order of importance:\\n\\n1. MOST IMPORTANT: the end customer must plausibly be large corporates / enterprise organizations \\u2014\\n   not consumers, not solo freelancers/creators, not small local businesses, not \\\"prosumer\\\" tools.\\n   Think: a Fortune 500 / large enterprise procurement or ops team would realistically buy this.\\n   If the target customer looks like SMBs, indie hackers, or individuals, REJECT regardless of anything else.\\n\\n2. REJECT anything in the \\\"AI agent\\\" category \\u2014 AI agent platforms, agent frameworks, browser-automation\\n   agents, autonomous-agent tooling, or generic LLM/GPT wrapper products. This category is explicitly\\n   excluded no matter how good it looks otherwise.\\n\\n2b. REJECT aerospace, space, satellite, and drone-based startups entirely \\u2014 not an area of interest for\\n   this investor, regardless of moat or enterprise fit.\\n\\n3. A tangible link to the physical world (hardware, robotics, sensors, IoT, industrial/manufacturing\\n   equipment, energy infrastructure, materials science, logistics/physical operations) is a BONUS, not a\\n   requirement. Pure software is completely fine \\u2014 do NOT reject or penalize a candidate just for being\\n   software-only. What matters is criteria 1 (enterprise customer) and 4 (real moat), full stop.\\n\\n4. Must show a genuinely defensible moat: proprietary data/tech, deep domain complexity, regulatory or\\n   compliance edge, hardware, network effects, or real technical depth. REJECT anything that looks like a\\n   thin wrapper or generic CRUD app replicable in about a week of \\\"vibe coding\\\". Be strict \\u2014 when in doubt, reject.\\n\\n5. Sector-agnostic beyond the above. Geography: Europe, UK, US, or Middle East (if unclear, lower confidence).\\n   Very early stage (pre-seed/seed) is assumed \\u2014 each candidate includes its source and founding info;\\n   trust that pre-filtering (BetaList = launching now, Apollo = founded within the last ~18 months) already\\n   handles stage, you don't need to re-derive it.\";\n\nconst unscored = $input.all()\n  .map(it => it.json)\n  .filter(j => j['Organization Name'] && (j['AI Moat Score'] === '' || j['AI Moat Score'] === undefined || j['AI Moat Score'] === null));\n\nconst out = [];\nfor (let b = 0; b < unscored.length && out.length < MAX_BATCHES; b += BATCH_SIZE) {\n  const rows = unscored.slice(b, b + BATCH_SIZE);\n  const candidates = rows.map(r => ({\n    id: r.row_number,\n    name: r['Organization Name'],\n    description: String(r['Description'] || '').slice(0, 600),\n    website: r['Website'] || '',\n    source: r['Source'] || '',\n    funding_usd: r['Funding USD (parsed)'] || null,\n  }));\n  const prompt = CRITERIA\n    + '\\n\\nHere are the candidate startups as a JSON array:\\n'\n    + JSON.stringify(candidates)\n    + '\\n\\nReturn ONLY a JSON array (no prose, no markdown fences), one object per candidate, in this exact shape:\\n'\n    + '[{\"id\": 0, \"company_name\": \"...\", \"pass\": true|false, \"enterprise_fit\": true|false, \"is_ai_agent\": true|false, '\n    + '\"has_physical_component\": true|false, \"moat_score\": 1-5, \"geography_guess\": \"...\", \"reasoning\": \"one short sentence covering enterprise fit, physical component, and moat\"}]\\n'\n    + '\"id\" must be echoed back EXACTLY as given in the input so results can be matched. \"company_name\" is the '\n    + 'clean startup name only (e.g. from a news headline like \"Acme raises $2M\", company_name is \"Acme\") - '\n    + 'strip any funding/news phrasing.\\n'\n    + 'moat_score reflects how defensible the product looks (5 = strong moat, 1 = trivially replicable). '\n    + 'pass must be false whenever enterprise_fit is false or is_ai_agent is true, regardless of moat_score.';\n  out.push({ json: { prompt, max_tokens: 4000, rows } });\n}\nreturn out;\n"
       },
-      "id": "27edc41e-cb02-4364-8c04-6542098e7709"
+      "id": "859b5b9b-c931-4888-ab50-3823d6a57937"
     },
     {
       "name": "Call Claude",
@@ -92,7 +92,7 @@
         "mode": "each",
         "options": {}
       },
-      "id": "4320fc79-5aae-49c9-bb08-07b1cc003dd1"
+      "id": "cdcf7ebb-7bfe-420d-9796-367c3c8804ab"
     },
     {
       "name": "Build Row Updates",
@@ -103,9 +103,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Zips each Claude batch result back to its sheet rows (by row_number) and builds\n// the in-place update. Rejected candidates get AI Moat Score 0 so they are never\n// re-scored and sort to the bottom; the real moat score stays visible in AI Notes.\nconst batches = $('Build Scoring Batches').all();\nconst NEWS_SOURCES = ['tech.eu', 'TechEU', 'Wamda'];\nconst out = [];\n$input.all().forEach((item, i) => {\n  const rows = (batches[i] && batches[i].json.rows) || [];\n  const results = Array.isArray(item.json.result) ? item.json.result : [];\n  const byId = {};\n  for (const r of results) byId[String(r.id)] = r;\n  for (const row of rows) {\n    const r = byId[String(row.row_number)];\n    if (!r) continue; // missing/malformed -> left unscored, retried next run\n    const moat = Number(r.moat_score) || 0;\n    const pass = r.pass === true && r.enterprise_fit !== false && r.is_ai_agent !== true;\n    const upd = {\n      row_number: row.row_number,\n      'AI Moat Score': pass ? moat : 0,\n      'AI Notes': (pass ? 'PASS' : 'REJECT') + ' (moat ' + moat + '/5) - ' + (r.reasoning || ''),\n    };\n    if (!row['Headquarters Location'] && r.geography_guess) upd['Headquarters Location'] = r.geography_guess;\n    if (NEWS_SOURCES.some(s => String(row['Source'] || '').toLowerCase() === s.toLowerCase()) && r.company_name) {\n      upd['Organization Name'] = r.company_name;\n    }\n    out.push({ json: upd });\n  }\n});\nreturn out;\n"
+        "jsCode": "// Zips each Claude batch result back to its sheet rows (by row_number) and builds\n// the in-place update. Rejected candidates get AI Moat Score 0 so they are never\n// re-scored and sort to the bottom; the real moat score stays visible in AI Notes.\nconst batches = $('Build Scoring Batches').all();\nconst NEWS_SOURCES = ['tech.eu', 'TechEU', 'Wamda'];\nconst out = [];\n$input.all().forEach((item, i) => {\n  const rows = (batches[i] && batches[i].json.rows) || [];\n  const results = Array.isArray(item.json.result) ? item.json.result : [];\n  const byId = {};\n  for (const r of results) byId[String(r.id)] = r;\n  for (const row of rows) {\n    const r = byId[String(row.row_number)];\n    if (!r) continue; // missing/malformed -> left unscored, retried next run\n    const moat = Number(r.moat_score) || 0;\n    const pass = r.pass === true && r.enterprise_fit !== false && r.is_ai_agent !== true;\n    const upd = {\n      row_number: row.row_number,\n      'AI Moat Score': pass ? moat : 0,\n      'AI Notes': (pass ? 'PASS' : 'REJECT') + ' (moat ' + moat + '/5) - ' + (r.reasoning || ''),\n      'Move to Pipeline?': pass, // picked up by 'Pipeline - Move to Pipeline'\n    };\n    if (!row['Headquarters Location'] && r.geography_guess) upd['Headquarters Location'] = r.geography_guess;\n    if (NEWS_SOURCES.some(s => String(row['Source'] || '').toLowerCase() === s.toLowerCase()) && r.company_name) {\n      upd['Organization Name'] = r.company_name;\n    }\n    out.push({ json: upd });\n  }\n});\nreturn out;\n"
       },
-      "id": "5c4b8bf6-9838-4c39-a0ca-6650b1dc649a"
+      "id": "f167a8b7-ab5d-4d29-b578-1825b922cee4"
     },
     {
       "name": "Sourcing - Write Scores",
@@ -145,7 +145,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "7098b4b9-4e0e-471f-88f3-2d1965285426"
+      "id": "494d8df7-b7ae-42b6-8a16-0b5c17bb80a4"
     }
   ],
   "connections": {
