@@ -1,0 +1,444 @@
+{
+  "name": "Pipeline - Apollo Enrich",
+  "nodes": [
+    {
+      "name": "Apollo Enrich Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "5-59/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "f32dd6ee-ba96-4f63-9072-67f713bda2a9"
+    },
+    {
+      "name": "Pipeline - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "id": "3cfd7414-1213-4d49-a00e-0fa5ba833ecd"
+    },
+    {
+      "name": "Select Rows to Enrich",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const MAX_PER_RUN = 10;\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction domainOf(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const name = String(j['Startup name'] || '').trim();\n  if (!name) continue;\n  if (String(j['Email'] || '').trim()) continue;          // already has a contact\n  if (String(j['Apollo Enrich'] || '').trim()) continue;  // already attempted\n  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });\n  if (out.length >= MAX_PER_RUN) break;\n}\nreturn out;\n"
+      },
+      "id": "f1748d8b-62c2-479c-9c07-8ccdfe16c64f"
+    },
+    {
+      "name": "Apollo - Find Company",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/mixed_companies/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.domain ? { q_organization_domains_list: [$json.domain], per_page: 1 } : { q_organization_name: $json.name, per_page: 5 }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tsTg37ICmuv8HBpC",
+          "name": "Apollo Header Auth"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "id": "31e0efcd-665c-455f-8e58-6a1926e013ac"
+    },
+    {
+      "name": "Resolve Domain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Rows that already had a real domain pass through; the others take the domain of the\n// Apollo company whose name matches exactly (never a fuzzy match, to avoid wrong contacts).\nconst norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nconst rows = $('Select Rows to Enrich').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const row = rows[i].json;\n  let domain = row.domain, resolvedWebsite = '';\n  if (!domain) {\n    const orgs = item.json.organizations || item.json.accounts || [];\n    const hit = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain);\n    if (hit) { domain = hit.primary_domain; resolvedWebsite = 'https://' + hit.primary_domain; }\n  }\n  out.push({ json: { ...row, domain, resolvedWebsite } });\n});\nreturn out;\n"
+      },
+      "id": "a3724341-7363-4b11-90c7-0736343506e7"
+    },
+    {
+      "name": "With Domain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(it => it.json.domain);"
+      },
+      "id": "1a577a24-3ff9-4330-a9af-16ddfcf0bc27"
+    },
+    {
+      "name": "No Domain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        160
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(it => !it.json.domain).map(it => ({ json: {\n  row_number: it.json.row_number,\n  'Apollo Enrich': 'No website found - ' + new Date().toISOString().slice(0, 10),\n}}));\n"
+      },
+      "id": "7017d2d4-536c-450e-aa54-c4a3f463c88d"
+    },
+    {
+      "name": "Apollo - Search People",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/mixed_people/api_search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ q_organization_domains_list: [$json.domain], per_page: 10 }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tsTg37ICmuv8HBpC",
+          "name": "Apollo Header Auth"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "id": "a92b3453-0ebe-4699-ade6-2909851e556c"
+    },
+    {
+      "name": "Pick Best Contact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "const PRIORITY_TITLES = [\n  ['ceo', 'chief executive officer', 'founder', 'co-founder', 'cofounder', 'owner', 'president',\n   'managing director', 'general manager'],\n  ['coo', 'cto', 'cfo', 'cpo', 'vp', 'vice president', 'head of', 'director', 'partner', 'principal'],\n];\nfunction titleRank(t) {\n  t = String(t || '').toLowerCase();\n  for (let r = 0; r < PRIORITY_TITLES.length; r++) if (PRIORITY_TITLES[r].some(k => t.includes(k))) return r;\n  return 99;\n}\nconst rows = $('With Domain').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const people = (item.json.people || []).filter(p => p.has_email && p.id);\n  people.sort((a, b) => titleRank(a.title) - titleRank(b.title));\n  out.push({ json: { ...rows[i].json, candidateId: people.length ? people[0].id : null, candidates: people.length } });\n});\nreturn out;\n"
+      },
+      "id": "901544ee-e55c-4572-af42-abb1fec7dea8"
+    },
+    {
+      "name": "Has Candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(it => it.json.candidateId);"
+      },
+      "id": "4a5e330a-f5b2-4536-be44-12463eb1d621"
+    },
+    {
+      "name": "No Candidate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().filter(it => !it.json.candidateId).map(it => {\n  const upd = { row_number: it.json.row_number, 'Apollo Enrich': 'No contact in Apollo - ' + new Date().toISOString().slice(0, 10) };\n  if (it.json.resolvedWebsite) upd['Website'] = it.json.resolvedWebsite;\n  return { json: upd };\n});\n"
+      },
+      "id": "5081f51b-1fc7-4176-b7da-0353d9096b2e"
+    },
+    {
+      "name": "Apollo - Reveal Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        -240
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/match",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $json.candidateId }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tsTg37ICmuv8HBpC",
+          "name": "Apollo Header Auth"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "id": "f2cc4678-f8c6-40fd-8d99-ab523c4228f0"
+    },
+    {
+      "name": "Build Found Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const rows = $('Has Candidate').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const row = rows[i].json;\n  const p = item.json.person || {};\n  const upd = { row_number: row.row_number };\n  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;\n  if (p.email) {\n    upd['Email'] = p.email;\n    upd['Full Name'] = p.name || [p.first_name, p.last_name].filter(Boolean).join(' ');\n    upd['Job title'] = p.title || p.headline || '';\n    upd['Apollo Enrich'] = 'Found - ' + new Date().toISOString().slice(0, 10);\n  } else {\n    upd['Apollo Enrich'] = 'Email not revealed - ' + new Date().toISOString().slice(0, 10);\n  }\n  out.push({ json: upd });\n});\nreturn out;\n"
+      },
+      "id": "08b2d9cb-3519-4786-9b0f-0f5a72aeae77"
+    },
+    {
+      "name": "Pipeline - Write Enrichment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn"
+        }
+      },
+      "id": "0cd82879-0308-4eb2-8a8e-e6ed527ef64a"
+    }
+  ],
+  "connections": {
+    "Apollo Enrich Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Get Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Get Rows": {
+      "main": [
+        [
+          {
+            "node": "Select Rows to Enrich",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Rows to Enrich": {
+      "main": [
+        [
+          {
+            "node": "Apollo - Find Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo - Find Company": {
+      "main": [
+        [
+          {
+            "node": "Resolve Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Domain": {
+      "main": [
+        [
+          {
+            "node": "With Domain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "No Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "With Domain": {
+      "main": [
+        [
+          {
+            "node": "Apollo - Search People",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo - Search People": {
+      "main": [
+        [
+          {
+            "node": "Pick Best Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Best Contact": {
+      "main": [
+        [
+          {
+            "node": "Has Candidate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "No Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Candidate": {
+      "main": [
+        [
+          {
+            "node": "Apollo - Reveal Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo - Reveal Email": {
+      "main": [
+        [
+          {
+            "node": "Build Found Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Domain": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Candidate": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Found Update": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
