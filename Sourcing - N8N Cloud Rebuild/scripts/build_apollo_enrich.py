@@ -2,16 +2,16 @@
 
 For each Pipeline row without an email and not yet attempted, in one linear pass
 (every node emits exactly one item per row, so later nodes zip results by index):
-  1. Resolve the company domain. If Website is a source-site URL (BetaList/tech.eu/Wamda),
-     look the company up in Apollo by exact name and use its real domain.
+  1. Resolve the company domain. Only if Website is a source-site URL (BetaList/tech.eu/Wamda),
+     look the company up in Apollo by exact name (1 credit) and use its real domain.
   2. Search people at that domain (free) and rank by title: CEO > founder > president/MD >
      other C-level > VP/head/director. Prefer people Apollo flags has_email; if none, still
      try the best-ranked person.
   3. Reveal that one person via people/match (1 Apollo credit when an email comes back).
   4. No email from Apollo -> read the startup's homepage and /contact page and take a public
      contact address on the startup's own domain (e.g. hello@, founders@).
-  5. 'Company LinkedIn' = the company page linked on the startup's own site, else Apollo's company
-     page; either way the page name must match the startup. 'Not found' when neither.
+  5. 'Company LinkedIn' = the company page linked on the startup's own site, else (only for rows
+     whose domain had to be looked up in Apollo) Apollo's company page; the page name must match. 'Not found' when neither.
      Rows that already went through enrichment but have no 'Company LinkedIn' yet get a light
      company-only pass that reads only the startup's website (no Apollo calls, 0 credits).
 Every attempted row gets 'Apollo Enrich' filled in, so it is never retried automatically.
@@ -41,9 +41,9 @@ def code(name, pos, js):
             "parameters": {"jsCode": js}}
 
 
-def apollo(name, pos, url, body_expr):
-    # Company-only rows never call Apollo: Organization Search costs 1 credit per call.
-    url_expr = "={{ $json.mode === 'companyOnly' ? 'https://invalid.invalid' : '" + url + "' }}"
+def apollo(name, pos, url, body_expr, call_when="$json.mode !== 'companyOnly'"):
+    # Rows that don't need a given Apollo call get an unreachable URL instead (fails, costs nothing).
+    url_expr = "={{ " + call_when + " ? '" + url + "' : 'https://invalid.invalid' }}"
     return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
             "parameters": {"method": "POST", "url": url_expr, "authentication": "genericCredentialType",
                            "genericAuthType": "httpHeaderAuth", "sendBody": True, "specifyBody": "json",
@@ -244,9 +244,11 @@ nodes = [
     {"name": "Pipeline - Get Rows", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4.5, "position": [220, 0],
      "parameters": {"documentId": DOC, "sheetName": PIPELINE, "options": {}}, "credentials": GS_CRED},
     code("Select Rows to Enrich", [440, 0], select_js),
+    # Organization Search costs 1 Apollo credit per call: only used to find the real domain of rows
+    # whose Website is a BetaList/tech.eu/Wamda link.
     apollo("Apollo - Find Company", [660, 0], "https://api.apollo.io/api/v1/mixed_companies/search",
-           "={{ JSON.stringify($json.domain ? { q_organization_domains_list: [$json.domain], per_page: 1 } "
-           ": { q_organization_name: $json.name, per_page: 5 }) }}"),
+           "={{ JSON.stringify({ q_organization_name: $json.name, per_page: 5 }) }}",
+           call_when="$json.mode === 'full' && !$json.domain"),
     code("Resolve Domain", [880, 0], resolve_js),
     # A domain that can't exist returns 0 people, so rows without a domain never search all of Apollo.
     apollo("Apollo - Search People", [1100, 0], "https://api.apollo.io/api/v1/mixed_people/api_search",
