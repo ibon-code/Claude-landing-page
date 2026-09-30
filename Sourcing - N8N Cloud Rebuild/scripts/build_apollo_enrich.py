@@ -10,6 +10,10 @@ For each Pipeline row without an email and not yet attempted, in one linear pass
   3. Reveal that one person via people/match (1 Apollo credit when an email comes back).
   4. No email from Apollo -> read the startup's homepage and /contact page and take a public
      contact address on the startup's own domain (e.g. hello@, founders@).
+  5. LinkedIn: 'CEO LinkedIn' = the revealed person's profile from Apollo, else a personal
+     profile linked on the startup's site, else a ready-made LinkedIn people-search link.
+     'Company LinkedIn' = Apollo's company page, else one linked on the site (name must match).
+     Rows without an email and without 'CEO LinkedIn' are (re)processed to fill these.
 Every attempted row gets 'Apollo Enrich' filled in, so it is never retried automatically.
 Rows marked 'No contact in Apollo' by the first version are retried once with this logic.
 Clear the cell to force a retry.
@@ -68,8 +72,10 @@ for (const item of $input.all()) {
   if (!name) continue;
   if (String(j['Email'] || '').trim()) continue;  // already has a contact
   const status = String(j['Apollo Enrich'] || '').trim();
+  const hasLinkedIn = !!String(j['CEO LinkedIn'] || '').trim();
   // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.
-  if (status && !status.startsWith('No contact in Apollo')) continue;
+  // Rows still without email get one more pass to fill in the LinkedIn columns.
+  if (status && !status.startsWith('No contact in Apollo') && hasLinkedIn) continue;
   out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });
   if (out.length >= MAX_PER_RUN) break;
 }
@@ -82,13 +88,15 @@ const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const rows = $('Select Rows to Enrich').all();
 return $input.all().map((item, i) => {
   const row = rows[i].json;
-  let domain = row.domain, resolvedWebsite = '';
+  const orgs = item.json.organizations || item.json.accounts || [];
+  let domain = row.domain, resolvedWebsite = '', org = null;
   if (!domain) {
-    const orgs = item.json.organizations || item.json.accounts || [];
-    const hit = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain);
-    if (hit) { domain = hit.primary_domain; resolvedWebsite = 'https://' + hit.primary_domain; }
+    org = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain) || null;
+    if (org) { domain = org.primary_domain; resolvedWebsite = 'https://' + org.primary_domain; }
+  } else {
+    org = orgs.find(o => String(o.primary_domain || '').toLowerCase() === domain) || null;
   }
-  return { json: { ...row, domain, resolvedWebsite } };
+  return { json: { ...row, domain, resolvedWebsite, companyLinkedin: (org && org.linkedin_url) || '' } };
 });
 """
 
@@ -126,28 +134,34 @@ return $input.all().map((item, i) => {
   return { json: { ...row,
     apolloError: row.apolloError || !!(row.candidateId && item.json.error),
     email,
+    linkedin: p.linkedin_url || '',
     fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),
     jobTitle: p.title || p.headline || '',
   }};
 });
 """
 
-HOME_URL = "={{ $json.domain && !$json.email ? 'https://' + $json.domain : 'https://invalid.invalid' }}"
-CONTACT_URL = ("={{ $('Apollo Reveal Result').all()[$itemIndex].json.domain && !$('Apollo Reveal Result').all()[$itemIndex].json.email"
-               " ? 'https://' + $('Apollo Reveal Result').all()[$itemIndex].json.domain + '/contact' : 'https://invalid.invalid' }}")
+HOME_URL = "={{ $json.domain && (!$json.email || !$json.linkedin) ? 'https://' + $json.domain : 'https://invalid.invalid' }}"
+def sub_page_url(path):
+    r = "$('Apollo Reveal Result').all()[$itemIndex].json"
+    return (f"={{{{ {r}.domain && (!{r}.email || !{r}.linkedin)"
+            f" ? 'https://' + {r}.domain + '{path}' : 'https://invalid.invalid' }}}}")
 
-final_js = r"""// Final outcome per row. Website emails are only accepted on the startup's own domain,
-// to avoid picking up agency, CDN or tracking addresses.
+final_js = r"""// Final outcome per row. Website emails and LinkedIn links are only taken from the startup's
+// own pages; website emails must be on its own domain (no agency, CDN or tracking addresses).
 const rows = $('Apollo Reveal Result').all();
 const homes = $('Fetch Homepage').all();
+const contacts = $('Fetch Contact Page').all();
 const TODAY = __TODAY__;
 const PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];
+const text = it => (it && typeof it.json.data === 'string') ? it.json.data : '';
+const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function siteEmail(html, domain) {
   if (!html || !domain) return '';
   const base = domain.replace(/^www\./, '');
   const found = new Set();
   for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) {
-    const e = m[0].toLowerCase().replace(/^mailto:/, '');
+    const e = m[0].toLowerCase();
     const host = e.split('@')[1];
     if (/\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;
     if (host === base || host.endsWith('.' + base)) found.add(e);
@@ -159,13 +173,36 @@ function siteEmail(html, domain) {
   });
   return list[0] || '';
 }
+function linkedinLinks(html, kind) {
+  const re = new RegExp('linkedin\\.com/' + kind + '/([A-Za-z0-9_%-]+)', 'gi');
+  const seen = [];
+  for (const m of String(html || '').matchAll(re)) {
+    const url = 'https://www.linkedin.com/' + kind + '/' + m[1].toLowerCase();
+    if (!seen.includes(url)) seen.push(url);
+  }
+  return seen;
+}
+// A company page linked on the site must look like this startup (sites often link their CMS or agency).
+function matchesStartup(url, row) {
+  const slug = norm(url.split('/company/')[1]);
+  const keys = [norm(row.name), norm(String(row.domain || '').split('.')[0])].filter(k => k.length >= 4);
+  return keys.some(k => slug.includes(k) || k.includes(slug));
+}
 const out = [];
 $input.all().forEach((item, i) => {
   const row = rows[i].json;
   // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.
   if (row.apolloError && !row.email) return;
+  const pages = [text(homes[i]), text(contacts[i]), text(item)].join('\n');
   const upd = { row_number: row.row_number };
   if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;
+
+  const sitePerson = linkedinLinks(pages, 'in')[0] || '';
+  const siteCompany = linkedinLinks(pages, 'company').find(u => matchesStartup(u, row)) || '';
+  upd['CEO LinkedIn'] = row.linkedin || sitePerson
+    || 'https://www.linkedin.com/search/results/people/?keywords=' + encodeURIComponent(row.name + ' CEO');
+  upd['Company LinkedIn'] = row.companyLinkedin || siteCompany || '';
+
   if (!row.domain) {
     upd['Apollo Enrich'] = 'No website found - ' + TODAY;
   } else if (row.email) {
@@ -174,14 +211,14 @@ $input.all().forEach((item, i) => {
     upd['Job title'] = row.jobTitle;
     upd['Apollo Enrich'] = 'Found - ' + TODAY;
   } else {
-    const home = homes[i] && typeof homes[i].json.data === 'string' ? homes[i].json.data : '';
-    const contact = typeof item.json.data === 'string' ? item.json.data : '';
-    const email = siteEmail(home, row.domain) || siteEmail(contact, row.domain);
+    const email = siteEmail(pages, row.domain);
     if (email) {
       upd['Email'] = email;
       upd['Job title'] = 'Generic contact (website)';
       upd['Apollo Enrich'] = 'Email from website - ' + TODAY;
     } else {
+      // No email anywhere: still record who the best contact is, for a LinkedIn approach.
+      if (row.fullName) { upd['Full Name'] = row.fullName; upd['Job title'] = row.jobTitle; }
       upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;
     }
   }
@@ -208,10 +245,11 @@ nodes = [
            "={{ JSON.stringify({ id: $json.candidateId || 'none' }) }}"),
     code("Apollo Reveal Result", [1760, 0], reveal_js),
     fetch_page("Fetch Homepage", [1980, 0], HOME_URL),
-    fetch_page("Fetch Contact Page", [2200, 0], CONTACT_URL),
-    code("Build Row Update", [2420, 0], final_js),
+    fetch_page("Fetch Contact Page", [2200, 0], sub_page_url("/contact")),
+    fetch_page("Fetch About Page", [2420, 0], sub_page_url("/about")),
+    code("Build Row Update", [2640, 0], final_js),
     {"name": "Pipeline - Write Enrichment", "type": "n8n-nodes-base.googleSheets", "typeVersion": 4.5,
-     "position": [2640, 0], "credentials": GS_CRED,
+     "position": [2860, 0], "credentials": GS_CRED,
      "parameters": {"operation": "update", "documentId": DOC, "sheetName": PIPELINE,
                     "columns": {"mappingMode": "autoMapInputData", "value": {},
                                 "matchingColumns": ["row_number"], "schema": []},

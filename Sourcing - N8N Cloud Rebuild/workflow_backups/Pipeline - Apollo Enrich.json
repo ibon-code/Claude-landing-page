@@ -19,7 +19,7 @@
           ]
         }
       },
-      "id": "3d9dc332-7dd8-4026-ace6-ff05a6fa5753"
+      "id": "e5e5ef2f-3b24-47d3-a30e-400bd7f3afda"
     },
     {
       "name": "Pipeline - Get Rows",
@@ -50,7 +50,7 @@
           "name": "Google Sheets (Iacopo Bon)"
         }
       },
-      "id": "075245d9-430d-4beb-a64e-bdfac887b693"
+      "id": "05ee1757-7c0d-4745-8eb7-b7826102d105"
     },
     {
       "name": "Select Rows to Enrich",
@@ -61,9 +61,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "const MAX_PER_RUN = 1000;\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction domainOf(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const name = String(j['Startup name'] || '').trim();\n  if (!name) continue;\n  if (String(j['Email'] || '').trim()) continue;  // already has a contact\n  const status = String(j['Apollo Enrich'] || '').trim();\n  // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.\n  if (status && !status.startsWith('No contact in Apollo')) continue;\n  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });\n  if (out.length >= MAX_PER_RUN) break;\n}\nreturn out;\n"
+        "jsCode": "const MAX_PER_RUN = 1000;\nconst SOURCE_DOMAINS = new Set(['betalist.com', 'tech.eu', 'wamda.com', 'linkedin.com']);\nfunction domainOf(url) {\n  const d = String(url || '').trim().toLowerCase()\n    .replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0].split('?')[0];\n  return SOURCE_DOMAINS.has(d) ? '' : d;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const name = String(j['Startup name'] || '').trim();\n  if (!name) continue;\n  if (String(j['Email'] || '').trim()) continue;  // already has a contact\n  const status = String(j['Apollo Enrich'] || '').trim();\n  const hasLinkedIn = !!String(j['CEO LinkedIn'] || '').trim();\n  // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.\n  // Rows still without email get one more pass to fill in the LinkedIn columns.\n  if (status && !status.startsWith('No contact in Apollo') && hasLinkedIn) continue;\n  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });\n  if (out.length >= MAX_PER_RUN) break;\n}\nreturn out;\n"
       },
-      "id": "42ddbe81-689e-438b-8b95-c5a36c9cb5c2"
+      "id": "1d828fe2-843f-4c06-a069-c8f3bb8c8c90"
     },
     {
       "name": "Apollo - Find Company",
@@ -98,7 +98,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "339f718f-5712-43aa-a945-2f6f18bce1f3"
+      "id": "b3ab7a4d-fda1-47db-86e5-d3d9875212a6"
     },
     {
       "name": "Resolve Domain",
@@ -109,9 +109,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Rows that already had a real domain pass through; the others take the domain of the\n// Apollo company whose name matches exactly (never a fuzzy match, to avoid wrong contacts).\nconst norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nconst rows = $('Select Rows to Enrich').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  let domain = row.domain, resolvedWebsite = '';\n  if (!domain) {\n    const orgs = item.json.organizations || item.json.accounts || [];\n    const hit = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain);\n    if (hit) { domain = hit.primary_domain; resolvedWebsite = 'https://' + hit.primary_domain; }\n  }\n  return { json: { ...row, domain, resolvedWebsite } };\n});\n"
+        "jsCode": "// Rows that already had a real domain pass through; the others take the domain of the\n// Apollo company whose name matches exactly (never a fuzzy match, to avoid wrong contacts).\nconst norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nconst rows = $('Select Rows to Enrich').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const orgs = item.json.organizations || item.json.accounts || [];\n  let domain = row.domain, resolvedWebsite = '', org = null;\n  if (!domain) {\n    org = orgs.find(o => norm(o.name) === norm(row.name) && o.primary_domain) || null;\n    if (org) { domain = org.primary_domain; resolvedWebsite = 'https://' + org.primary_domain; }\n  } else {\n    org = orgs.find(o => String(o.primary_domain || '').toLowerCase() === domain) || null;\n  }\n  return { json: { ...row, domain, resolvedWebsite, companyLinkedin: (org && org.linkedin_url) || '' } };\n});\n"
       },
-      "id": "317a0fe9-322d-4fad-ba53-8bc8dc04885a"
+      "id": "3b8f0b8f-9ba1-48a6-b85c-a78d88db993d"
     },
     {
       "name": "Apollo - Search People",
@@ -146,7 +146,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "9a6ccc22-008e-4a0f-8cf4-20f5b9a2144e"
+      "id": "21e8fc95-a7bb-4784-a18e-be20cbcaba45"
     },
     {
       "name": "Pick Best Contact",
@@ -159,7 +159,7 @@
       "parameters": {
         "jsCode": "const RANKS = [\n  ['ceo', 'chief executive'],\n  ['founder'],\n  ['president', 'managing director', 'general manager', 'owner'],\n  ['coo', 'cto', 'cfo', 'cpo', 'cmo', 'chief'],\n  ['vp', 'vice president', 'head of', 'director', 'partner', 'principal'],\n];\nfunction titleRank(t) {\n  t = String(t || '').toLowerCase();\n  for (let r = 0; r < RANKS.length; r++) if (RANKS[r].some(k => t.includes(k))) return r;\n  return 99;\n}\nconst byRank = (a, b) => titleRank(a.title) - titleRank(b.title);\nconst rows = $('Resolve Domain').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const people = row.domain ? (item.json.people || []).filter(p => p.id) : [];\n  const withEmail = people.filter(p => p.has_email).sort(byRank);\n  // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.\n  const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;\n  const apolloError = !!(row.domain && item.json.error);\n  return { json: { ...row, candidateId: pick ? pick.id : null, peopleFound: people.length, apolloError } };\n});\n"
       },
-      "id": "f3b33f61-4f36-4ff3-b7cf-8d0fc223507d"
+      "id": "f9000216-9220-4a0e-ad59-dbd503bd3671"
     },
     {
       "name": "Apollo - Reveal Email",
@@ -194,7 +194,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "b19e87d7-5c4b-4d7a-bd55-d2558c1805ba"
+      "id": "4b00f0f3-ff11-4a1a-aa5f-076133e498f8"
     },
     {
       "name": "Apollo Reveal Result",
@@ -205,9 +205,9 @@
         0
       ],
       "parameters": {
-        "jsCode": "const rows = $('Pick Best Contact').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const p = (row.candidateId && item.json.person) || {};\n  // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.\n  const email = /not_unlocked|@domain\\.com$/i.test(p.email || '') ? '' : (p.email || '');\n  return { json: { ...row,\n    apolloError: row.apolloError || !!(row.candidateId && item.json.error),\n    email,\n    fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),\n    jobTitle: p.title || p.headline || '',\n  }};\n});\n"
+        "jsCode": "const rows = $('Pick Best Contact').all();\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const p = (row.candidateId && item.json.person) || {};\n  // Apollo returns a placeholder like email_not_unlocked@domain.com when it has no real address.\n  const email = /not_unlocked|@domain\\.com$/i.test(p.email || '') ? '' : (p.email || '');\n  return { json: { ...row,\n    apolloError: row.apolloError || !!(row.candidateId && item.json.error),\n    email,\n    linkedin: p.linkedin_url || '',\n    fullName: p.name || [p.first_name, p.last_name].filter(Boolean).join(' '),\n    jobTitle: p.title || p.headline || '',\n  }};\n});\n"
       },
-      "id": "d55410c7-8a29-4cc5-a33d-2f91a3b1e5b2"
+      "id": "b4179d62-b4b4-44a9-8d7e-506519e3d896"
     },
     {
       "name": "Fetch Homepage",
@@ -218,7 +218,7 @@
         0
       ],
       "parameters": {
-        "url": "={{ $json.domain && !$json.email ? 'https://' + $json.domain : 'https://invalid.invalid' }}",
+        "url": "={{ $json.domain && (!$json.email || !$json.linkedin) ? 'https://' + $json.domain : 'https://invalid.invalid' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -246,7 +246,7 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "3437707e-8b68-44d1-a2db-51bc6032db69"
+      "id": "80d8e6e2-1b4e-428c-b9fb-e9dff26f492b"
     },
     {
       "name": "Fetch Contact Page",
@@ -257,7 +257,7 @@
         0
       ],
       "parameters": {
-        "url": "={{ $('Apollo Reveal Result').all()[$itemIndex].json.domain && !$('Apollo Reveal Result').all()[$itemIndex].json.email ? 'https://' + $('Apollo Reveal Result').all()[$itemIndex].json.domain + '/contact' : 'https://invalid.invalid' }}",
+        "url": "={{ $('Apollo Reveal Result').all()[$itemIndex].json.domain && (!$('Apollo Reveal Result').all()[$itemIndex].json.email || !$('Apollo Reveal Result').all()[$itemIndex].json.linkedin) ? 'https://' + $('Apollo Reveal Result').all()[$itemIndex].json.domain + '/contact' : 'https://invalid.invalid' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -285,27 +285,66 @@
       },
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "id": "431f3ff1-19d8-4d41-b137-7a0690355622"
+      "id": "e85ed377-d912-479a-ba88-290edd7e958f"
+    },
+    {
+      "name": "Fetch About Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $('Apollo Reveal Result').all()[$itemIndex].json.domain && (!$('Apollo Reveal Result').all()[$itemIndex].json.email || !$('Apollo Reveal Result').all()[$itemIndex].json.linkedin) ? 'https://' + $('Apollo Reveal Result').all()[$itemIndex].json.domain + '/about' : 'https://invalid.invalid' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5,
+              "batchInterval": 1000
+            }
+          },
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "id": "9eb1a231-0ef6-4bd2-a185-0cbbb7cb3279"
     },
     {
       "name": "Build Row Update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2420,
+        2640,
         0
       ],
       "parameters": {
-        "jsCode": "// Final outcome per row. Website emails are only accepted on the startup's own domain,\n// to avoid picking up agency, CDN or tracking addresses.\nconst rows = $('Apollo Reveal Result').all();\nconst homes = $('Fetch Homepage').all();\nconst TODAY = new Date().toISOString().slice(0, 10);\nconst PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];\nfunction siteEmail(html, domain) {\n  if (!html || !domain) return '';\n  const base = domain.replace(/^www\\./, '');\n  const found = new Set();\n  for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/g)) {\n    const e = m[0].toLowerCase().replace(/^mailto:/, '');\n    const host = e.split('@')[1];\n    if (/\\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;\n    if (host === base || host.endsWith('.' + base)) found.add(e);\n  }\n  const list = [...found];\n  list.sort((a, b) => {\n    const ra = PREFERRED.indexOf(a.split('@')[0]), rb = PREFERRED.indexOf(b.split('@')[0]);\n    return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);\n  });\n  return list[0] || '';\n}\nconst out = [];\n$input.all().forEach((item, i) => {\n  const row = rows[i].json;\n  // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.\n  if (row.apolloError && !row.email) return;\n  const upd = { row_number: row.row_number };\n  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;\n  if (!row.domain) {\n    upd['Apollo Enrich'] = 'No website found - ' + TODAY;\n  } else if (row.email) {\n    upd['Email'] = row.email;\n    upd['Full Name'] = row.fullName;\n    upd['Job title'] = row.jobTitle;\n    upd['Apollo Enrich'] = 'Found - ' + TODAY;\n  } else {\n    const home = homes[i] && typeof homes[i].json.data === 'string' ? homes[i].json.data : '';\n    const contact = typeof item.json.data === 'string' ? item.json.data : '';\n    const email = siteEmail(home, row.domain) || siteEmail(contact, row.domain);\n    if (email) {\n      upd['Email'] = email;\n      upd['Job title'] = 'Generic contact (website)';\n      upd['Apollo Enrich'] = 'Email from website - ' + TODAY;\n    } else {\n      upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;\n    }\n  }\n  out.push({ json: upd });\n});\nreturn out;\n"
+        "jsCode": "// Final outcome per row. Website emails and LinkedIn links are only taken from the startup's\n// own pages; website emails must be on its own domain (no agency, CDN or tracking addresses).\nconst rows = $('Apollo Reveal Result').all();\nconst homes = $('Fetch Homepage').all();\nconst contacts = $('Fetch Contact Page').all();\nconst TODAY = new Date().toISOString().slice(0, 10);\nconst PREFERRED = ['founders', 'founder', 'ceo', 'hello', 'hi', 'contact', 'info', 'team', 'partnerships', 'business', 'sales'];\nconst text = it => (it && typeof it.json.data === 'string') ? it.json.data : '';\nconst norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nfunction siteEmail(html, domain) {\n  if (!html || !domain) return '';\n  const base = domain.replace(/^www\\./, '');\n  const found = new Set();\n  for (const m of String(html).matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/g)) {\n    const e = m[0].toLowerCase();\n    const host = e.split('@')[1];\n    if (/\\.(png|jpe?g|gif|svg|webp)$/.test(e)) continue;\n    if (host === base || host.endsWith('.' + base)) found.add(e);\n  }\n  const list = [...found];\n  list.sort((a, b) => {\n    const ra = PREFERRED.indexOf(a.split('@')[0]), rb = PREFERRED.indexOf(b.split('@')[0]);\n    return (ra < 0 ? 99 : ra) - (rb < 0 ? 99 : rb);\n  });\n  return list[0] || '';\n}\nfunction linkedinLinks(html, kind) {\n  const re = new RegExp('linkedin\\\\.com/' + kind + '/([A-Za-z0-9_%-]+)', 'gi');\n  const seen = [];\n  for (const m of String(html || '').matchAll(re)) {\n    const url = 'https://www.linkedin.com/' + kind + '/' + m[1].toLowerCase();\n    if (!seen.includes(url)) seen.push(url);\n  }\n  return seen;\n}\n// A company page linked on the site must look like this startup (sites often link their CMS or agency).\nfunction matchesStartup(url, row) {\n  const slug = norm(url.split('/company/')[1]);\n  const keys = [norm(row.name), norm(String(row.domain || '').split('.')[0])].filter(k => k.length >= 4);\n  return keys.some(k => slug.includes(k) || k.includes(slug));\n}\nconst out = [];\n$input.all().forEach((item, i) => {\n  const row = rows[i].json;\n  // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.\n  if (row.apolloError && !row.email) return;\n  const pages = [text(homes[i]), text(contacts[i]), text(item)].join('\\n');\n  const upd = { row_number: row.row_number };\n  if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;\n\n  const sitePerson = linkedinLinks(pages, 'in')[0] || '';\n  const siteCompany = linkedinLinks(pages, 'company').find(u => matchesStartup(u, row)) || '';\n  upd['CEO LinkedIn'] = row.linkedin || sitePerson\n    || 'https://www.linkedin.com/search/results/people/?keywords=' + encodeURIComponent(row.name + ' CEO');\n  upd['Company LinkedIn'] = row.companyLinkedin || siteCompany || '';\n\n  if (!row.domain) {\n    upd['Apollo Enrich'] = 'No website found - ' + TODAY;\n  } else if (row.email) {\n    upd['Email'] = row.email;\n    upd['Full Name'] = row.fullName;\n    upd['Job title'] = row.jobTitle;\n    upd['Apollo Enrich'] = 'Found - ' + TODAY;\n  } else {\n    const email = siteEmail(pages, row.domain);\n    if (email) {\n      upd['Email'] = email;\n      upd['Job title'] = 'Generic contact (website)';\n      upd['Apollo Enrich'] = 'Email from website - ' + TODAY;\n    } else {\n      // No email anywhere: still record who the best contact is, for a LinkedIn approach.\n      if (row.fullName) { upd['Full Name'] = row.fullName; upd['Job title'] = row.jobTitle; }\n      upd['Apollo Enrich'] = (row.peopleFound ? 'No email found' : 'No people in Apollo') + ', none on website - ' + TODAY;\n    }\n  }\n  out.push({ json: upd });\n});\nreturn out;\n"
       },
-      "id": "b1933b8e-1c8b-4590-9524-b49747f9fa61"
+      "id": "455f6aa6-f4ba-467e-aec2-2fb7832dbad5"
     },
     {
       "name": "Pipeline - Write Enrichment",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        2640,
+        2860,
         0
       ],
       "credentials": {
@@ -340,7 +379,7 @@
           "handlingExtraData": "insertInNewColumn"
         }
       },
-      "id": "81b9a3e0-87a3-46bd-b737-c98697a303a6"
+      "id": "45d33ec4-3333-4afe-a55a-ef4737e8f28c"
     }
   ],
   "connections": {
@@ -455,6 +494,17 @@
       ]
     },
     "Fetch Contact Page": {
+      "main": [
+        [
+          {
+            "node": "Fetch About Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch About Page": {
       "main": [
         [
           {
