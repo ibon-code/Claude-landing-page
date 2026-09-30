@@ -10,10 +10,10 @@ For each Pipeline row without an email and not yet attempted, in one linear pass
   3. Reveal that one person via people/match (1 Apollo credit when an email comes back).
   4. No email from Apollo -> read the startup's homepage and /contact page and take a public
      contact address on the startup's own domain (e.g. hello@, founders@).
-  5. LinkedIn: 'CEO LinkedIn' = the revealed person's profile from Apollo, else a personal
-     profile linked on the startup's site, else a ready-made LinkedIn people-search link.
-     'Company LinkedIn' = Apollo's company page, else one linked on the site (name must match).
-     Rows without an email and without 'CEO LinkedIn' are (re)processed to fill these.
+  5. 'Company LinkedIn' = the company page linked on the startup's own site, else Apollo's company
+     page; either way the page name must match the startup. 'Not found' when neither.
+     Rows that already went through enrichment but have no 'Company LinkedIn' yet get a light
+     company-only pass (no people search, no email reveal, no Apollo credits for people).
 Every attempted row gets 'Apollo Enrich' filled in, so it is never retried automatically.
 Rows marked 'No contact in Apollo' by the first version are retried once with this logic.
 Clear the cell to force a retry.
@@ -31,6 +31,8 @@ APOLLO_CRED = {"httpHeaderAuth": {"id": "tsTg37ICmuv8HBpC", "name": "Apollo Head
 BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
 # Requests go out 5 at a time so a large backlog doesn't trip Apollo's rate limit.
 BATCHING = {"batching": {"batch": {"batchSize": 5, "batchInterval": 1000}}}
+# Plain website reads (no rate-limited API): larger batches so a big backlog finishes well within 15 minutes.
+PAGE_BATCHING = {"batching": {"batch": {"batchSize": 15, "batchInterval": 200}}}
 MAX_PER_RUN = 3 if TEST else 1000  # effectively "all pending rows"
 
 
@@ -51,7 +53,7 @@ def fetch_page(name, pos, url_expr):
     return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
             "parameters": {"url": url_expr, "sendHeaders": True,
                            "headerParameters": {"parameters": [{"name": "User-Agent", "value": BROWSER_UA}]},
-                           "options": {**BATCHING, "timeout": 15000,
+                           "options": {**PAGE_BATCHING, "timeout": 10000,
                                        "response": {"response": {"responseFormat": "text", "neverError": True}}}},
             "continueOnFail": True, "onError": "continueRegularOutput"}
 
@@ -70,13 +72,16 @@ for (const item of $input.all()) {
   const j = item.json;
   const name = String(j['Startup name'] || '').trim();
   if (!name) continue;
-  if (String(j['Email'] || '').trim()) continue;  // already has a contact
+  const hasEmail = !!String(j['Email'] || '').trim();
   const status = String(j['Apollo Enrich'] || '').trim();
-  const hasLinkedIn = !!String(j['CEO LinkedIn'] || '').trim();
+  const hasCompanyLinkedIn = !!String(j['Company LinkedIn'] || '').trim();
   // 'No contact in Apollo' was written by the first version, which had no fallbacks: retry once.
-  // Rows still without email get one more pass to fill in the LinkedIn columns.
-  if (status && !status.startsWith('No contact in Apollo') && hasLinkedIn) continue;
-  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']) } });
+  const needsContact = !hasEmail && (!status || status.startsWith('No contact in Apollo'));
+  let mode;
+  if (needsContact) mode = 'full';
+  else if (!hasCompanyLinkedIn) mode = 'companyOnly';
+  else continue;
+  out.push({ json: { row_number: j.row_number, name, domain: domainOf(j['Website']), mode } });
   if (out.length >= MAX_PER_RUN) break;
 }
 return out;
@@ -116,7 +121,7 @@ const byRank = (a, b) => titleRank(a.title) - titleRank(b.title);
 const rows = $('Resolve Domain').all();
 return $input.all().map((item, i) => {
   const row = rows[i].json;
-  const people = row.domain ? (item.json.people || []).filter(p => p.id) : [];
+  const people = (row.domain && row.mode === 'full') ? (item.json.people || []).filter(p => p.id) : [];
   const withEmail = people.filter(p => p.has_email).sort(byRank);
   // Nobody flagged has_email: still try the best-ranked person, Apollo sometimes finds one.
   const pick = withEmail[0] || people.slice().sort(byRank)[0] || null;
@@ -141,11 +146,10 @@ return $input.all().map((item, i) => {
 });
 """
 
-HOME_URL = "={{ $json.domain && (!$json.email || !$json.linkedin) ? 'https://' + $json.domain : 'https://invalid.invalid' }}"
+HOME_URL = "={{ $json.domain ? 'https://' + $json.domain : 'https://invalid.invalid' }}"
 def sub_page_url(path):
     r = "$('Apollo Reveal Result').all()[$itemIndex].json"
-    return (f"={{{{ {r}.domain && (!{r}.email || !{r}.linkedin)"
-            f" ? 'https://' + {r}.domain + '{path}' : 'https://invalid.invalid' }}}}")
+    return (f"={{{{ {r}.domain ? 'https://' + {r}.domain + '{path}' : 'https://invalid.invalid' }}}}")
 
 final_js = r"""// Final outcome per row. Website emails and LinkedIn links are only taken from the startup's
 // own pages; website emails must be on its own domain (no agency, CDN or tracking addresses).
@@ -184,7 +188,8 @@ function linkedinLinks(html, kind) {
 }
 // A company page linked on the site must look like this startup (sites often link their CMS or agency).
 function matchesStartup(url, row) {
-  const slug = norm(url.split('/company/')[1]);
+  const slug = norm(String(url).split('/company/')[1]);
+  if (!slug) return false;
   const keys = [norm(row.name), norm(String(row.domain || '').split('.')[0])].filter(k => k.length >= 4);
   return keys.some(k => slug.includes(k) || k.includes(slug));
 }
@@ -192,17 +197,21 @@ const out = [];
 $input.all().forEach((item, i) => {
   const row = rows[i].json;
   // Apollo errored (e.g. rate limit): write nothing, so the row is simply retried next run.
-  if (row.apolloError && !row.email) return;
+  if (row.mode === 'full' && row.apolloError && !row.email) return;
   const pages = [text(homes[i]), text(contacts[i]), text(item)].join('\n');
   const upd = { row_number: row.row_number };
   if (row.resolvedWebsite) upd['Website'] = row.resolvedWebsite;
 
-  const sitePerson = linkedinLinks(pages, 'in')[0] || '';
+  // The startup's own site is the most reliable source for its company page; Apollo's is only a fallback,
+  // and both must look like this startup.
   const siteCompany = linkedinLinks(pages, 'company').find(u => matchesStartup(u, row)) || '';
-  upd['CEO LinkedIn'] = row.linkedin || sitePerson
-    || 'https://www.linkedin.com/search/results/people/?keywords=' + encodeURIComponent(row.name + ' CEO');
-  upd['Company LinkedIn'] = row.companyLinkedin || siteCompany || '';
+  const apolloCompany = row.companyLinkedin && matchesStartup(row.companyLinkedin, row) ? row.companyLinkedin : '';
+  upd['Company LinkedIn'] = siteCompany || apolloCompany || 'Not found';
 
+  if (row.mode === 'companyOnly') {
+    out.push({ json: { row_number: row.row_number, 'Company LinkedIn': upd['Company LinkedIn'] } });
+    return;
+  }
   if (!row.domain) {
     upd['Apollo Enrich'] = 'No website found - ' + TODAY;
   } else if (row.email) {
@@ -239,7 +248,7 @@ nodes = [
     code("Resolve Domain", [880, 0], resolve_js),
     # A domain that can't exist returns 0 people, so rows without a domain never search all of Apollo.
     apollo("Apollo - Search People", [1100, 0], "https://api.apollo.io/api/v1/mixed_people/api_search",
-           "={{ JSON.stringify({ q_organization_domains_list: [$json.domain || 'invalid.invalid'], per_page: 10 }) }}"),
+           "={{ JSON.stringify({ q_organization_domains_list: [($json.mode === 'full' && $json.domain) || 'invalid.invalid'], per_page: 10 }) }}"),
     code("Pick Best Contact", [1320, 0], rank_js),
     apollo("Apollo - Reveal Email", [1540, 0], "https://api.apollo.io/api/v1/people/match",
            "={{ JSON.stringify({ id: $json.candidateId || 'none' }) }}"),
