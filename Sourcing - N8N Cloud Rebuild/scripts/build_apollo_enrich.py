@@ -13,7 +13,7 @@ For each Pipeline row without an email and not yet attempted, in one linear pass
   5. 'Company LinkedIn' = the company page linked on the startup's own site, else Apollo's company
      page; either way the page name must match the startup. 'Not found' when neither.
      Rows that already went through enrichment but have no 'Company LinkedIn' yet get a light
-     company-only pass (no people search, no email reveal, no Apollo credits for people).
+     company-only pass that reads only the startup's website (no Apollo calls, 0 credits).
 Every attempted row gets 'Apollo Enrich' filled in, so it is never retried automatically.
 Rows marked 'No contact in Apollo' by the first version are retried once with this logic.
 Clear the cell to force a retry.
@@ -42,8 +42,10 @@ def code(name, pos, js):
 
 
 def apollo(name, pos, url, body_expr):
+    # Company-only rows never call Apollo: Organization Search costs 1 credit per call.
+    url_expr = "={{ $json.mode === 'companyOnly' ? 'https://invalid.invalid' : '" + url + "' }}"
     return {"name": name, "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": pos,
-            "parameters": {"method": "POST", "url": url, "authentication": "genericCredentialType",
+            "parameters": {"method": "POST", "url": url_expr, "authentication": "genericCredentialType",
                            "genericAuthType": "httpHeaderAuth", "sendBody": True, "specifyBody": "json",
                            "jsonBody": body_expr, "options": BATCHING},
             "credentials": APOLLO_CRED, "continueOnFail": True, "onError": "continueRegularOutput"}
