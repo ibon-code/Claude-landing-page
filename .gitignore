@@ -15,3 +15,6 @@ leads_cache.json
 seen_bounces.json
 seen_replies.json
 *.log
+
+# One-off email sends (recipient data) — see .claude/skills/one-off-email-send
+one-off-sends/
