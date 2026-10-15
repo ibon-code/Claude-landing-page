@@ -1,9 +1,9 @@
 ---
-name: one-off-email-send
+name: email-one-time
 description: Send a batch of pre-written, personalised emails one time from a spreadsheet (one row = one email with To/CC/Subject/Body), safely, from the user's Gmail. Use when the user shares a Google Sheet/Excel/CSV of emails to send ("manda queste mail", "invia a tutte le startup del file", outcome/selection emails, invitations, announcements). Not for recurring automations — those live on the company n8n.
 ---
 
-# One-off email send
+# Email one time
 
 The user's standard is **"non possiamo sbagliare nulla"**: every email that leaves goes to real founders/partners
 from the user's own account and cannot be recalled. Follow every step in order. Never skip the test or the explicit go.
@@ -43,7 +43,7 @@ Ask the user about every flag with AskUserQuestion, then proceed.
 - Re-run the step-2 analysis on the local file (Python) so the frozen copy is the reviewed one.
 
 ### 4. Dry run + preview
-`python3 .claude/skills/one-off-email-send/scripts/send_one_off.py --config one-off-sends/<job>/config.json`
+`python3 .claude/skills/email-one-time/scripts/send_one_off.py --config one-off-sends/<job>/config.json`
 - Fix any validation failure in the sheet (not in the snapshot by hand), re-freeze.
 - Also build every message offline (import the script, call `Job.build_message`) and assert: envelope recipients == To + CC (+BCC) of the row, subject/plain text unchanged, signature present, bullets rendered as `<ul>` where the body has "- " lines.
 - `open` the preview.html for the user.

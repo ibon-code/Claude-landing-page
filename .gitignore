@@ -16,5 +16,5 @@ seen_bounces.json
 seen_replies.json
 *.log
 
-# One-off email sends (recipient data) — see .claude/skills/one-off-email-send
+# One-off email sends (recipient data) — see .claude/skills/email-one-time
 one-off-sends/
