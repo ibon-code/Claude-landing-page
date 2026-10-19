@@ -1,27 +1,54 @@
 {
+  "updatedAt": "2026-10-19T09:53:07.611Z",
+  "createdAt": "2026-09-25T09:46:09.000Z",
+  "id": "1TkdOwL5o1WWC6a8",
   "name": "Pipeline - Salesforce Outreach",
+  "description": null,
+  "active": false,
+  "isArchived": false,
   "nodes": [
     {
+      "id": "2f3a0c79-5757-45a3-a7a7-bc28d38c6114",
+      "name": "Outreach Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
       "parameters": {
         "rule": {
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "*/15 * * * *"
+              "expression": "*/15 9-17 * * 1-5"
             }
           ]
         }
-      },
-      "id": "trigger",
-      "name": "Pipeline Outreach Trigger",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        200,
-        200
-      ]
+      }
     },
     {
+      "id": "b54de45a-2f37-45df-9176-495dea95d190",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Single place for every outreach limit. Outside the sending window a live run stops here.\nconst DRY_RUN = true;\nconst DAILY_CAP = 20;\nconst PER_RUN_CAP = 3;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;\nif (!DRY_RUN && !inWindow) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\n// Rome midnight as epoch seconds (offset probed so DST is handled)\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP, today, dayStartEpoch, inWindow } }];\n"
+      }
+    },
+    {
+      "id": "bddece33-86b3-4f74-8feb-68491e42a11d",
+      "name": "Pipeline - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
       "parameters": {
         "documentId": {
           "__rl": true,
@@ -37,50 +64,73 @@
         },
         "options": {}
       },
-      "id": "read",
-      "name": "Pipeline - Get Rows",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        420,
-        200
-      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "gRSPd8YEw5iadWsy",
           "name": "Google Sheets (Iacopo Bon)"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
     },
     {
+      "id": "2974753a-d041-4bca-be9d-56062280cfe7",
+      "name": "Gmail - Sent Today",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        0
+      ],
       "parameters": {
-        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nconst out = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  const email = j['Email'];\n  if (!email) continue;\n  if (!isChecked(j['Salesforce'])) continue;\n  if (isChecked(j['Contacted'])) continue;\n  if (isChecked(j['Playbook'])) continue;\n  if (j['Meeting']) continue;\n  const outreachCount = Number(j['Outreach Count'] || 0);\n  if (outreachCount >= 3) continue;\n  out.push({ json: j });\n}\nreturn out;"
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 100,
+        "simple": true,
+        "filters": {
+          "q": "={{ 'in:sent subject:\"Plug and Play <>\" after:' + $('Config').first().json.dayStartEpoch }}"
+        },
+        "options": {}
       },
-      "id": "filter",
-      "name": "Filter - Eligible for Outreach",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "executeOnce": true,
+      "webhookId": "382f0520-3ae8-496d-9268-3869e2692330"
+    },
+    {
+      "id": "eeb2eb51-ed28-4ccf-ab94-ad58322f50e3",
+      "name": "Select Candidates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
-        200
-      ]
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nconst cfg = $('Config').first().json;\nconst GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',\n  'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',\n  'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',\n  'contatti', 'info.it', 'investors', 'ir', 'help', 'service', 'welcome']);\nconst JUNK_LOCAL = /^(no-?reply|do-?not-?reply|postmaster|abuse|privacy|legal|gdpr|dpo|unsubscribe|webmaster|billing|invoices?|accounts?|security|bounce|mailer-daemon)$/;\nconst JUNK_DOMAIN = /(^|\\.)(example\\.(com|org)|domain\\.com|email\\.com|sentry\\.io|wixpress\\.com|test\\.com|yourdomain\\.com)$/;\nconst EMAIL_RE = /^[a-z0-9._%+'-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\n\nconst rows = $('Pipeline - Get Rows').all().map(it => it.json);\nconst norm = e => String(e || '').trim().toLowerCase();\n// Addresses already handled anywhere in the sheet (contacted, claimed, failed, under review)\nconst used = new Set(rows.filter(r => isChecked(r['Contacted']) || String(r['Outreach Status'] || '').trim())\n  .map(r => norm(r['Email'])).filter(Boolean));\n\nconst sentInGmail = $('Gmail - Sent Today').all().filter(it => it.json && it.json.id).length;\nconst sentInSheet = rows.filter(r => String(r['Date Contacted'] || '').slice(0, 10) === cfg.today).length;\nconst sentToday = Math.max(sentInGmail, sentInSheet);\nconst remaining = Math.max(0, cfg.dailyCap - sentToday);\nconst limit = cfg.dryRun ? remaining : Math.min(cfg.perRunCap, remaining);\n\nconst out = [];\nconst seen = new Set();\nfor (const r of rows) {\n  if (out.length >= limit) break;\n  const email = norm(r['Email']);\n  const name = String(r['Startup name'] || '').trim();\n  if (!email || !name) continue;\n  if (!isChecked(r['Salesforce']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;\n  if (String(r['Meeting'] || '').trim() || String(r['Outreach Status'] || '').trim()) continue;\n  if (Number(r['Outreach Count'] || 0) >= 3) continue;\n  if (used.has(email) || seen.has(email)) continue;\n  const [local, domain] = email.split('@');\n  if (!EMAIL_RE.test(email) || JUNK_LOCAL.test(local) || JUNK_DOMAIN.test(domain)) continue;\n  if (/\\.(png|jpe?g|gif|svg|webp)$/.test(email)) continue;\n  if (/test company|delete me/i.test(name) || name.length > 60) continue;\n  seen.add(email);\n  out.push({ json: {\n    row_number: r.row_number, name, email, website: String(r['Website'] || '').trim(),\n    jobTitle: r['Job title'] || '', fullName: String(r['Full Name'] || '').trim(),\n    generic: GENERIC.has(local.replace(/[0-9]+$/, '')), outreachCount: Number(r['Outreach Count'] || 0),\n    sentToday, remainingToday: remaining,\n  } });\n}\nreturn out;\n"
+      }
     },
     {
-      "parameters": {
-        "maxItems": 20
-      },
-      "id": "limit",
-      "name": "Cap 20 per run",
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
+      "id": "a9223a1a-42da-4540-8fb7-40cf904e0f8e",
+      "name": "Fetch Startup Homepage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        860,
-        200
-      ]
-    },
-    {
+        1100,
+        0
+      ],
       "parameters": {
-        "url": "={{ $json['Website'] }}",
+        "url": "={{ $json.website }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -91,6 +141,7 @@
           ]
         },
         "options": {
+          "timeout": 15000,
           "response": {
             "response": {
               "responseFormat": "text",
@@ -99,31 +150,30 @@
           }
         }
       },
-      "id": "fetchhome",
-      "name": "Fetch Startup Homepage",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1080,
-        200
-      ],
-      "onError": "continueRegularOutput",
-      "continueOnFail": true
+      "onError": "continueRegularOutput"
     },
     {
-      "parameters": {
-        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\", \"European Space Agency\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"Cirrus Logic\", \"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nfunction stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Filter - Eligible for Outreach').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  const html = typeof item.json.data === 'string' ? item.json.data : '';\n  let siteSummary = '';\n  if (html) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(html);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    siteSummary = parts.join(' — ').slice(0, 400);\n  }\n  const name = orig['Startup name'];\n  const website = orig['Website'];\n  const jobTitle = orig['Job title'];\n  const founderName = orig['Full Name'];\n  const prompt = \"You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\\n\\n\"\n    + JSON.stringify(PARTNERS)\n    + \"\\n\\nStartup: \" + name + \"\\nWebsite: \" + website + \"\\n\"\n    + \"What the startup's own homepage says about itself: \" + (siteSummary || 'not available') + \"\\n\"\n    + \"Founder/contact title: \" + (jobTitle || 'unknown') + \"\\n\"\n    + \"Founder/contact name on file: \" + (founderName || 'unknown') + \"\\n\\n\"\n    + \"Base the industry classification primarily on what the homepage says, not on the company name alone.\\n\"\n    + 'Return ONLY JSON (no prose, no markdown fences): {\"greeting\": \"...\", \"industry\": \"...\", \"partners\": \"...\"}\\n'\n    + \"greeting: the founder's first name if founder_name looks like a real person's name, otherwise \\\"\" + name + \"'s team\\\".\\n\"\n    + \"industry: a natural, human-readable phrase for the vertical (e.g. \\\"mobility and physical AI\\\"), not the all-caps category label.\\n\"\n    + 'partners: 1-2 partner names joined naturally, e.g. \"BMW Group and Bosch\" or \"PepsiCo\".';\n  out.push({ json: { ...orig, prompt, max_tokens: 300 } });\n});\nreturn out;"
-      },
-      "id": "buildprompt",
+      "id": "0f9ae094-e46d-4527-bea9-2a9fd8272342",
       "name": "Build Personalization Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1300,
-        200
-      ]
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\", \"European Space Agency\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"Cirrus Logic\", \"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nfunction stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Select Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = originals[i].json;\n  const html = typeof item.json.data === 'string' ? item.json.data : '';\n  let siteSummary = '';\n  if (html) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(html);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    siteSummary = parts.join(' \u2014 ').slice(0, 400);\n  }\n  const prompt = \"You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\\n\\n\"\n    + JSON.stringify(PARTNERS)\n    + \"\\n\\nStartup: \" + orig.name + \"\\nWebsite: \" + orig.website + \"\\n\"\n    + \"What the startup's own homepage says about itself: \" + (siteSummary || 'not available') + \"\\n\"\n    + \"Founder/contact title: \" + (orig.jobTitle || 'unknown') + \"\\n\\n\"\n    + \"Base the industry classification primarily on what the homepage says, not on the company name alone.\\n\"\n    + 'Return ONLY JSON (no prose, no markdown fences): {\"industry\": \"...\", \"partners\": \"...\"}\\n'\n    + \"industry: a natural, human-readable phrase for the vertical (e.g. \\\"mobility and physical AI\\\"), not the all-caps category label.\\n\"\n    + 'partners: 1-2 partner names copied EXACTLY as written in the list, joined with \" and \", e.g. \"BMW Group and Bosch Germany\" or \"PepsiCo\".';\n  out.push({ json: { prompt, max_tokens: 200 } });\n});\nreturn out;\n"
+      }
     },
     {
+      "id": "9320d13b-6e7e-4b98-b731-cca83d20b81e",
+      "name": "Call Claude",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        0
+      ],
       "parameters": {
         "workflowId": {
           "__rl": true,
@@ -143,67 +193,150 @@
         "mode": "each",
         "options": {}
       },
-      "id": "callclaude",
-      "name": "Call Claude",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        1520,
-        200
-      ],
-      "onError": "continueRegularOutput",
-      "continueOnFail": true
+      "onError": "continueRegularOutput"
     },
     {
-      "parameters": {
-        "jsCode": "const CALENDLY_LINK = \"https://calendly.com/i-bon\";\nconst SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst originals = $('Build Personalization Prompt').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  const info = item.json;\n  if (!info || info.error || !info.greeting || !info.industry || !info.partners) return;\n  const name = orig['Startup name'];\n  const email = orig['Email'];\n  const text = \"Hi \" + info.greeting + \",\\nI came across \" + name + \" while mapping out startups in the \" + info.industry + \" space.\\nI'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + info.industry + \" that includes \" + info.partners + \".\\nEven if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.\\nAre you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: \" + CALENDLY_LINK + \"\\n\\nBest,\\n\\nIacopo Bon\";\n  const html = \"<p>Hi \" + info.greeting + \",</p><p>I came across \" + name + \" while mapping out startups in the \" + info.industry + \" space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + info.industry + \" that includes \" + info.partners + \".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\\\"\" + CALENDLY_LINK + \"\\\">\" + CALENDLY_LINK + \"</a></p><p>Best,</p>\" + SIGNATURE_HTML;\n  out.push({ json: {\n    row_number: orig.row_number,\n    outreachCount: Number(orig['Outreach Count'] || 0),\n    'Email': email,\n    'Startup name': name,\n    sendTo: email,\n    subject: \"Plug and Play <> \" + name,\n    htmlBody: html\n  }});\n});\nreturn out;"
-      },
-      "id": "buildemail",
-      "name": "Build Email",
+      "id": "1ff60153-596d-408a-96e3-d20d4bc21238",
+      "name": "Build + Validate Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1740,
-        200
-      ]
+        1760,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\", \"European Space Agency\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"Cirrus Logic\", \"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nconst SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst CALENDLY_LINK = \"https://calendly.com/i-bon\";\nconst ALL_PARTNERS = [...new Set(Object.values(PARTNERS).flat())].sort((a, b) => b.length - a.length);\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nfunction greetingFor(c) {\n  if (c.generic) return c.name + ' team';\n  const first = (c.fullName.split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n  if (!/^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first)) return c.name + ' team';\n  const isOneCase = first === first.toUpperCase() || first === first.toLowerCase();\n  return isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first;\n}\nfunction checkPartners(p) {\n  let rest = String(p || ''); let found = 0;\n  for (const name of ALL_PARTNERS) {\n    const idx = rest.toLowerCase().indexOf(name.toLowerCase());\n    if (idx >= 0) { rest = rest.slice(0, idx) + ' ' + rest.slice(idx + name.length); found++; }\n  }\n  rest = rest.replace(/\\band\\b/gi, '').replace(/[,&\\s]/g, '');\n  return found >= 1 && found <= 2 && rest === '';\n}\n\nconst candidates = $('Select Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const c = candidates[i].json;\n  const info = item.json || {};\n  const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount };\n  let reason = '';\n  const industry = String(info.industry || '').trim();\n  const partners = String(info.partners || '').trim();\n  if (info.error || !industry || !partners) reason = 'Claude returned no usable answer';\n  else if (!/^[\\p{L}][\\p{L}\\s&,\\/'-]{2,60}$/u.test(industry)) reason = 'Odd industry text: ' + industry.slice(0, 60);\n  else if (!checkPartners(partners)) reason = 'Partners not in the PnP list: ' + partners.slice(0, 80);\n  if (reason) { out.push({ json: { ...base, valid: false, reason } }); return; }\n\n  const greeting = greetingFor(c);\n  const subject = 'Plug and Play <> ' + c.name;\n  const html = \"<p>Hi \" + esc(greeting) + \",</p><p>I came across \" + esc(c.name) + \" while mapping out startups in the \" + esc(industry) + \" space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + esc(industry) + \" that includes \" + esc(partners) + \".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\\\"\" + CALENDLY_LINK + \"\\\">\" + CALENDLY_LINK + \"</a></p><p>Best,</p>\" + SIGNATURE_HTML;\n  if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(html + subject)) {\n    out.push({ json: { ...base, valid: false, reason: 'Rendered email contains a placeholder' } }); return;\n  }\n  out.push({ json: { ...base, valid: true, subject, htmlBody: html, greeting, industry, partners } });\n});\nreturn out;\n"
+      }
     },
     {
+      "id": "ec7fac7c-7064-4ce0-a25a-7072867d0a2c",
+      "name": "Dry Run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ],
       "parameters": {
-        "sendTo": "={{ $json.sendTo }}",
-        "subject": "={{ $json.subject }}",
-        "message": "={{ $json.htmlBody }}",
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a2ec5bfd-bb61-45ed-bb08-47b599e76c76",
+              "leftValue": "={{ $('Config').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
         "options": {}
-      },
-      "id": "gmailsend",
-      "name": "Send Outreach Email",
+      }
+    },
+    {
+      "id": "aead8812-6fbf-4ed8-a1b1-73cd5d7a5dc8",
+      "name": "Build Dry-Run Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "// DRY RUN: one preview email to the user, nothing sent to startups, nothing written to the sheet.\n// On scheduled runs the same preview is not repeated.\nconst items = $input.all().map(it => it.json);\nconst first = $('Select Candidates').first().json;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst key = items.map(e => e.email + '|' + e.valid + '|' + (e.subject || e.reason)).join('\\n');\nconst sd = $getWorkflowStaticData('global');\nconst manual = ['manual', 'test'].includes($execution.mode);\nif (!manual && sd.lastDigestKey === key) return [];\nsd.lastDigestKey = key;\nconst ok = items.filter(e => e.valid), bad = items.filter(e => !e.valid);\nlet html = `<p><b>DRY RUN - nessuna email inviata.</b> Gia' inviate oggi: ${first.sentToday} / 20. Nel live partirebbero max 3 ogni 15 min, lun-ven 9-18.</p>`;\nhtml += `<p>Pronte: ${ok.length} - Da rivedere: ${bad.length}</p>`;\nif (bad.length) html += '<ul>' + bad.map(e => `<li>${esc(e.name)} &lt;${esc(e.email)}&gt;: ${esc(e.reason)}</li>`).join('') + '</ul>';\nfor (const e of ok) html += `<hr><p><b>To:</b> ${esc(e.email)}<br><b>Subject:</b> ${esc(e.subject)}</p>${e.htmlBody}`;\nreturn [{ json: { subject: `[DRY RUN] Outreach preview - ${ok.length} pronte, ${bad.length} da rivedere`, html } }];\n"
+      }
+    },
+    {
+      "id": "f6012aac-3e73-4094-bba2-52d4713957fc",
+      "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1960,
-        200
+        2420,
+        -220
       ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
       "credentials": {
         "gmailOAuth2": {
           "id": "3FF4ROo5Rl75aufp",
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "824af330-45c8-463d-abd1-c14a74b02f38"
+      "webhookId": "2c91b2fa-09b3-4f94-bdf7-8b5f022b55e4"
     },
     {
+      "id": "e8a12a0f-8986-428c-a69c-aebbcf26a637",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        120
+      ],
       "parameters": {
-        "jsCode": "// Pairs each Gmail send result with the email it came from and marks the row contacted.\n// Message/Thread ID are kept so follow-ups can reply in the same Gmail thread.\nconst originals = $('Build Email').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = (originals[i] && originals[i].json) || {};\n  out.push({ json: {\n    row_number: orig.row_number,\n    'Contacted': true,\n    'Date Contacted': new Date().toISOString().slice(0, 10),\n    'Followed Up': false,\n    'Outreach Count': (orig.outreachCount || 0) + 1,\n    'Message ID': item.json.id || '',\n    'Thread ID': item.json.threadId || '',\n  }});\n});\nreturn out;"
-      },
-      "id": "prepupdate",
-      "name": "Prepare Sheet Update",
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e54e7980-0e0a-4e1f-b0ee-d885fff4b696",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a03c4ed7-d00f-43d5-b1e5-087bd974af3f",
+      "name": "Needs Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2180,
-        200
-      ]
+        2420,
+        320
+      ],
+      "parameters": {
+        "jsCode": "return $input.all().map(it => ({ json: { row_number: it.json.row_number,\n  'Outreach Status': 'Needs review: ' + it.json.reason } }));\n"
+      }
     },
     {
+      "id": "2126573f-0e88-41cf-a65e-a16e1e428d86",
+      "name": "Pipeline - Mark Needs Review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2640,
+        320
+      ],
       "parameters": {
         "operation": "update",
         "documentId": {
@@ -230,24 +363,293 @@
           "handlingExtraData": "insertInNewColumn"
         }
       },
-      "id": "sheetupdate",
-      "name": "Pipeline - Mark Contacted",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        2400,
-        200
-      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "gRSPd8YEw5iadWsy",
           "name": "Google Sheets (Iacopo Bon)"
         }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "0543b0db-7fe8-4c7b-9c72-af3bb81870b5",
+      "name": "Loop Over Emails",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2420,
+        100
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
       }
+    },
+    {
+      "id": "22ba86a2-393d-40a7-85de-d445afb4413b",
+      "name": "Claim Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Loop Over Emails').first().json;\nreturn [{ json: { row_number: e.row_number, 'Outreach Status': 'Sending ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "87d40491-fa04-4657-8c5d-0c7529554677",
+      "name": "Pipeline - Claim Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2860,
+        100
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5dad79fd-3979-4a2d-9275-b3484301246b",
+      "name": "Gmail - Already Sent?",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3080,
+        100
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 1,
+        "simple": true,
+        "filters": {
+          "q": "={{ 'in:sent to:' + $('Loop Over Emails').first().json.email + ' subject:\"' + $('Loop Over Emails').first().json.subject.replace(/\"/g, '') + '\"' }}"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "0a02c8d3-7ddc-401e-ad27-f46cabec5360"
+    },
+    {
+      "id": "5065ac82-d05d-4088-90c3-4d567a2dbade",
+      "name": "Already Sent Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3300,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// Last safety net against a double send: same recipient + same subject already in Gmail Sent.\nconst e = $('Loop Over Emails').first().json;\nconst hit = $input.all().some(it => it.json && it.json.id);\nreturn [{ json: { ...e, alreadySent: hit } }];\n"
+      }
+    },
+    {
+      "id": "466041d5-12ab-4067-9df4-69e7275a3a96",
+      "name": "Already Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "4ad13dd5-f492-40c0-970b-b466ec8bc77a",
+              "leftValue": "={{ $json.alreadySent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "fa38a61b-30c1-44fc-8ed6-c11308fe1375",
+      "name": "Mark Already Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        -60
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Already Sent Check').first().json;\nreturn [{ json: { row_number: e.row_number, Contacted: true,\n  'Outreach Status': 'Already sent (found in Gmail) ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "f10351b6-73da-4e30-a15a-5429ac155ea8",
+      "name": "Send Outreach Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3740,
+        140
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.htmlBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "4fcfea4b-38d1-4d3f-a466-a375573a2bff"
+    },
+    {
+      "id": "460e6bfe-daf8-4aa7-80db-04352b4f2b34",
+      "name": "Mark Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        60
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Already Sent Check').first().json;\nconst g = $input.first().json;\nconst today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date());\nreturn [{ json: { row_number: e.row_number, Contacted: true, 'Date Contacted': today, 'Followed Up': false,\n  'Outreach Count': (e.outreachCount || 0) + 1, 'Message ID': g.id || '', 'Thread ID': g.threadId || '',\n  'Outreach Status': 'Sent ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "5b99dc73-634d-4ee0-8b95-ae94fd34c8e1",
+      "name": "Mark Send Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        240
+      ],
+      "parameters": {
+        "jsCode": "// Not retried automatically: clear 'Outreach Status' in the sheet to try again.\nconst e = $('Already Sent Check').first().json;\nconst err = $input.first().json.error;\nconst msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');\nreturn [{ json: { row_number: e.row_number, 'Outreach Status': 'Send failed: ' + String(msg).slice(0, 150) } }];\n"
+      }
+    },
+    {
+      "id": "b88837f6-5c76-48f2-b0a9-342e4fb6d130",
+      "name": "Pipeline - Write Result",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4180,
+        100
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
     }
   ],
   "connections": {
-    "Pipeline Outreach Trigger": {
+    "Outreach Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
       "main": [
         [
           {
@@ -262,25 +664,25 @@
       "main": [
         [
           {
-            "node": "Filter - Eligible for Outreach",
+            "node": "Gmail - Sent Today",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter - Eligible for Outreach": {
+    "Gmail - Sent Today": {
       "main": [
         [
           {
-            "node": "Cap 20 per run",
+            "node": "Select Candidates",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Cap 20 per run": {
+    "Select Candidates": {
       "main": [
         [
           {
@@ -317,18 +719,161 @@
       "main": [
         [
           {
-            "node": "Build Email",
+            "node": "Build + Validate Email",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Email": {
+    "Build + Validate Email": {
       "main": [
         [
           {
+            "node": "Dry Run?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Run?": {
+      "main": [
+        [
+          {
+            "node": "Build Dry-Run Digest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Dry-Run Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Digest to Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Needs Review Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Review Payload": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Mark Needs Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Emails": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Claim Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Payload": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Claim Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Claim Row": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Already Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Already Sent?": {
+      "main": [
+        [
+          {
+            "node": "Already Sent Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Sent Check": {
+      "main": [
+        [
+          {
+            "node": "Already Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Sent?": {
+      "main": [
+        [
+          {
+            "node": "Mark Already Sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Send Outreach Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Already Sent": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Result",
             "type": "main",
             "index": 0
           }
@@ -339,18 +884,47 @@
       "main": [
         [
           {
-            "node": "Prepare Sheet Update",
+            "node": "Mark Sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Send Failed",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare Sheet Update": {
+    "Mark Sent": {
       "main": [
         [
           {
-            "node": "Pipeline - Mark Contacted",
+            "node": "Pipeline - Write Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Send Failed": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Write Result": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Emails",
             "type": "main",
             "index": 0
           }
@@ -358,5 +932,20 @@
       ]
     }
   },
-  "settings": {}
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Rome",
+    "errorWorkflow": "kWaALs0g5noG4ly4"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "d6c43551-a7ed-4dcc-af14-461a8899db47",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "activeVersion": null
 }

@@ -1,0 +1,125 @@
+{
+  "updatedAt": "2026-10-19T09:53:06.440Z",
+  "createdAt": "2026-10-19T09:53:06.440Z",
+  "id": "kWaALs0g5noG4ly4",
+  "name": "Util - Error Alert",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "7174c247-4561-45c2-87af-eff055fd1f2f",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c7c75e5e-e2c8-41de-8475-d0f0b4fcc148",
+      "name": "Build Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// One alert per workflow per hour, so a workflow failing every 15 min doesn't flood the inbox.\nconst d = $input.first().json;\nconst wf = (d.workflow && d.workflow.name) || 'unknown workflow';\nconst sd = $getWorkflowStaticData('global');\nconst last = (sd.lastAlert || {})[wf] || 0;\nif (Date.now() - last < 60 * 60 * 1000) return [];\nsd.lastAlert = { ...(sd.lastAlert || {}), [wf]: Date.now() };\nconst ex = d.execution || {};\nconst err = ex.error || {};\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nreturn [{ json: {\n  subject: '[n8n] Errore in ' + wf,\n  html: `<p>Il workflow <b>${esc(wf)}</b> e' andato in errore.</p>`\n    + `<p><b>Nodo:</b> ${esc(ex.lastNodeExecuted || err.node?.name || '-')}<br><b>Errore:</b> ${esc(err.message || '-')}</p>`\n    + (ex.url ? `<p><a href=\"${esc(ex.url)}\">Apri l'esecuzione</a></p>` : ''),\n} }];\n"
+      }
+    },
+    {
+      "id": "9fa91997-4737-408f-965b-84e56e58d44d",
+      "name": "Email Me",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "6b2f95cd-f8c5-4c55-b78b-a4508177f014"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Alert": {
+      "main": [
+        [
+          {
+            "node": "Email Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "fdcf7003-0b63-453b-8bd2-ecb79a14c32f",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-10-19T09:53:06.440Z",
+      "createdAt": "2026-10-19T09:53:06.440Z",
+      "role": "workflow:owner",
+      "workflowId": "kWaALs0g5noG4ly4",
+      "projectId": "0Xc2vqh3ay8XF9p7",
+      "project": {
+        "updatedAt": "2026-09-17T14:57:31.253Z",
+        "createdAt": "2026-09-17T14:56:30.296Z",
+        "id": "0Xc2vqh3ay8XF9p7",
+        "name": "Iacopo Bon <i.bon@pnptc.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": null
+}
