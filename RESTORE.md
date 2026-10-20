@@ -39,7 +39,12 @@ Guida per rimettere in piedi questo progetto (landing page, design system, pipel
       ~/.claude/projects/-Users-<nuovoutente>-Desktop-Claude-code-experiment
    ```
 
-5. **Rifai il login a GitHub, una volta sola**: al primo `git push` macOS chiede le credenziali. Usa un token GitHub classic con scope `repo`, che verrà salvato nel Portachiavi.
+5. **Rifai il login a GitHub, una volta sola, senza password**: l'account GitHub si usa con "Continue with Google", quindi niente password né token da copiare.
+   ```bash
+   brew install gh            # se manca Homebrew: https://brew.sh
+   gh auth login --web        # apre il browser: entra con "Continue with Google" e incolla il codice di 8 caratteri
+   gh auth setup-git          # da qui git push usa questo login
+   ```
 
 6. **Controlli finali**:
    - `cd ~/Desktop/"Claude code experiment" && git status`: deve risultare pulito.
