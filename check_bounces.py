@@ -5,6 +5,12 @@ clears the Email cell, resets Contacted so it re-enters the outreach flow,
 and records the dead address in "Bounced Emails" so enrich_apollo_pipeline.py
 knows to skip that contact and try the next-best one at the company instead.
 
+Exception: if the row already has Meeting set or Playbook = TRUE, it never
+resets Contacted / clears Email — a startup you've already met must never
+re-enter the cold-outreach flow just because an old address bounced. The
+dead address is still recorded in Bounced Emails for the record, but you'll
+need to fix the contact email manually for these.
+
 Tracks processed bounce UIDs in a local cache so the same bounce is never
 handled twice.
 """
@@ -52,6 +58,14 @@ NONEXISTENT_MARKERS = [
     "5.1.1", "user unknown", "invalid recipient", "address not found",
     "couldn't be found", "unable to receive mail",
 ]
+
+
+def is_checked(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().upper() == "TRUE"
+    return False
 
 
 def get_plain_body(msg):
@@ -146,6 +160,9 @@ def main():
 
         dead_email = str(current_email).strip().lower()
         name = ws.cell(row, col["Startup name "]).value
+        meeting = ws.cell(row, col.get("Meeting", 0)).value if "Meeting" in col else None
+        playbook_flag = ws.cell(row, col.get("Playbook", 0)).value if "Playbook" in col else None
+        already_met = bool(meeting) or is_checked(playbook_flag)
 
         existing_bounced = ws.cell(row, col["Bounced Emails"]).value or ""
         bounced_list = [e.strip() for e in existing_bounced.split(",") if e.strip()]
@@ -153,11 +170,15 @@ def main():
             bounced_list.append(dead_email)
         ws.cell(row, col["Bounced Emails"]).value = ", ".join(bounced_list)
 
-        ws.cell(row, col["Email"]).value = None
-        ws.cell(row, col["Contacted "]).value = False
+        if already_met:
+            print(f"  !! {name} — {dead_email} bounced but Meeting/Playbook already set — "
+                  f"NOT resetting Contacted (would re-enter cold outreach). Fix the email manually.")
+        else:
+            ws.cell(row, col["Email"]).value = None
+            ws.cell(row, col["Contacted "]).value = False
+            print(f"  reset: {name} — cleared {dead_email}, will retry via Apollo")
 
         updated += 1
-        print(f"  reset: {name} — cleared {dead_email}, will retry via Apollo")
 
     if updated:
         wb.save(FILE_PATH)

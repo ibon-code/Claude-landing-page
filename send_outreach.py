@@ -18,6 +18,7 @@ import smtplib
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import make_msgid
 
 import openpyxl
 import requests
@@ -142,11 +143,12 @@ def personalize(name, website, job_title, founder_name, partners_by_industry):
     return json.loads(text)
 
 
-def send_email(to_addr, subject, text_body, html_body):
+def send_email(to_addr, subject, text_body, html_body, message_id):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = GMAIL_USER
     msg["To"] = to_addr
+    msg["Message-ID"] = message_id
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
@@ -179,8 +181,16 @@ def main():
         contacted = ws.cell(row, col.get("Contacted ", 0)).value if "Contacted " in col else None
         salesforce_approved = ws.cell(row, col.get("Salesforce", 0)).value if "Salesforce" in col else None
         outreach_count = ws.cell(row, col.get("Outreach Count", 0)).value if "Outreach Count" in col else 0
+        playbook_flag = ws.cell(row, col.get("Playbook", 0)).value if "Playbook" in col else None
+        meeting = ws.cell(row, col.get("Meeting", 0)).value if "Meeting" in col else None
 
         if not name or not email or contacted or not is_checked(salesforce_approved):
+            continue
+        if is_checked(playbook_flag):
+            print(f"{name} <{email}> — Playbook = TRUE, never send cold outreach, skipping")
+            continue
+        if meeting:  # a meeting already happened (booked/interested/declined) — never re-enter cold outreach,
+            print(f"{name} <{email}> — Meeting already set ({meeting}), never send cold outreach, skipping")
             continue
         if "Outreach Count" in col and int(outreach_count or 0) >= MAX_OUTREACH_PER_STARTUP:
             print(f"{name} <{email}> — outreach cap ({MAX_OUTREACH_PER_STARTUP}) already reached, skipping")
@@ -208,8 +218,9 @@ def main():
         print("-" * 55)
 
         if not DRY_RUN:
+            message_id = make_msgid(domain="gmail.com")
             try:
-                send_email(email, subject, body, html_body)
+                send_email(email, subject, body, html_body, message_id)
             except Exception as e:
                 print(f"  !! send failed for {name} <{email}>: {e}")
                 continue
@@ -218,6 +229,8 @@ def main():
                 ws.cell(row, col["Date Contacted"]).value = datetime.date.today().isoformat()
             if "Followed Up" in col:
                 ws.cell(row, col["Followed Up"]).value = False
+            if "Message ID" in col:
+                ws.cell(row, col["Message ID"]).value = message_id
             if "Outreach Count" in col:
                 ws.cell(row, col["Outreach Count"]).value = int(outreach_count or 0) + 1
             wb.save(FILE_PATH)  # save immediately so a later crash (e.g. SMTP disconnect) can't lose this send's flag and cause a resend

@@ -71,11 +71,14 @@ def has_replied_to_playbook_invite(imap_conn, addr, since_date):
     return bool(data[0].split())
 
 
-def send_email(to_addr, subject, text_body, html_body):
+def send_email(to_addr, subject, text_body, html_body, in_reply_to=None):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = GMAIL_USER
     msg["To"] = to_addr
+    if in_reply_to:
+        msg["In-Reply-To"] = in_reply_to
+        msg["References"] = in_reply_to
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
@@ -112,6 +115,7 @@ def main():
         date_sent = ws.cell(row, col["Date Playbook Invite Sent"]).value
         already_followed_up = ws.cell(row, col["Playbook Followup Sent"]).value
         outreach_count = ws.cell(row, col.get("Outreach Count", 0)).value if "Outreach Count" in col else 0
+        message_id = ws.cell(row, col.get("Playbook Message ID", 0)).value if "Playbook Message ID" in col else None
 
         if not name or not email_addr or not is_checked(invite_sent) or not date_sent:
             continue
@@ -146,7 +150,7 @@ def main():
 
         if not DRY_RUN:
             try:
-                send_email(email_addr, subject, body, html_body)
+                send_email(email_addr, subject, body, html_body, in_reply_to=message_id)
             except Exception as e:
                 print(f"  !! send failed for {name} <{email_addr}>: {e}")
                 continue

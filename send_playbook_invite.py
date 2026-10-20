@@ -13,6 +13,7 @@ import os
 import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import make_msgid
 import smtplib
 
 import openpyxl
@@ -65,11 +66,12 @@ def is_checked(value) -> bool:
     return False
 
 
-def send_email(to_addr, subject, text_body, html_body):
+def send_email(to_addr, subject, text_body, html_body, message_id):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = GMAIL_USER
     msg["To"] = to_addr
+    msg["Message-ID"] = message_id
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
@@ -122,8 +124,9 @@ def main():
         print("-" * 55)
 
         if not DRY_RUN:
+            message_id = make_msgid(domain="gmail.com")
             try:
-                send_email(email_addr, subject, text_body, html_body)
+                send_email(email_addr, subject, text_body, html_body, message_id)
             except Exception as e:
                 print(f"  !! send failed for {name} <{email_addr}>: {e}")
                 continue
@@ -132,6 +135,8 @@ def main():
                 ws.cell(row, col["Date Playbook Invite Sent"]).value = datetime.date.today().isoformat()
             if "Playbook Followup Sent" in col:
                 ws.cell(row, col["Playbook Followup Sent"]).value = False
+            if "Playbook Message ID" in col:
+                ws.cell(row, col["Playbook Message ID"]).value = message_id
             if "Outreach Count" in col:
                 ws.cell(row, col["Outreach Count"]).value = int(outreach_count or 0) + 1
             wb.save(FILE_PATH)  # save immediately so a later crash (e.g. SMTP disconnect) can't lose this send's flag and cause a resend
