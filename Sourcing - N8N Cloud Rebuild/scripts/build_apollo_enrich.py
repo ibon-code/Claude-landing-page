@@ -41,7 +41,7 @@ PIPELINE = {"__rl": True, "value": "114224284", "mode": "id"}
 GS_CRED = {"googleSheetsOAuth2Api": {"id": "gRSPd8YEw5iadWsy", "name": "Google Sheets (Iacopo Bon)"}}
 PLAYBOOK_CRED = {"mcpOAuth2Api": {"id": "TerVDTem462Rn6TK", "name": "Playbook MCP - Iacopo Bon"}}
 PLAYBOOK_MCP = "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/"
-PLAYBOOK_BACKFILL = 20  # already-enriched rows checked per run, so the backlog is spread out
+PLAYBOOK_BACKFILL = 300  # already-enriched rows checked per run (the whole Pipeline fits in one run)
 APOLLO_CRED = {"httpHeaderAuth": {"id": "tsTg37ICmuv8HBpC", "name": "Apollo Header Auth"}}
 BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
 # Requests go out 5 at a time so a large backlog doesn't trip Apollo's rate limit.
