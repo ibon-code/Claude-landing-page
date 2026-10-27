@@ -20,6 +20,8 @@ Config (JSON) — only "snapshot" and "sha256" are required:
     "body_must_start_with": "Dear ",
     "body_must_end_with": "Best regards,",
     "signature": true,                            # append SIGNATURE_HTML from email_signature.py
+    "bold_lines": ["Please book your slot by ..."],  # optional: these exact lines are bold in the HTML part;
+                                                  # each must appear exactly once in every body
     "sender_name": "Iacopo Bon",
     "pause_seconds": 3
   }
@@ -152,6 +154,10 @@ class Job:
                 errors.append(f"{tag}: leftover placeholder")
             if HIDDEN_RE.search(subj + body + self.col(r, "to") + self.col(r, "cc")):
                 errors.append(f"{tag}: hidden character")
+            for b in self.cfg.get("bold_lines", []):
+                n = sum(1 for l in body.split("\n") if l.strip() == b)
+                if n != 1:
+                    errors.append(f"{tag}: bold line {b!r} found {n} times, expected once")
             if ready and self.col(r, "status") != ready:
                 errors.append(f"{tag}: status {self.col(r, 'status')!r} != {ready!r}")
         if self.cols.get("name"):
@@ -185,6 +191,10 @@ class Job:
 
     # --- rendering -------------------------------------------------------------------------
 
+    def line_html(self, line):
+        esc = html.escape(line)
+        return f"<strong>{esc}</strong>" if line.strip() in self.cfg.get("bold_lines", []) else esc
+
     def body_to_html(self, body):
         parts = []
         for para in re.split(r"\n\s*\n", body.strip()):
@@ -193,7 +203,7 @@ class Job:
             for l in [l.rstrip() for l in para.split("\n")] + [None]:
                 if l is not None and re.match(r"^[-*•] ", l):
                     if text:
-                        parts.append("<p>" + "<br>".join(html.escape(t) for t in text) + "</p>")
+                        parts.append("<p>" + "<br>".join(self.line_html(t) for t in text) + "</p>")
                         text = []
                     items.append(f"<li>{html.escape(l[2:])}</li>")
                 else:
@@ -203,7 +213,7 @@ class Job:
                     if l is not None:
                         text.append(l)
             if text:
-                parts.append("<p>" + "<br>".join(html.escape(t) for t in text) + "</p>")
+                parts.append("<p>" + "<br>".join(self.line_html(t) for t in text) + "</p>")
         out = "\n".join(parts)
         if self.cfg.get("signature", True):
             from email_signature import SIGNATURE_HTML
