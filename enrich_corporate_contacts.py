@@ -67,10 +67,16 @@ def clean_email(e):
     return "" if not e or re.search(r"not_unlocked|@domain\.com$", e, re.I) else e
 
 
-def email_ok(email, site_domain, person):
+def email_ok(email, site_domain, person, names):
+    # The person's own company domain counts only if that company is this one (or its group):
+    # Apollo can return someone who has since moved to another company.
     host = email.split("@")[-1].lower()
-    org = ((person.get("organization") or {}).get("primary_domain") or "").lower()
-    return any(d and (host == d or host.endswith("." + d)) for d in (site_domain, org))
+    org = person.get("organization") or {}
+    org_domain = (org.get("primary_domain") or "").lower()
+    org_name = norm(org.get("name"))
+    same_company = bool(org_name) and any(n and (n in org_name or org_name in n) for n in map(norm, names))
+    return any(d and (host == d or host.endswith("." + d))
+               for d in (site_domain, org_domain if same_company else ""))
 
 
 def score(title, role_words):
@@ -162,7 +168,7 @@ def main():
             first, last = known.split(" ", 1)
             p = apollo("https://api.apollo.io/api/v1/people/match",
                        {"first_name": first, "last_name": last, "domain": domain}, True).get("person") or {}
-            if clean_email(p.get("email")) and email_ok(p["email"], domain, p):
+            if clean_email(p.get("email")) and email_ok(p["email"], domain, p, (company, str(ws.cell(r, C_GRP).value or ""))):
                 done("Apollo: named contact in the sheet" + note, p)
                 continue
 
@@ -176,7 +182,7 @@ def main():
         person = None
         for cand in ranked[:2]:
             p = apollo("https://api.apollo.io/api/v1/people/match", {"id": cand["id"]}, True).get("person") or {}
-            if clean_email(p.get("email")) and email_ok(p["email"], domain, p):
+            if clean_email(p.get("email")) and email_ok(p["email"], domain, p, (company, str(ws.cell(r, C_GRP).value or ""))):
                 person = p
                 break
         if person:
