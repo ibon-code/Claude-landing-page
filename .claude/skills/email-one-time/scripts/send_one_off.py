@@ -13,7 +13,12 @@ Config (JSON) — only "snapshot" and "sha256" are required:
     "snapshot": "path/to/snapshot.csv",           # relative to the config file
     "sha256": "<hash printed by --hash>",
     "columns": {"to": "To", "cc": "CC", "bcc": null, "subject": "Subject", "body": "Body",
-                "name": "Startup name", "category": "Category", "status": "Status"},
+                "name": "Startup name", "category": "Category", "status": "Status",
+                "html": null},                    # html: optional column with a ready-made HTML body, sent
+                                                  # as-is (+ signature) instead of the one built from "body";
+                                                  # its visible text must match "body" (links may be written
+                                                  # "text (url)" in the plain body). category may be a list
+                                                  # of columns, joined with " / ".
     "ready_status": "Ready",                      # null = don't check
     "expected_rows": 49,
     "expected_counts": {"1. Selected": 7},        # per category, optional
@@ -48,7 +53,7 @@ EMAIL_RE = re.compile(r"^[^@\s,;<>]+@[^@\s,;<>]+\.[A-Za-z]{2,}$")
 HIDDEN_RE = re.compile("[ ​-‍﻿  ]")
 PLACEHOLDER_RE = re.compile(r"\{\{|\}\}|\[[A-Z_ ]{2,}\]|\bTBD\b|\bXXX\b|\bLorem\b")
 DEFAULT_COLUMNS = {"to": "To", "cc": "CC", "bcc": None, "subject": "Subject", "body": "Body",
-                   "name": None, "category": None, "status": None}
+                   "name": None, "category": None, "status": None, "html": None}
 
 
 def find_repo_root():
@@ -90,7 +95,24 @@ class Job:
 
     def col(self, r, key):
         name = self.cols.get(key)
+        if isinstance(name, list):
+            return " / ".join(r.get(n, "") for n in name)
         return r.get(name, "") if name else ""
+
+    def html_part(self, r, body):
+        """The HTML that is sent: the sheet's own HTML column if configured, else built from the body."""
+        if not self.cols.get("html"):
+            return self.body_to_html(body)
+        out = self.col(r, "html")
+        if self.cfg.get("signature", True):
+            from email_signature import SIGNATURE_HTML
+            out += "\n" + SIGNATURE_HTML
+        return out
+
+    @staticmethod
+    def visible_text(html_text):
+        t = re.sub(r"<[^>]+>", " ", html_text)
+        return re.sub(r"\s+", "", html.unescape(t))
 
     def label(self, r):
         return self.col(r, "name") or split_addrs(self.col(r, "to"))[0]
@@ -108,8 +130,9 @@ class Job:
         errors = []
         header = list(rows[0].keys()) if rows else []
         for key, name in self.cols.items():
-            if name and name not in header:
-                errors.append(f"column {name!r} ({key}) not in CSV header {header}")
+            for n in (name if isinstance(name, list) else [name]):
+                if n and n not in header:
+                    errors.append(f"column {n!r} ({key}) not in CSV header {header}")
         if errors:
             sys.exit("VALIDATION FAILED:\n  " + "\n  ".join(errors))
 
@@ -158,6 +181,17 @@ class Job:
                 n = sum(1 for l in body.split("\n") if l.strip() == b)
                 if n != 1:
                     errors.append(f"{tag}: bold line {b!r} found {n} times, expected once")
+            if self.cols.get("html"):
+                h = self.col(r, "html")
+                if not h.strip():
+                    errors.append(f"{tag}: empty HTML body")
+                elif PLACEHOLDER_RE.search(h):
+                    errors.append(f"{tag}: leftover placeholder in HTML")
+                else:
+                    plain = re.sub(r"\s*\(https?://[^)\s]+\)", "", body)
+                    plain = re.sub(r"\s+", "", plain.replace("\u2022", ""))
+                    if self.visible_text(h).replace("\u2022", "") != plain:
+                        errors.append(f"{tag}: HTML text differs from the plain body")
             if ready and self.col(r, "status") != ready:
                 errors.append(f"{tag}: status {self.col(r, 'status')!r} != {ready!r}")
         if self.cols.get("name"):
@@ -185,7 +219,9 @@ class Job:
                 s = short(self.col(o, "name"))
                 if o is r or len(s) <= 3 or s.lower() in own:
                     continue
-                if re.search(r"(?<!\w)" + re.escape(s) + r"(?!\w)", text, re.I):
+                # All-caps names (GAME, LVP) must match case too: "Madrid in Game" is not the company GAME.
+                flags = 0 if s.isupper() else re.I
+                if re.search(r"(?<!\w)" + re.escape(s) + r"(?!\w)", text, flags):
                     errors.append(f"row {r['_row']} ({self.col(r, 'name')}): mentions another row's company {s!r}")
         return errors
 
@@ -244,7 +280,10 @@ class Job:
         msg["Message-ID"] = make_msgid(domain=sender.split("@")[1])
         plain = body.rstrip() + ("\n\n" + self.cfg.get("sender_name", "") if self.cfg.get("signature", True) else "")
         msg.set_content(plain + "\n")
-        msg.add_alternative(self.body_to_html(body), subtype="html")
+        html_body = self.html_part(r, body)
+        if test and self.cols.get("html"):  # the sheet's HTML doesn't contain the [TEST] recipients line
+            html_body = f"<p><b>{html.escape(body.split(chr(10))[0])}</b></p>" + html_body
+        msg.add_alternative(html_body, subtype="html")
         return msg, to + cc + bcc  # bcc goes only in the envelope, never in a header
 
     def write_preview(self, rows):
@@ -258,7 +297,7 @@ class Job:
                     f"BCC: {html.escape(', '.join(split_addrs(self.col(r, 'bcc'))) or '-')}",
                     f"Subject: <b>{html.escape(self.col(r, 'subject'))}</b>"]
             blocks.append(f"<section><div class='meta'>{'<br>'.join(meta)}</div>"
-                          f"<div>{self.body_to_html(self.col(r, 'body'))}</div></section>")
+                          f"<div>{self.html_part(r, self.col(r, 'body'))}</div></section>")
         page = ("<!doctype html><meta charset='utf-8'><title>Send preview</title><style>"
                 "body{font-family:sans-serif;max-width:820px;margin:24px auto;color:#222}"
                 "section{border:1px solid #ccc;border-radius:8px;margin:18px 0;padding:14px}"
