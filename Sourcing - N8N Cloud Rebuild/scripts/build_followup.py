@@ -290,7 +290,7 @@ nodes = [
     code("Select Follow-up Candidates", [880, 0], select_js),
     gmail_api("Gmail - Get Thread", [1100, 0],
               f"={{{{ '{GAPI}/threads/' + $json.threadId + '?format=metadata&metadataHeaders=From&metadataHeaders=To"
-              "&metadataHeaders=Subject&metadataHeaders=Message-ID' }}}}", onError="continueRegularOutput"),
+              "&metadataHeaders=Subject&metadataHeaders=Message-ID&metadataHeaders=Message-Id' }}}}", onError="continueRegularOutput"),
     gmail_api("Gmail - Sent To Address", [1320, 0], f"{GAPI}/messages",
               [("q", q_sent.replace("$json.email", "$('Select Follow-up Candidates').item.json.email")), ("maxResults", "20")],
               onError="continueRegularOutput"),

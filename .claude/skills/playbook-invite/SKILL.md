@@ -5,9 +5,10 @@ description: After a first meeting with a founder, invite their startup to Playb
 
 # Playbook invite (done by Claude in Chrome, on request)
 
-n8n cannot do this: its Playbook login only works for the MCP connector, which can create a startup but has no
-"add team member" function (tested 2026-11-02: the backend answers "Authentication credentials were not
-provided"). So Claude does it in the user's Chrome, where they are logged in to Playbook.
+n8n cannot do this: the Playbook MCP can create a startup, but none of its 45 tools has a team / founder /
+email field (`update_startup` only edits company data). The web app adds a team member with a
+`PATCH /v1/startups/<id>/` on its own session cookie. So Claude does it in the user's Chrome, where they are
+logged in to Playbook (route tested 2026-11-02 on test startup 119064: card showed "Invitation sent").
 
 Every email goes to a real founder and cannot be recalled. Follow the steps in order.
 
@@ -27,12 +28,27 @@ Every email goes to a real founder and cannot be recalled. Follow the steps in o
    Show the user the list (startup, recipient, name) before touching Playbook.
 2. **Already on Playbook?** Search the startup name and website domain in Playbook (Discover > Startups).
    If the same domain exists, do NOT create a duplicate: tell the user and use that profile only if they say so.
-3. **Create the profile** in Playbook (sidebar "Create" > startup): name, website, one-liner, description
-   (from the startup's own website, factual, no hype), country, vertical. Save, then note the profile URL
-   (`https://app.playbook.vc/discover/startups/<id>/overview`).
-4. **Add the founder to the Team**: profile > Team tab > **+** > name + email of the recipient > Submit.
-   Playbook sends its invitation email automatically at this moment. Reload the Team tab and check the person
-   is listed with the right email. If not, stop and tell the user (no email).
+3. **Create the profile**: sidebar **Create** > **Startup** > **From Website URL** > paste the website >
+   **Analyze Website**.
+   - If Playbook shows "This company may already exist in Playbook", stop: no duplicate. Tell the user and
+     use that profile only if they say so.
+   - The AI pre-fills a review form. Check every field against the startup's own website and fix it: factual,
+     no hype, and the right logo (a wrong logo can appear).
+   - Required fields: Website, Startup name, Logo, One liner, Description, Vertical(s), Tags, HQ country, HQ city.
+   - Press **CREATE STARTUP** and note the profile URL (`https://app.playbook.vc/discover/startups/<id>/overview`).
+   - If the analysis finds nothing, fill the same fields by hand ("Create Manually" also needs a logo file).
+4. **Add the founder to the Team**: open `https://app.playbook.vc/discover/startups/<id>/team` and press
+   **+** next to "Startup Team".
+   - In the form, User type = **Member Profile** (the default, the one tested; External Contact was not tested).
+   - Fill First name, Last name, Email = the recipient, Job role (e.g. CEO), then **SUBMIT**.
+   - Playbook sends its invitation at this moment.
+   - The email must belong to one of the profile's **valid domains** (by default the website's domain).
+     Otherwise the form says "Email doesn't match the following domains".
+     - If the founder's company email domain differs: **ACTIONS > Manage domains > Add domain**, then retry.
+     - Some domains are refused ("This domain is not allowed", e.g. pnptc.com, probably also gmail.com etc.).
+       If so, stop and tell the user: no email.
+   - Reload the Team tab. The card must show the name, the role and **"Invitation sent"**. If not, stop and
+     tell the user (no email).
 5. **Our email**: run the script without `--send`, show the user the preview, and send only after their
    explicit go ("invia"):
    `python3 .claude/skills/playbook-invite/scripts/send_invite_email.py --to EMAIL --name "First Last" --startup "Name" --send`
@@ -45,3 +61,4 @@ Every email goes to a real founder and cannot be recalled. Follow the steps in o
 - Never send the email before step 4 is confirmed (otherwise the founder has no invitation to open).
 - Never invite a startup twice: `Playbook Invite Status` filled or BLOCKED from the script = stop.
 - No emoji, no edits to other rows or columns.
+- Never delete a Playbook profile yourself (ACTIONS > Delete startup exists): ask the user to do it.
