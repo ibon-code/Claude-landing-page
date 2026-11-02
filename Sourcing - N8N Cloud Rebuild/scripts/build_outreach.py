@@ -15,7 +15,7 @@ Guardrails (agreed with the user 2026-10-19):
 - DRY_RUN = True: nothing is sent and nothing is written; one preview digest goes to the user instead.
 - Any execution error emails the user via 'Util - Error Alert' (max one alert per workflow per hour).
 
-Usage: python3 build_outreach.py <out_dir> [--deploy]
+Usage: python3 build_outreach.py <out_dir> [--live] [--test-email ADDR] [--deploy]
 --deploy creates/updates both workflows on n8n via API. The Outreach workflow stays INACTIVE.
 """
 import json, os, sys, uuid, urllib.request, urllib.error
@@ -28,7 +28,9 @@ from email_signature import SIGNATURE_HTML  # noqa: E402
 out_dir = sys.argv[1]
 DEPLOY = "--deploy" in sys.argv
 
-DRY_RUN = True
+# Live sending only with an explicit --live flag. --test-email ADDR: may only email ADDR, any time of day.
+DRY_RUN = "--live" not in sys.argv
+TEST_ONLY_EMAIL = sys.argv[sys.argv.index("--test-email") + 1].lower() if "--test-email" in sys.argv else None
 DAILY_CAP = 20
 PER_RUN_CAP = 3
 OUTREACH_ID = "1TkdOwL5o1WWC6a8"
@@ -59,7 +61,7 @@ def sheets_update(name, pos):
                 {"operation": "update", "documentId": DOC, "sheetName": PIPELINE,
                  "columns": {"mappingMode": "autoMapInputData", "value": {}, "matchingColumns": ["row_number"],
                              "schema": []},
-                 "options": {"handlingExtraData": "insertInNewColumn"}},
+                 "options": {"handlingExtraData": "insertInNewColumn", "cellFormat": "RAW"}},
                 credentials=GS_CRED, **RETRY)
 
 
@@ -88,6 +90,7 @@ def if_true(name, pos, expr):
 
 config_js = f"""// Single place for every outreach limit. Outside the sending window a live run stops here.
 const DRY_RUN = {json.dumps(DRY_RUN)};
+const TEST_ONLY_EMAIL = {json.dumps(TEST_ONLY_EMAIL)};
 const DAILY_CAP = {DAILY_CAP};
 const PER_RUN_CAP = {PER_RUN_CAP};
 const now = new Date();
@@ -96,14 +99,14 @@ const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {{
   hour: '2-digit', weekday: 'short', hour12: false }}).formatToParts(now).map(p => [p.type, p.value]));
 const hour = Number(parts.hour);
 const inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;
-if (!DRY_RUN && !inWindow) return [];
+if (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];
 const today = `${{parts.year}}-${{parts.month}}-${{parts.day}}`;
 // Rome midnight as epoch seconds (offset probed so DST is handled)
 const probe = new Date(`${{today}}T00:00:00Z`);
 const romeAtProbe = new Date(probe.toLocaleString('en-US', {{ timeZone: 'Europe/Rome' }}));
 const utcAtProbe = new Date(probe.toLocaleString('en-US', {{ timeZone: 'UTC' }}));
 const dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);
-return [{{ json: {{ dryRun: DRY_RUN, dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP, today, dayStartEpoch, inWindow }} }}];
+return [{{ json: {{ dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP, today, dayStartEpoch, inWindow }} }}];
 """
 
 select_js = r"""function isChecked(v) {
@@ -126,12 +129,24 @@ const norm = e => String(e || '').trim().toLowerCase();
 const used = new Set(rows.filter(r => isChecked(r['Contacted']) || String(r['Outreach Status'] || '').trim())
   .map(r => norm(r['Email'])).filter(Boolean));
 
-const sentInGmail = $('Gmail - Sent Today').all().filter(it => it.json && it.json.id).length;
+// First emails only: follow-ups ('Re: Plug and Play <> ...') have their own cap. Unknown subject counts (safe side).
+const subjectOf = j => j.Subject || j.subject || ((j.payload && j.payload.headers) || []).find(h => /^subject$/i.test(h.name))?.value || '';
+const sentInGmail = $('Gmail - Sent Today').all().filter(it => it.json && it.json.id && !/^\s*re:/i.test(subjectOf(it.json))).length;
 const sentInSheet = rows.filter(r => String(r['Date Contacted'] || '').slice(0, 10) === cfg.today).length;
 const sentToday = Math.max(sentInGmail, sentInSheet);
 const remaining = Math.max(0, cfg.dailyCap - sentToday);
 const limit = cfg.dryRun ? remaining : Math.min(cfg.perRunCap, remaining);
 
+const FREE = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\./;
+const domainOf = e => (norm(e).split('@')[1] || '');
+const siteOf = r => String(r['Website'] || '').toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[\/?#]/)[0];
+// Companies already handled: by email domain (not free mail) and by website domain.
+const usedDomains = new Set(), usedSites = new Set();
+for (const r of rows) {
+  if (!(isChecked(r['Contacted']) || String(r['Outreach Status'] || '').trim())) continue;
+  const d = domainOf(r['Email']); if (d && !FREE.test(d)) usedDomains.add(d);
+  const w = siteOf(r); if (w) usedSites.add(w);
+}
 const out = [];
 const seen = new Set();
 for (const r of rows) {
@@ -141,6 +156,11 @@ for (const r of rows) {
   if (!email || !name) continue;
   // 'Contact' (was 'Salesforce') is ticked by hand; 'Playbook' is the YES/NO dropdown written by Apollo Enrich.
   if (!isChecked(r['Contact']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;
+  // Only startups that Apollo Enrich actually checked on Playbook and did not find.
+  if (!/^Not in Playbook/i.test(String(r['Playbook Check'] || '').trim())) continue;
+  if (cfg.testOnlyEmail && email !== cfg.testOnlyEmail.toLowerCase()) continue;
+  const d = domainOf(email), w = siteOf(r);
+  if ((d && !FREE.test(d) && usedDomains.has(d)) || (w && usedSites.has(w))) continue;
   if (String(r['Meeting'] || '').trim() || String(r['Outreach Status'] || '').trim()) continue;
   if (Number(r['Outreach Count'] || 0) >= 3) continue;
   if (used.has(email) || seen.has(email)) continue;
@@ -149,6 +169,8 @@ for (const r of rows) {
   if (/\.(png|jpe?g|gif|svg|webp)$/.test(email)) continue;
   if (/test company|delete me/i.test(name) || name.length > 60) continue;
   seen.add(email);
+  if (d && !FREE.test(d)) usedDomains.add(d);
+  if (w) usedSites.add(w);
   out.push({ json: {
     row_number: r.row_number, name, email, website: String(r['Website'] || '').trim(),
     jobTitle: r['Job title'] || '', fullName: String(r['Full Name'] || '').trim(),
@@ -260,15 +282,18 @@ claim_js = """const e = $('Loop Over Emails').first().json;
 return [{ json: { row_number: e.row_number, 'Outreach Status': 'Sending ' + new Date().toISOString() } }];
 """
 
-already_js = """// Last safety net against a double send: same recipient + same subject already in Gmail Sent.
+already_js = """// Hard block, independent of the sheet: if Gmail Sent holds ANY automated email
+// ('Plug and Play <> ...' or 'Re: Plug and Play <> ...') to this address, ever, nothing is sent.
+// A result whose subject can't be read also blocks (fail closed).
 const e = $('Loop Over Emails').first().json;
-const hit = $input.all().some(it => it.json && it.json.id);
+const subjectOf = j => j.Subject || j.subject || ((j.payload && j.payload.headers) || []).find(h => /^subject$/i.test(h.name))?.value || '';
+const hit = $input.all().some(it => it.json && it.json.id && (!subjectOf(it.json) || /plug and play <>/i.test(subjectOf(it.json))));
 return [{ json: { ...e, alreadySent: hit } }];
 """
 
 mark_already_js = """const e = $('Already Sent Check').first().json;
 return [{ json: { row_number: e.row_number, Contacted: true,
-  'Outreach Status': 'Already sent (found in Gmail) ' + new Date().toISOString() } }];
+  'Outreach Status': 'Blocked: an automated email to this address is already in Gmail Sent ' + new Date().toISOString() } }];
 """
 
 mark_sent_js = """const e = $('Already Sent Check').first().json;
@@ -290,8 +315,7 @@ review_js = """return $input.all().map(it => ({ json: { row_number: it.json.row_
   'Outreach Status': 'Needs review: ' + it.json.reason } }));
 """
 
-loop_q = ("={{ 'in:sent to:' + $('Loop Over Emails').first().json.email + ' subject:\"' + "
-          "$('Loop Over Emails').first().json.subject.replace(/\"/g, '') + '\"' }}")
+loop_q = "={{ 'in:sent to:' + $('Loop Over Emails').first().json.email + ' subject:\"Plug and Play\"' }}"
 L = "Loop Over Emails"
 nodes = [
     node("Outreach Trigger", "n8n-nodes-base.scheduleTrigger", 1.2, [0, 0],
@@ -326,7 +350,7 @@ nodes = [
     node(L, "n8n-nodes-base.splitInBatches", 3, [2420, 100], {"batchSize": 1, "options": {}}),
     code("Claim Payload", [2640, 100], claim_js),
     sheets_update("Pipeline - Claim Row", [2860, 100]),
-    gmail_search("Gmail - Already Sent?", [3080, 100], loop_q, 1),
+    gmail_search("Gmail - Already Sent?", [3080, 100], loop_q, 20),
     code("Already Sent Check", [3300, 100], already_js),
     if_true("Already Sent?", [3520, 100], "={{ $json.alreadySent }}"),
     code("Mark Already Sent", [3740, -60], mark_already_js),
@@ -391,7 +415,7 @@ outreach = {"name": "Pipeline - Salesforce Outreach", "nodes": nodes, "connectio
             "settings": {"executionOrder": "v1", "timezone": "Europe/Rome"}}
 json.dump(outreach, open(f"{out_dir}/outreach.json", "w"), indent=1)
 json.dump(alert, open(f"{out_dir}/error_alert.json", "w"), indent=1)
-print("generated", "DRY_RUN" if DRY_RUN else "LIVE", f"cap {DAILY_CAP}/day {PER_RUN_CAP}/run")
+print("generated", "DRY_RUN" if DRY_RUN else "LIVE", ("test-only " + TEST_ONLY_EMAIL) if TEST_ONLY_EMAIL else "", f"cap {DAILY_CAP}/day {PER_RUN_CAP}/run")
 
 if DEPLOY:
     env = {}
