@@ -20,7 +20,14 @@ All'inizio Google Cloud era bloccato per l'account aziendale, quindi la build pa
 
 ## Layout del tab Pipeline (dal 2026-11-02)
 
-A Startup name · B Website · **C Playbook** (tendina YES rosso / NO, la scrive Apollo Enrich) · **D Contact** (ex "Salesforce": la spunti tu, TRUE = da contattare) · E Job title · F Email · G Company LinkedIn · H Contacted · I Meeting · J Full Name · K Date Contacted · L Followed Up · M Apollo Enrich · N Playbook Check · O Playbook URL. Tendine fino alla riga 1000. I workflow leggono/scrivono per nome di colonna e `row_number`, quindi spostare colonne non li rompe; rinominarle sì (va aggiornato il generatore).
+A Startup name · B Website · **C Playbook** (tendina YES rosso / NO, la scrive Apollo Enrich) · **D Contact** (ex "Salesforce": la spunti tu, TRUE = da contattare) · E Job title · F Email · G Company LinkedIn · H Contacted · I Meeting · J Full Name · K Date Contacted · L Followed Up · M Apollo Enrich · N Playbook Check · O Playbook URL. P Outreach Status · Q Outreach Count · R Message ID · S Thread ID (scritte dall'Outreach) · **T Playbook Invite** (YES/NO) · U Meeting contact · V Meeting contact name · W Playbook Invite Status · X Playbook Profile URL · Y Date Playbook Invite · Z Playbook Invite Message ID. Il Follow-up aggiunge in fondo `Follow-up Status`, `Date Followed Up`, `Follow-up Message ID`. Tendine fino alla riga 1000.
+
+## Outreach, Follow-up e Playbook invite (dal 2026-11-02)
+
+- **Outreach** (`Pipeline - Salesforce Outreach`, `scripts/build_outreach.py`): parte solo con Contact = TRUE e `Playbook Check` = "Not in Playbook"; blocco duro se Gmail Inviati ha già una qualsiasi email "Plug and Play <> …" a quell'indirizzo; una sola azienda una volta (dominio email e sito).
+- **Follow-up** (`Pipeline - Follow-up` id `bGP5LlHKC9miEcps`, `scripts/build_followup.py`): uno solo, 7 giorni dopo, nello stesso thread, solo se nessuno ha risposto/nessun bounce e Gmail Inviati ha esattamente l'email originale.
+- Entrambi: `--live` esplicito per inviare, `--test-email ADDR` per provare su un solo indirizzo; 20/giorno ciascuno, 3 per giro, lun-ven 9-18.
+- **Playbook invite**: NON su n8n (la login MCP di Playbook non permette di aggiungere team member: "Authentication credentials were not provided"). Lo fa Claude in Chrome su richiesta con la skill `.claude/skills/playbook-invite` (profilo → + Team con nome/email → Playbook manda l'invito → nostra email con `send_invite_email.py` → log in T–Z). I workflow leggono/scrivono per nome di colonna e `row_number`, quindi spostare colonne non li rompe; rinominarle sì (va aggiornato il generatore).
 
 ## Stato attuale (aggiornato 2026-09-29)
 
