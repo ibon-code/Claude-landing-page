@@ -189,6 +189,9 @@ class Job:
                     errors.append(f"{tag}: leftover placeholder in HTML")
                 else:
                     plain = re.sub(r"\s*\(https?://[^)\s]+\)", "", body)
+                    if "<li" in h.lower():
+                        # "- " and "1. " line markers become <ul>/<ol> items in the HTML, which draw them.
+                        plain = re.sub(r"(?m)^\s*(- |\d+\. )", "", plain)
                     plain = re.sub(r"\s+", "", plain.replace("\u2022", ""))
                     if self.visible_text(h).replace("\u2022", "") != plain:
                         errors.append(f"{tag}: HTML text differs from the plain body")
