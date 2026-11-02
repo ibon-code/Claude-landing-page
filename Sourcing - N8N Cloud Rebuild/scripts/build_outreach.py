@@ -108,7 +108,7 @@ return [{{ json: {{ dryRun: DRY_RUN, dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP
 
 select_js = r"""function isChecked(v) {
   if (typeof v === 'boolean') return v;
-  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';
+  if (typeof v === 'string') return ['TRUE', 'YES'].includes(v.trim().toUpperCase());
   return false;
 }
 const cfg = $('Config').first().json;
@@ -139,7 +139,8 @@ for (const r of rows) {
   const email = norm(r['Email']);
   const name = String(r['Startup name'] || '').trim();
   if (!email || !name) continue;
-  if (!isChecked(r['Salesforce']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;
+  // 'Contact' (was 'Salesforce') is ticked by hand; 'Playbook' is the YES/NO dropdown written by Apollo Enrich.
+  if (!isChecked(r['Contact']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;
   if (String(r['Meeting'] || '').trim() || String(r['Outreach Status'] || '').trim()) continue;
   if (Number(r['Outreach Count'] || 0) >= 3) continue;
   if (used.has(email) || seen.has(email)) continue;

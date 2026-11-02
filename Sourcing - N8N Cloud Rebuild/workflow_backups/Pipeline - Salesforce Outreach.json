@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-19T09:53:07.611Z",
+  "updatedAt": "2026-11-02T16:11:18.687Z",
   "createdAt": "2026-09-25T09:46:09.000Z",
   "id": "1TkdOwL5o1WWC6a8",
   "name": "Pipeline - Salesforce Outreach",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "2f3a0c79-5757-45a3-a7a7-bc28d38c6114",
+      "id": "b93ac153-63b8-4271-83d1-ffbdbff851d0",
       "name": "Outreach Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "b54de45a-2f37-45df-9176-495dea95d190",
+      "id": "1ca08792-a214-4b4f-912e-7b803d908689",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -41,7 +41,7 @@
       }
     },
     {
-      "id": "bddece33-86b3-4f74-8feb-68491e42a11d",
+      "id": "6328d5f3-6541-4a1b-80f8-7e293117ecc4",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "2974753a-d041-4bca-be9d-56062280cfe7",
+      "id": "2637f8fc-6b95-40e2-aca6-6f3a4a03ae73",
       "name": "Gmail - Sent Today",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -105,10 +105,10 @@
       "maxTries": 3,
       "waitBetweenTries": 5000,
       "executeOnce": true,
-      "webhookId": "382f0520-3ae8-496d-9268-3869e2692330"
+      "webhookId": "46a36640-de47-41e2-933e-8867ba32ab71"
     },
     {
-      "id": "eeb2eb51-ed28-4ccf-ab94-ad58322f50e3",
+      "id": "5125dffe-615d-4288-97ee-c2f0d1bb9cce",
       "name": "Select Candidates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -117,11 +117,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.trim().toUpperCase() === 'TRUE';\n  return false;\n}\nconst cfg = $('Config').first().json;\nconst GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',\n  'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',\n  'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',\n  'contatti', 'info.it', 'investors', 'ir', 'help', 'service', 'welcome']);\nconst JUNK_LOCAL = /^(no-?reply|do-?not-?reply|postmaster|abuse|privacy|legal|gdpr|dpo|unsubscribe|webmaster|billing|invoices?|accounts?|security|bounce|mailer-daemon)$/;\nconst JUNK_DOMAIN = /(^|\\.)(example\\.(com|org)|domain\\.com|email\\.com|sentry\\.io|wixpress\\.com|test\\.com|yourdomain\\.com)$/;\nconst EMAIL_RE = /^[a-z0-9._%+'-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\n\nconst rows = $('Pipeline - Get Rows').all().map(it => it.json);\nconst norm = e => String(e || '').trim().toLowerCase();\n// Addresses already handled anywhere in the sheet (contacted, claimed, failed, under review)\nconst used = new Set(rows.filter(r => isChecked(r['Contacted']) || String(r['Outreach Status'] || '').trim())\n  .map(r => norm(r['Email'])).filter(Boolean));\n\nconst sentInGmail = $('Gmail - Sent Today').all().filter(it => it.json && it.json.id).length;\nconst sentInSheet = rows.filter(r => String(r['Date Contacted'] || '').slice(0, 10) === cfg.today).length;\nconst sentToday = Math.max(sentInGmail, sentInSheet);\nconst remaining = Math.max(0, cfg.dailyCap - sentToday);\nconst limit = cfg.dryRun ? remaining : Math.min(cfg.perRunCap, remaining);\n\nconst out = [];\nconst seen = new Set();\nfor (const r of rows) {\n  if (out.length >= limit) break;\n  const email = norm(r['Email']);\n  const name = String(r['Startup name'] || '').trim();\n  if (!email || !name) continue;\n  if (!isChecked(r['Salesforce']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;\n  if (String(r['Meeting'] || '').trim() || String(r['Outreach Status'] || '').trim()) continue;\n  if (Number(r['Outreach Count'] || 0) >= 3) continue;\n  if (used.has(email) || seen.has(email)) continue;\n  const [local, domain] = email.split('@');\n  if (!EMAIL_RE.test(email) || JUNK_LOCAL.test(local) || JUNK_DOMAIN.test(domain)) continue;\n  if (/\\.(png|jpe?g|gif|svg|webp)$/.test(email)) continue;\n  if (/test company|delete me/i.test(name) || name.length > 60) continue;\n  seen.add(email);\n  out.push({ json: {\n    row_number: r.row_number, name, email, website: String(r['Website'] || '').trim(),\n    jobTitle: r['Job title'] || '', fullName: String(r['Full Name'] || '').trim(),\n    generic: GENERIC.has(local.replace(/[0-9]+$/, '')), outreachCount: Number(r['Outreach Count'] || 0),\n    sentToday, remainingToday: remaining,\n  } });\n}\nreturn out;\n"
+        "jsCode": "function isChecked(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return ['TRUE', 'YES'].includes(v.trim().toUpperCase());\n  return false;\n}\nconst cfg = $('Config').first().json;\nconst GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',\n  'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',\n  'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',\n  'contatti', 'info.it', 'investors', 'ir', 'help', 'service', 'welcome']);\nconst JUNK_LOCAL = /^(no-?reply|do-?not-?reply|postmaster|abuse|privacy|legal|gdpr|dpo|unsubscribe|webmaster|billing|invoices?|accounts?|security|bounce|mailer-daemon)$/;\nconst JUNK_DOMAIN = /(^|\\.)(example\\.(com|org)|domain\\.com|email\\.com|sentry\\.io|wixpress\\.com|test\\.com|yourdomain\\.com)$/;\nconst EMAIL_RE = /^[a-z0-9._%+'-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\n\nconst rows = $('Pipeline - Get Rows').all().map(it => it.json);\nconst norm = e => String(e || '').trim().toLowerCase();\n// Addresses already handled anywhere in the sheet (contacted, claimed, failed, under review)\nconst used = new Set(rows.filter(r => isChecked(r['Contacted']) || String(r['Outreach Status'] || '').trim())\n  .map(r => norm(r['Email'])).filter(Boolean));\n\nconst sentInGmail = $('Gmail - Sent Today').all().filter(it => it.json && it.json.id).length;\nconst sentInSheet = rows.filter(r => String(r['Date Contacted'] || '').slice(0, 10) === cfg.today).length;\nconst sentToday = Math.max(sentInGmail, sentInSheet);\nconst remaining = Math.max(0, cfg.dailyCap - sentToday);\nconst limit = cfg.dryRun ? remaining : Math.min(cfg.perRunCap, remaining);\n\nconst out = [];\nconst seen = new Set();\nfor (const r of rows) {\n  if (out.length >= limit) break;\n  const email = norm(r['Email']);\n  const name = String(r['Startup name'] || '').trim();\n  if (!email || !name) continue;\n  // 'Contact' (was 'Salesforce') is ticked by hand; 'Playbook' is the YES/NO dropdown written by Apollo Enrich.\n  if (!isChecked(r['Contact']) || isChecked(r['Contacted']) || isChecked(r['Playbook'])) continue;\n  if (String(r['Meeting'] || '').trim() || String(r['Outreach Status'] || '').trim()) continue;\n  if (Number(r['Outreach Count'] || 0) >= 3) continue;\n  if (used.has(email) || seen.has(email)) continue;\n  const [local, domain] = email.split('@');\n  if (!EMAIL_RE.test(email) || JUNK_LOCAL.test(local) || JUNK_DOMAIN.test(domain)) continue;\n  if (/\\.(png|jpe?g|gif|svg|webp)$/.test(email)) continue;\n  if (/test company|delete me/i.test(name) || name.length > 60) continue;\n  seen.add(email);\n  out.push({ json: {\n    row_number: r.row_number, name, email, website: String(r['Website'] || '').trim(),\n    jobTitle: r['Job title'] || '', fullName: String(r['Full Name'] || '').trim(),\n    generic: GENERIC.has(local.replace(/[0-9]+$/, '')), outreachCount: Number(r['Outreach Count'] || 0),\n    sentToday, remainingToday: remaining,\n  } });\n}\nreturn out;\n"
       }
     },
     {
-      "id": "a9223a1a-42da-4540-8fb7-40cf904e0f8e",
+      "id": "d1e2aa56-a0b0-470e-88e6-a45ea205c341",
       "name": "Fetch Startup Homepage",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -153,7 +153,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "0f9ae094-e46d-4527-bea9-2a9fd8272342",
+      "id": "517a130a-4c23-4962-bdb1-a00d25dfbea8",
       "name": "Build Personalization Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -166,7 +166,7 @@
       }
     },
     {
-      "id": "9320d13b-6e7e-4b98-b731-cca83d20b81e",
+      "id": "e39a923f-dbec-4780-b54b-8c8513e34d11",
       "name": "Call Claude",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
@@ -196,7 +196,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "1ff60153-596d-408a-96e3-d20d4bc21238",
+      "id": "5a31c857-4222-42b0-928c-1b2d9fb72fb9",
       "name": "Build + Validate Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -209,7 +209,7 @@
       }
     },
     {
-      "id": "ec7fac7c-7064-4ce0-a25a-7072867d0a2c",
+      "id": "c90c03c2-84f2-4fac-a1b4-abecdead15a5",
       "name": "Dry Run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -226,7 +226,7 @@
           },
           "conditions": [
             {
-              "id": "a2ec5bfd-bb61-45ed-bb08-47b599e76c76",
+              "id": "be28015c-e591-4e97-936e-8a65bc1ed49d",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -242,7 +242,7 @@
       }
     },
     {
-      "id": "aead8812-6fbf-4ed8-a1b1-73cd5d7a5dc8",
+      "id": "d1243c3b-d552-456f-a36e-4e5c7bc98a42",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -255,7 +255,7 @@
       }
     },
     {
-      "id": "f6012aac-3e73-4094-bba2-52d4713957fc",
+      "id": "7176157e-d4f4-4c6b-b220-4e61b1bf96b7",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -280,10 +280,10 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "2c91b2fa-09b3-4f94-bdf7-8b5f022b55e4"
+      "webhookId": "43bb1a16-35a0-42ac-906f-b7ac3efb6303"
     },
     {
-      "id": "e8a12a0f-8986-428c-a69c-aebbcf26a637",
+      "id": "cadab585-79ba-4914-ba1f-17ad54eb1d6f",
       "name": "Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -300,7 +300,7 @@
           },
           "conditions": [
             {
-              "id": "e54e7980-0e0a-4e1f-b0ee-d885fff4b696",
+              "id": "2720a890-3f4f-45eb-8f6c-81173895755e",
               "leftValue": "={{ $json.valid }}",
               "rightValue": "",
               "operator": {
@@ -316,7 +316,7 @@
       }
     },
     {
-      "id": "a03c4ed7-d00f-43d5-b1e5-087bd974af3f",
+      "id": "115534be-cfad-4fd8-92e6-ab80d14c2d4f",
       "name": "Needs Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -329,7 +329,7 @@
       }
     },
     {
-      "id": "2126573f-0e88-41cf-a65e-a16e1e428d86",
+      "id": "119fb83f-1f40-4c0a-90e1-d94c6e5e7de2",
       "name": "Pipeline - Mark Needs Review",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -374,7 +374,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "0543b0db-7fe8-4c7b-9c72-af3bb81870b5",
+      "id": "a9a3e9d6-b2d6-43b9-a334-ef16ae60d466",
       "name": "Loop Over Emails",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -388,7 +388,7 @@
       }
     },
     {
-      "id": "22ba86a2-393d-40a7-85de-d445afb4413b",
+      "id": "f67346df-5de4-4b01-8b37-e38743468b52",
       "name": "Claim Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -401,7 +401,7 @@
       }
     },
     {
-      "id": "87d40491-fa04-4657-8c5d-0c7529554677",
+      "id": "76ea3cb1-1e93-4907-88f2-1fabeb3a4f7b",
       "name": "Pipeline - Claim Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -446,7 +446,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "5dad79fd-3979-4a2d-9275-b3484301246b",
+      "id": "6bffa56b-120f-4062-8547-344da7bbc6ed",
       "name": "Gmail - Already Sent?",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -475,10 +475,10 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000,
-      "webhookId": "0a02c8d3-7ddc-401e-ad27-f46cabec5360"
+      "webhookId": "bd358447-2d6e-4714-93f8-65666bc522a5"
     },
     {
-      "id": "5065ac82-d05d-4088-90c3-4d567a2dbade",
+      "id": "a79b8c10-127d-43f5-9d15-33539eef82c5",
       "name": "Already Sent Check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -491,7 +491,7 @@
       }
     },
     {
-      "id": "466041d5-12ab-4067-9df4-69e7275a3a96",
+      "id": "fcfc03cd-c28b-490b-a50f-be0be1fa455b",
       "name": "Already Sent?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -508,7 +508,7 @@
           },
           "conditions": [
             {
-              "id": "4ad13dd5-f492-40c0-970b-b466ec8bc77a",
+              "id": "3a41041c-9177-4010-b949-764b1fff12bd",
               "leftValue": "={{ $json.alreadySent }}",
               "rightValue": "",
               "operator": {
@@ -524,7 +524,7 @@
       }
     },
     {
-      "id": "fa38a61b-30c1-44fc-8ed6-c11308fe1375",
+      "id": "3cc0664f-87c1-4167-94a9-c749990e9e1f",
       "name": "Mark Already Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -537,7 +537,7 @@
       }
     },
     {
-      "id": "f10351b6-73da-4e30-a15a-5429ac155ea8",
+      "id": "58cfd6f1-9863-49c9-94b1-4c33cdf31fce",
       "name": "Send Outreach Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -563,10 +563,10 @@
         }
       },
       "onError": "continueErrorOutput",
-      "webhookId": "4fcfea4b-38d1-4d3f-a466-a375573a2bff"
+      "webhookId": "fc52ee59-4be8-4fdb-9c5d-3f36425b895e"
     },
     {
-      "id": "460e6bfe-daf8-4aa7-80db-04352b4f2b34",
+      "id": "ba4f4db6-5273-4ec6-9a5e-2f729d995511",
       "name": "Mark Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -579,7 +579,7 @@
       }
     },
     {
-      "id": "5b99dc73-634d-4ee0-8b95-ae94fd34c8e1",
+      "id": "8334fde2-7516-4376-af2f-0a57b1a3cf87",
       "name": "Mark Send Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -592,7 +592,7 @@
       }
     },
     {
-      "id": "b88837f6-5c76-48f2-b0a9-342e4fb6d130",
+      "id": "29d0f7b8-4b48-4718-9b8f-9994091ea81f",
       "name": "Pipeline - Write Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -941,9 +941,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "d6c43551-a7ed-4dcc-af14-461a8899db47",
+  "versionId": "d88bae1a-4660-4d41-8bc4-55e7cf8243d4",
   "activeVersionId": null,
-  "versionCounter": 4,
+  "versionCounter": 5,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

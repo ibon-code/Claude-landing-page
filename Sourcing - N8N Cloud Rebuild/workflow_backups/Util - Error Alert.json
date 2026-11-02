@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-19T09:53:06.440Z",
+  "updatedAt": "2026-11-02T16:11:17.646Z",
   "createdAt": "2026-10-19T09:53:06.440Z",
   "id": "kWaALs0g5noG4ly4",
   "name": "Util - Error Alert",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "7174c247-4561-45c2-87af-eff055fd1f2f",
+      "id": "2f31bfa4-1b57-4e35-9603-9bea15eff7b2",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -19,7 +19,7 @@
       "parameters": {}
     },
     {
-      "id": "c7c75e5e-e2c8-41de-8475-d0f0b4fcc148",
+      "id": "ec711ad9-1cdc-4319-8385-47882760ffb1",
       "name": "Build Alert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -32,7 +32,7 @@
       }
     },
     {
-      "id": "9fa91997-4737-408f-965b-84e56e58d44d",
+      "id": "63a8dc69-a1af-4bac-915b-c39ae552e4a7",
       "name": "Email Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -60,7 +60,7 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000,
-      "webhookId": "6b2f95cd-f8c5-4c55-b78b-a4508177f014"
+      "webhookId": "71694659-6831-4add-8461-4f7b9768a65f"
     }
   ],
   "connections": {
@@ -94,32 +94,11 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "fdcf7003-0b63-453b-8bd2-ecb79a14c32f",
+  "versionId": "1a7945c4-4e0f-479a-b0b9-1cb7a94d4900",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 2,
   "triggerCount": 0,
   "sourceWorkflowId": null,
-  "shared": [
-    {
-      "updatedAt": "2026-10-19T09:53:06.440Z",
-      "createdAt": "2026-10-19T09:53:06.440Z",
-      "role": "workflow:owner",
-      "workflowId": "kWaALs0g5noG4ly4",
-      "projectId": "0Xc2vqh3ay8XF9p7",
-      "project": {
-        "updatedAt": "2026-09-17T14:57:31.253Z",
-        "createdAt": "2026-09-17T14:56:30.296Z",
-        "id": "0Xc2vqh3ay8XF9p7",
-        "name": "Iacopo Bon <i.bon@pnptc.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
-      }
-    }
-  ],
   "tags": [],
-  "parentFolder": null,
   "activeVersion": null
 }

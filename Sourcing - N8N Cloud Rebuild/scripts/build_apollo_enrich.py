@@ -290,7 +290,7 @@ $input.all().forEach((item, i) => {
   if (row.mode !== 'playbookOnly' || row.needsCompanyLinkedIn) upd['Company LinkedIn'] = companyLinkedIn;
 
   if (row.playbook === 'found') {
-    upd['Playbook'] = true;
+    upd['Playbook'] = 'YES';  // dropdown value, shown in red in the sheet
     upd['Playbook Check'] = 'In Playbook - ' + TODAY;
     upd['Playbook URL'] = row.playbookUrl;
     if (row.mode === 'full') upd['Apollo Enrich'] = 'Skipped: already in Playbook - ' + TODAY;
