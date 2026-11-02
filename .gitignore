@@ -18,3 +18,6 @@ seen_replies.json
 
 # One-off email sends (recipient data) — see .claude/skills/email-one-time
 one-off-sends/
+
+# Apollo API response cache (personal data, never commit)
+cache.json
