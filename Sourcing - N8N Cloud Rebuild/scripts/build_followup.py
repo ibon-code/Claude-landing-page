@@ -155,6 +155,17 @@ q_sent = "={{ 'in:sent to:' + $json.email + ' subject:\"Plug and Play\"' }}"
 q_from = ("={{ (() => { const c = $('Select Follow-up Candidates').item.json; const d = c.email.split('@')[1];"
           " const free = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./.test(d)"
           " || d === '" + MY_DOMAIN + "'; return '-in:sent from:' + (free ? c.email : '@' + d); })() }}")
+# Signs of life: anything in Gmail (not sent by me) since the first email that mentions the founder's address,
+# their company domain, or - in a Calendly notification - the startup name (founders who book a call without replying).
+q_life = ("={{ (() => { const c = $('Select Follow-up Candidates').item.json; const d = c.email.split('@')[1];"
+          " const free = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./.test(d)"
+          " || d === '" + MY_DOMAIN + "';"
+          " let since = ''; try { const ms = Number($('Gmail - Get Thread').item.json.messages[0].internalDate);"
+          " if (ms > 0) since = ' after:' + Math.floor(ms / 1000); } catch (e) {}"
+          " const nm = String(c.name || '').replace(/[\"()]/g, ' ').trim();"
+          " const parts = ['\"' + c.email + '\"']; if (!free) parts.push('\"' + d + '\"');"
+          " if (nm.length >= 3) parts.push('(from:calendly.com \"' + nm + '\")');"
+          " return '-in:sent' + since + ' (' + parts.join(' OR ') + ')'; })() }}")
 q_bounce = "={{ '(from:mailer-daemon OR from:postmaster) \"' + $('Select Follow-up Candidates').item.json.email + '\"' }}"
 
 evaluate_js = ("const SIGNATURE_HTML = " + json.dumps(SIGNATURE_HTML) + ";\n"
@@ -163,6 +174,7 @@ evaluate_js = ("const SIGNATURE_HTML = " + json.dumps(SIGNATURE_HTML) + ";\n"
 const cands = $('Select Follow-up Candidates').all();
 const threads = $('Gmail - Get Thread').all(), sents = $('Gmail - Sent To Address').all();
 const froms = $('Gmail - Messages From Startup').all(), bounces = $('Gmail - Bounces').all();
+const lifes = $('Gmail - Signs of Life').all();
 const hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',
@@ -189,8 +201,8 @@ cands.forEach((it, i) => {
   const stop = reason => out.push({ json: { ...base, action: 'stop', reason } });
   const review = reason => out.push({ json: { ...base, action: 'review', reason } });
   const wait = reason => out.push({ json: { ...base, action: 'wait', reason } });
-  const t = threads[i].json, s = sents[i].json, f = froms[i].json, b = bounces[i].json;
-  if ([t, s, f, b].some(x => x.error || !x || typeof x !== 'object')) return review('Gmail check failed');
+  const t = threads[i].json, s = sents[i].json, f = froms[i].json, b = bounces[i].json, lf = (lifes[i] || {}).json;
+  if ([t, s, f, b, lf].some(x => !x || typeof x !== 'object' || x.error)) return review('Gmail check failed');
   const msgs = t.messages || [];
   if (!msgs.length) return review('Thread not found in Gmail');
   const orig = msgs[0];
@@ -204,6 +216,7 @@ cands.forEach((it, i) => {
   if (!rfcId) return review('Original email has no Message-ID header');
   if ((b.messages || []).length) return stop('Bounced');
   if ((f.messages || []).length) return stop('Startup wrote back (inbox)');
+  if ((lf.messages || []).length) return stop('Signs of life in Gmail since the first email (e.g. Calendly booking): ' + lf.messages.length + ' email(s) mention them');
   const sentList = s.messages || [];
   if (sentList.length !== 1 || sentList[0].id !== c.messageId) return stop('Gmail Sent has ' + sentList.length + ' Plug and Play emails to this address (must be exactly the original)');
   const days = (Date.now() - Number(orig.internalDate)) / 86400000;
@@ -298,6 +311,8 @@ nodes = [
               [("q", q_from), ("maxResults", "5")], onError="continueRegularOutput"),
     gmail_api("Gmail - Bounces", [1760, 0], f"{GAPI}/messages",
               [("q", q_bounce), ("maxResults", "5")], onError="continueRegularOutput"),
+    gmail_api("Gmail - Signs of Life", [1870, 0], f"{GAPI}/messages",
+              [("q", q_life), ("maxResults", "5")], onError="continueRegularOutput"),
     code("Evaluate Follow-ups", [1980, 0], evaluate_js),
     if_true("Dry Run?", [2200, 0], "={{ $('Config').first().json.dryRun }}"),
     code("Build Dry-Run Digest", [2420, -220], digest_js),
@@ -335,7 +350,7 @@ def to(n):
 
 straight = ["Follow-up Trigger", "Config", "Pipeline - Get Rows", "Gmail - Follow-ups Sent Today",
             "Select Follow-up Candidates", "Gmail - Get Thread", "Gmail - Sent To Address",
-            "Gmail - Messages From Startup", "Gmail - Bounces", "Evaluate Follow-ups", "Dry Run?"]
+            "Gmail - Messages From Startup", "Gmail - Bounces", "Gmail - Signs of Life", "Evaluate Follow-ups", "Dry Run?"]
 connections = {a: {"main": [to(b)]} for a, b in zip(straight, straight[1:])}
 connections.update({
     "Dry Run?": {"main": [to("Build Dry-Run Digest"), to("Send?")]},

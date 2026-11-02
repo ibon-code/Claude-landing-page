@@ -25,7 +25,7 @@ A Startup name · B Website · **C Playbook** (tendina YES rosso / NO, la scrive
 ## Outreach, Follow-up e Playbook invite (dal 2026-11-02)
 
 - **Outreach** (`Pipeline - Salesforce Outreach`, `scripts/build_outreach.py`): parte solo con Contact = TRUE e `Playbook Check` = "Not in Playbook"; blocco duro se Gmail Inviati ha già una qualsiasi email "Plug and Play <> …" a quell'indirizzo; una sola azienda una volta (dominio email e sito).
-- **Follow-up** (`Pipeline - Follow-up` id `bGP5LlHKC9miEcps`, `scripts/build_followup.py`): uno solo, 7 giorni dopo, nello stesso thread, solo se nessuno ha risposto/nessun bounce e Gmail Inviati ha esattamente l'email originale.
+- **Follow-up** (`Pipeline - Follow-up` id `bGP5LlHKC9miEcps`, `scripts/build_followup.py`): uno solo, 7 giorni dopo, nello stesso thread, solo se il founder non ha dato segni di vita (nessuna risposta, nemmeno fuori dal thread, nessuna email in Gmail dal primo invio che citi il suo indirizzo o il dominio dell'azienda, nessuna prenotazione Calendly con il nome della startup), nessun bounce, e Gmail Inviati ha esattamente l'email originale.
 - Entrambi: `--live` esplicito per inviare, `--test-email ADDR` per provare su un solo indirizzo; 20/giorno ciascuno, 3 per giro, lun-ven 9-18.
 - **Playbook invite**: NON su n8n (la login MCP di Playbook non permette di aggiungere team member: "Authentication credentials were not provided"). Lo fa Claude in Chrome su richiesta con la skill `.claude/skills/playbook-invite` (profilo → + Team con nome/email → Playbook manda l'invito → nostra email con `send_invite_email.py` → log in T–Z). I workflow leggono/scrivono per nome di colonna e `row_number`, quindi spostare colonne non li rompe; rinominarle sì (va aggiornato il generatore).
 

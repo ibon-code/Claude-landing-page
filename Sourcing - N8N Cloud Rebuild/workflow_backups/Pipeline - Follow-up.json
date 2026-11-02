@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T17:01:29.962Z",
+  "updatedAt": "2026-11-02T17:15:39.976Z",
   "createdAt": "2026-11-02T16:26:58.779Z",
   "id": "bGP5LlHKC9miEcps",
   "name": "Pipeline - Follow-up",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "48bef2cd-dbb5-4fa6-a0bf-94978c743a1f",
+      "id": "3a3b4641-0358-46fc-b042-0ea86e75b533",
       "name": "Follow-up Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "f7f41f14-a56a-4cc6-8223-3807a22bd479",
+      "id": "430d8070-0af9-488e-95f8-04ca35a7169d",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -41,7 +41,7 @@
       }
     },
     {
-      "id": "6d6b18db-7376-44fe-977b-4ac69eb69e25",
+      "id": "f1439134-130c-42aa-985c-43fd6e965c6e",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "61b6c88a-244f-4d2a-9ab3-1ecf363ab04f",
+      "id": "d2d83646-aada-49ec-8053-cea4d7cd6c0d",
       "name": "Gmail - Follow-ups Sent Today",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -115,7 +115,7 @@
       "executeOnce": true
     },
     {
-      "id": "bb024433-639b-4219-9439-e46e8fc86d29",
+      "id": "fa3b4deb-4470-4b51-ae36-c551fe32ae9c",
       "name": "Select Follow-up Candidates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -128,7 +128,7 @@
       }
     },
     {
-      "id": "87b379ae-979a-4b22-940f-9ae838a94ad3",
+      "id": "f3c47cf5-2e19-40e3-8af2-d7fd2f450629",
       "name": "Gmail - Get Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -155,7 +155,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "d616c00e-1587-409e-99c1-33f9a432d9de",
+      "id": "24bfc2fd-66d1-4e87-a8ca-eed147748f16",
       "name": "Gmail - Sent To Address",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -195,7 +195,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "c66d76e5-d198-4edd-ac04-80e1a02c09e2",
+      "id": "8334049f-2fb3-4115-9442-31b405993f7d",
       "name": "Gmail - Messages From Startup",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -235,7 +235,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "16bb5e06-30b0-4618-866a-d29fbb453aa5",
+      "id": "0517d7fa-3b21-4fe6-bd04-fa13ce286dc4",
       "name": "Gmail - Bounces",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -275,7 +275,47 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "16750dac-f177-44d7-9b10-13d5a78a8db8",
+      "id": "edb61b8b-39b3-4657-b31f-bcb5e304ed77",
+      "name": "Gmail - Signs of Life",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1870,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => { const c = $('Select Follow-up Candidates').item.json; const d = c.email.split('@')[1]; const free = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./.test(d) || d === 'pnptc.com'; let since = ''; try { const ms = Number($('Gmail - Get Thread').item.json.messages[0].internalDate); if (ms > 0) since = ' after:' + Math.floor(ms / 1000); } catch (e) {} const nm = String(c.name || '').replace(/[\"()]/g, ' ').trim(); const parts = ['\"' + c.email + '\"']; if (!free) parts.push('\"' + d + '\"'); if (nm.length >= 3) parts.push('(from:calendly.com \"' + nm + '\")'); return '-in:sent' + since + ' (' + parts.join(' OR ') + ')'; })() }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "462613c9-d199-47ce-af8b-731487bc9062",
       "name": "Evaluate Follow-ups",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -284,11 +324,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst SENDER = \"Iacopo Bon <i.bon@pnptc.com>\";\nconst ME = \"i.bon@pnptc.com\";\nconst CALENDLY = \"https://calendly.com/i-bon\";\nconst cfg = $('Config').first().json;\nconst cands = $('Select Follow-up Candidates').all();\nconst threads = $('Gmail - Get Thread').all(), sents = $('Gmail - Sent To Address').all();\nconst froms = $('Gmail - Messages From Startup').all(), bounces = $('Gmail - Bounces').all();\nconst hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',\n  'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',\n  'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',\n  'contatti', 'investors', 'ir', 'help', 'service', 'welcome']);\nfunction greetingFor(c) {\n  const local = c.email.split('@')[0].replace(/[0-9]+$/, '');\n  if (GENERIC.has(local)) return c.name + ' team';\n  const first = (c.fullName.split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n  if (!/^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first)) return c.name + ' team';\n  const oneCase = first === first.toUpperCase() || first === first.toLowerCase();\n  return oneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first;\n}\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\n\nconst out = [];\ncands.forEach((it, i) => {\n  const c = it.json;\n  const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount,\n                 threadId: c.threadId, messageId: c.messageId };\n  const stop = reason => out.push({ json: { ...base, action: 'stop', reason } });\n  const review = reason => out.push({ json: { ...base, action: 'review', reason } });\n  const wait = reason => out.push({ json: { ...base, action: 'wait', reason } });\n  const t = threads[i].json, s = sents[i].json, f = froms[i].json, b = bounces[i].json;\n  if ([t, s, f, b].some(x => x.error || !x || typeof x !== 'object')) return review('Gmail check failed');\n  const msgs = t.messages || [];\n  if (!msgs.length) return review('Thread not found in Gmail');\n  const orig = msgs[0];\n  if (orig.id !== c.messageId) return review('Thread does not start with the stored Message ID');\n  if (msgs.length > 1) return stop(msgs.some(m => !hdr(m, 'From').toLowerCase().includes(ME)) ? 'Replied in thread' : 'Thread already has more than one email');\n  if (!hdr(orig, 'From').toLowerCase().includes(ME)) return review('Original email is not from me');\n  if (!hdr(orig, 'To').toLowerCase().includes(c.email)) return review('Original email was not sent to ' + c.email);\n  const subject = hdr(orig, 'Subject').replace(/^\\s*re:\\s*/i, '');\n  if (!/^Plug and Play <> /.test(subject)) return review('Original subject is not an outreach subject: ' + subject.slice(0, 60));\n  const rfcId = hdr(orig, 'Message-ID');\n  if (!rfcId) return review('Original email has no Message-ID header');\n  if ((b.messages || []).length) return stop('Bounced');\n  if ((f.messages || []).length) return stop('Startup wrote back (inbox)');\n  const sentList = s.messages || [];\n  if (sentList.length !== 1 || sentList[0].id !== c.messageId) return stop('Gmail Sent has ' + sentList.length + ' Plug and Play emails to this address (must be exactly the original)');\n  const days = (Date.now() - Number(orig.internalDate)) / 86400000;\n  if (!(days >= cfg.followupDays)) return wait('Only ' + days.toFixed(1) + ' days since the first email');\n\n  const greeting = greetingFor(c);\n  const text = `Hi ${greeting},\\n\\nBumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${c.name}, and see if there's potential alignment with our corporate network at Plug and Play.\\n\\nOpen to a quick chat? Feel free to reply directly or grab a slot here: ${CALENDLY}\\n\\nBest,\\n\\nIacopo`;\n  const html = `<p>Hi ${esc(greeting)},</p><p>Bumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${esc(c.name)}, and see if there's potential alignment with our corporate network at Plug and Play.</p><p>Open to a quick chat? Feel free to reply directly or grab a slot here: <a href=\"${CALENDLY}\">${CALENDLY}</a></p><p>Best,</p>` + SIGNATURE_HTML;\n  if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(text + html + subject)) return review('Rendered follow-up contains a placeholder');\n  const reSubject = 'Re: ' + subject;\n  const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\n  const mime = [\n    'From: ' + SENDER, 'To: ' + c.email, 'Subject: =?UTF-8?B?' + b64(reSubject) + '?=',\n    'In-Reply-To: ' + rfcId, 'References: ' + rfcId, 'MIME-Version: 1.0',\n    'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n    '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n    '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),\n    '--' + boundary + '--', '',\n  ].join('\\r\\n');\n  out.push({ json: { ...base, action: 'send', subject: reSubject, greeting, htmlBody: html, days: Number(days.toFixed(1)),\n                     sendBody: { raw: b64url(mime), threadId: c.threadId } } });\n});\n// Only the first PER_RUN_CAP (or what's left of today's cap) are sent; the others wait for the next run.\nlet room = cfg.dryRun ? Infinity : Math.min(cfg.perRunCap, cands.length ? cands[0].json.remainingToday : 0);\nfor (const o of out) if (o.json.action === 'send') { if (room > 0) room--; else o.json.action = 'wait'; }\nreturn out.filter(o => o.json.action !== 'wait' || cfg.dryRun);\n"
+        "jsCode": "const SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst SENDER = \"Iacopo Bon <i.bon@pnptc.com>\";\nconst ME = \"i.bon@pnptc.com\";\nconst CALENDLY = \"https://calendly.com/i-bon\";\nconst cfg = $('Config').first().json;\nconst cands = $('Select Follow-up Candidates').all();\nconst threads = $('Gmail - Get Thread').all(), sents = $('Gmail - Sent To Address').all();\nconst froms = $('Gmail - Messages From Startup').all(), bounces = $('Gmail - Bounces').all();\nconst lifes = $('Gmail - Signs of Life').all();\nconst hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 'team', 'office', 'admin', 'support',\n  'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',\n  'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',\n  'contatti', 'investors', 'ir', 'help', 'service', 'welcome']);\nfunction greetingFor(c) {\n  const local = c.email.split('@')[0].replace(/[0-9]+$/, '');\n  if (GENERIC.has(local)) return c.name + ' team';\n  const first = (c.fullName.split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n  if (!/^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first)) return c.name + ' team';\n  const oneCase = first === first.toUpperCase() || first === first.toLowerCase();\n  return oneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first;\n}\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\n\nconst out = [];\ncands.forEach((it, i) => {\n  const c = it.json;\n  const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount,\n                 threadId: c.threadId, messageId: c.messageId };\n  const stop = reason => out.push({ json: { ...base, action: 'stop', reason } });\n  const review = reason => out.push({ json: { ...base, action: 'review', reason } });\n  const wait = reason => out.push({ json: { ...base, action: 'wait', reason } });\n  const t = threads[i].json, s = sents[i].json, f = froms[i].json, b = bounces[i].json, lf = (lifes[i] || {}).json;\n  if ([t, s, f, b, lf].some(x => !x || typeof x !== 'object' || x.error)) return review('Gmail check failed');\n  const msgs = t.messages || [];\n  if (!msgs.length) return review('Thread not found in Gmail');\n  const orig = msgs[0];\n  if (orig.id !== c.messageId) return review('Thread does not start with the stored Message ID');\n  if (msgs.length > 1) return stop(msgs.some(m => !hdr(m, 'From').toLowerCase().includes(ME)) ? 'Replied in thread' : 'Thread already has more than one email');\n  if (!hdr(orig, 'From').toLowerCase().includes(ME)) return review('Original email is not from me');\n  if (!hdr(orig, 'To').toLowerCase().includes(c.email)) return review('Original email was not sent to ' + c.email);\n  const subject = hdr(orig, 'Subject').replace(/^\\s*re:\\s*/i, '');\n  if (!/^Plug and Play <> /.test(subject)) return review('Original subject is not an outreach subject: ' + subject.slice(0, 60));\n  const rfcId = hdr(orig, 'Message-ID');\n  if (!rfcId) return review('Original email has no Message-ID header');\n  if ((b.messages || []).length) return stop('Bounced');\n  if ((f.messages || []).length) return stop('Startup wrote back (inbox)');\n  if ((lf.messages || []).length) return stop('Signs of life in Gmail since the first email (e.g. Calendly booking): ' + lf.messages.length + ' email(s) mention them');\n  const sentList = s.messages || [];\n  if (sentList.length !== 1 || sentList[0].id !== c.messageId) return stop('Gmail Sent has ' + sentList.length + ' Plug and Play emails to this address (must be exactly the original)');\n  const days = (Date.now() - Number(orig.internalDate)) / 86400000;\n  if (!(days >= cfg.followupDays)) return wait('Only ' + days.toFixed(1) + ' days since the first email');\n\n  const greeting = greetingFor(c);\n  const text = `Hi ${greeting},\\n\\nBumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${c.name}, and see if there's potential alignment with our corporate network at Plug and Play.\\n\\nOpen to a quick chat? Feel free to reply directly or grab a slot here: ${CALENDLY}\\n\\nBest,\\n\\nIacopo`;\n  const html = `<p>Hi ${esc(greeting)},</p><p>Bumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${esc(c.name)}, and see if there's potential alignment with our corporate network at Plug and Play.</p><p>Open to a quick chat? Feel free to reply directly or grab a slot here: <a href=\"${CALENDLY}\">${CALENDLY}</a></p><p>Best,</p>` + SIGNATURE_HTML;\n  if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(text + html + subject)) return review('Rendered follow-up contains a placeholder');\n  const reSubject = 'Re: ' + subject;\n  const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\n  const mime = [\n    'From: ' + SENDER, 'To: ' + c.email, 'Subject: =?UTF-8?B?' + b64(reSubject) + '?=',\n    'In-Reply-To: ' + rfcId, 'References: ' + rfcId, 'MIME-Version: 1.0',\n    'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n    '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n    '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),\n    '--' + boundary + '--', '',\n  ].join('\\r\\n');\n  out.push({ json: { ...base, action: 'send', subject: reSubject, greeting, htmlBody: html, days: Number(days.toFixed(1)),\n                     sendBody: { raw: b64url(mime), threadId: c.threadId } } });\n});\n// Only the first PER_RUN_CAP (or what's left of today's cap) are sent; the others wait for the next run.\nlet room = cfg.dryRun ? Infinity : Math.min(cfg.perRunCap, cands.length ? cands[0].json.remainingToday : 0);\nfor (const o of out) if (o.json.action === 'send') { if (room > 0) room--; else o.json.action = 'wait'; }\nreturn out.filter(o => o.json.action !== 'wait' || cfg.dryRun);\n"
       }
     },
     {
-      "id": "c8dee67f-71b5-4b62-b2ce-a33b6d03d2bf",
+      "id": "0d4a59ff-fd94-498f-a7ae-287f21e0ed71",
       "name": "Dry Run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -305,7 +345,7 @@
           },
           "conditions": [
             {
-              "id": "6ff3ab66-e42e-4b2d-a3af-941462a72214",
+              "id": "f7eff940-cf0d-4838-9f8f-8996ec77b961",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -321,7 +361,7 @@
       }
     },
     {
-      "id": "d9ce3ce8-baa6-494f-a2a6-6997e9f8f78c",
+      "id": "8bb75f92-0a4e-4656-a3ec-f5586923c97d",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -334,7 +374,7 @@
       }
     },
     {
-      "id": "c2565eae-6edc-455d-b1bd-683ebd571191",
+      "id": "1f003e43-abbe-41ce-ba2d-7a7b11e9fb27",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -359,10 +399,10 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "92c34ae3-e6ad-451b-9e84-087f922a0e50"
+      "webhookId": "f1b1fb3d-3cf0-4564-9677-eb5a8343bc93"
     },
     {
-      "id": "07c3472b-7462-470e-882e-0c5e5c8aebea",
+      "id": "6c769e1a-2881-4e8b-99de-c427f5c5539e",
       "name": "Send?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -379,7 +419,7 @@
           },
           "conditions": [
             {
-              "id": "292d41b3-6f9f-44d5-b91b-7bd490ae6b49",
+              "id": "2d4f8901-b2d4-4d3d-881a-8bcb94bac608",
               "leftValue": "={{ $json.action }}",
               "rightValue": "send",
               "operator": {
@@ -394,7 +434,7 @@
       }
     },
     {
-      "id": "516df281-1e20-4023-be57-6282a21ce814",
+      "id": "8267c476-7b04-4d16-89dc-ac8ae220e11d",
       "name": "Stop / Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -407,7 +447,7 @@
       }
     },
     {
-      "id": "c5eb1577-eae4-4771-9855-9f3f2ab16118",
+      "id": "20df39e0-1a79-406f-beb3-cdb7a3f8d666",
       "name": "Pipeline - Write Stop Status",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -453,7 +493,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "068d850d-f3cc-4e44-8381-7cf2b7863bde",
+      "id": "d27fd3a3-0946-47f5-8d37-c5eaff63ba66",
       "name": "Loop Over Follow-ups",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -467,7 +507,7 @@
       }
     },
     {
-      "id": "8bc65f20-39af-4b86-a449-faeb7804a61c",
+      "id": "a05a4667-edd6-459d-9fdd-902ffe312388",
       "name": "Claim Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -480,7 +520,7 @@
       }
     },
     {
-      "id": "59fe2f69-9d38-4c01-9301-366688159c81",
+      "id": "38646768-568c-4d19-906b-1c9ceb0d7b61",
       "name": "Pipeline - Claim Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -526,7 +566,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "c71e00e8-8ff5-434d-95bf-1c12b95be324",
+      "id": "28a81ef3-1bdf-4f0f-9d2c-0cea00fea7c3",
       "name": "Gmail - Sent To Address (again)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -566,7 +606,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "97b2a25e-1d87-4984-a368-391167c275c2",
+      "id": "d87ac67e-0644-4f21-b381-4548c3423453",
       "name": "Re-check Sent Count",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -579,7 +619,7 @@
       }
     },
     {
-      "id": "b8f5d2c1-096d-4f1c-aace-eea47bafe750",
+      "id": "6757b08c-6af4-44c1-a45a-62d6d3fd5703",
       "name": "Still Exactly One?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -596,7 +636,7 @@
           },
           "conditions": [
             {
-              "id": "a212d322-4956-4497-928c-4313d0943833",
+              "id": "86797a9d-c2be-42bc-b08d-03ad39bbcb79",
               "leftValue": "={{ $json.okToSend }}",
               "rightValue": "",
               "operator": {
@@ -612,7 +652,7 @@
       }
     },
     {
-      "id": "82f29d66-1458-4ca8-b861-44fd7c566cdc",
+      "id": "f02e7948-f5b4-4cda-9ab9-090a0f1b535c",
       "name": "Mark Blocked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -625,7 +665,7 @@
       }
     },
     {
-      "id": "d90c55d6-cc34-4874-9a9a-c4e964f14279",
+      "id": "24e4bf40-6152-47af-b493-115ae1483843",
       "name": "Send Follow-up",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -652,7 +692,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "17ee1b7b-4f18-4ac6-a3e2-7fe4d737a49c",
+      "id": "56180a27-3008-4816-a36e-86753c40c311",
       "name": "Mark Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -665,7 +705,7 @@
       }
     },
     {
-      "id": "e19f40c2-1e3a-49a5-b2dc-c5253d6f4d8c",
+      "id": "72c099f4-91ad-4c01-9e32-484734053edf",
       "name": "Mark Send Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -678,7 +718,7 @@
       }
     },
     {
-      "id": "38d80857-19cb-42ea-a6de-0d8f23185777",
+      "id": "d98f61e8-d91a-4292-8933-9316a8c90d07",
       "name": "Pipeline - Write Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -814,6 +854,17 @@
       ]
     },
     "Gmail - Bounces": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Signs of Life",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Signs of Life": {
       "main": [
         [
           {
@@ -1039,9 +1090,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "cba0e1ea-f359-414a-9885-eb31fa503675",
+  "versionId": "42ff34f9-95f6-416d-b280-7cb2b0fa64ee",
   "activeVersionId": null,
-  "versionCounter": 2,
+  "versionCounter": 3,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],
