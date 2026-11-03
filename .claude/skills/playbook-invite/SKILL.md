@@ -5,6 +5,11 @@ description: After a first meeting with a founder, invite their startup to Playb
 
 # Playbook invite (done by Claude in Chrome, on request)
 
+**Normally n8n does this** (workflow `Pipeline - Playbook Invite`, from 2026-11-03): it creates the profile, emails the
+user the Team link, and sends our email once the user sets `Team Added` = YES. Use this skill only as a fallback:
+rows n8n marked `Needs review`, or when the user explicitly asks Claude to do it in Chrome. Never run it on a row
+whose `Playbook Invite Status` is not empty without the user's OK (n8n may be handling it).
+
 n8n cannot do this: the Playbook MCP can create a startup, but none of its 45 tools has a team / founder /
 email field (`update_startup` only edits company data). The web app adds a team member with a
 `PATCH /v1/startups/<id>/` on its own session cookie. So Claude does it in the user's Chrome, where they are

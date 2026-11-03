@@ -1,0 +1,2030 @@
+{
+  "updatedAt": "2026-11-03T10:41:36.378Z",
+  "createdAt": "2026-11-03T10:41:36.378Z",
+  "id": "HhIgZ9AEW5r0XxPB",
+  "name": "Pipeline - Playbook Invite",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "852e2f31-e4af-4463-8441-4e968759ea73",
+      "name": "Playbook Invite Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "4,19,34,49 9-17 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1a4eba2f-2bdb-47ff-8df8-a8711ca6ef22",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const DRY_RUN = true;\nconst TEST_ONLY_EMAIL = null;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;\nif (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, dailyCap: 20, perRunCap: 3,\n  today, dayStartEpoch } }];\n"
+      }
+    },
+    {
+      "id": "f39315e4-c231-4128-89bb-51250ff3f473",
+      "name": "Pipeline - Get Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "810ee50f-9b73-41ab-85b0-9c953b1e576d",
+      "name": "Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -400
+      ],
+      "parameters": {
+        "jsCode": "\nconst isYes = v => typeof v === 'boolean' ? v : ['TRUE', 'YES'].includes(String(v || '').trim().toUpperCase());\nconst norm = e => String(e || '').trim().toLowerCase();\nconst EMAIL_RE = /^[^@\\s,;<>]+@[^@\\s,;<>]+\\.[a-z]{2,}$/;\nconst FREE = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./;\nconst host = u => String(u || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split(/[\\/?#]/)[0];\nconst nowIso = () => new Date().toISOString();\nfunction recipientOf(r) {\n  const mc = norm(r['Meeting contact']);\n  if (mc) return { email: mc, name: String(r['Meeting contact name'] || '').trim() };\n  return { email: norm(r['Email']), name: String(r['Full Name'] || '').trim() };\n}\n// Once a day: rows whose profile was created over a day ago but 'Team Added' is still not YES.\nconst cfg = $('Config').first().json;\nconst sd = $getWorkflowStaticData('global');\nif (sd.lastReminder === cfg.today) return [];\nconst DAY = 86400000;\nconst stuck = $('Pipeline - Get Rows').all().map(i => i.json).filter(r => {\n  const m = /^Profile created (\\S+)/.exec(String(r['Playbook Invite Status'] || ''));\n  return m && !isYes(r['Team Added']) && Date.now() - Date.parse(m[1]) > DAY;\n});\nif (!stuck.length) return [];\nif (!cfg.dryRun) sd.lastReminder = cfg.today;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nreturn [{ json: { subject: `Playbook: ${stuck.length} founder da aggiungere nel Team`,\n  html: '<p>Profilo creato ma Team Added non ancora YES:</p><ul>' + stuck.map(r => `<li>${esc(r['Startup name'])} (riga ${r.row_number}) - <a href=\"${esc(String(r['Playbook Profile URL'] || '').replace(/\\/overview$/, '/team'))}\">Team</a></li>`).join('') + '</ul>' } }];\n"
+      }
+    },
+    {
+      "id": "7c15742c-14ad-4b68-b4ed-e7872da6e31d",
+      "name": "Send Reminder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        -400
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "c4e4dfdc-6fbd-45ab-bc5f-c86fe754b825"
+    },
+    {
+      "id": "0041062d-0f2f-4fc6-9c5e-a54811c80db0",
+      "name": "Select Profiles To Create",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\nconst isYes = v => typeof v === 'boolean' ? v : ['TRUE', 'YES'].includes(String(v || '').trim().toUpperCase());\nconst norm = e => String(e || '').trim().toLowerCase();\nconst EMAIL_RE = /^[^@\\s,;<>]+@[^@\\s,;<>]+\\.[a-z]{2,}$/;\nconst FREE = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./;\nconst host = u => String(u || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split(/[\\/?#]/)[0];\nconst nowIso = () => new Date().toISOString();\nfunction recipientOf(r) {\n  const mc = norm(r['Meeting contact']);\n  if (mc) return { email: mc, name: String(r['Meeting contact name'] || '').trim() };\n  return { email: norm(r['Email']), name: String(r['Full Name'] || '').trim() };\n}\nconst cfg = $('Config').first().json;\nconst out = [];\nfor (const it of $('Pipeline - Get Rows').all()) {\n  const r = it.json;\n  if (!isYes(r['Playbook Invite']) || String(r['Playbook Invite Status'] || '').trim()) continue;\n  const name = String(r['Startup name'] || '').trim();\n  const rec = recipientOf(r);\n  if (cfg.testOnlyEmail && rec.email !== cfg.testOnlyEmail) continue;\n  if (!cfg.testOnlyEmail && /test company|delete me/i.test(name)) continue;\n  let problem = '';\n  const domain = host(r['Website']);\n  if (!name) problem = 'Startup name is empty';\n  else if (!domain || !/\\./.test(domain)) problem = 'Website is empty or not a domain';\n  else if (!EMAIL_RE.test(rec.email)) problem = 'No valid recipient email (Meeting contact / Email)';\n  else if (isYes(r['Playbook'])) problem = 'Playbook column says YES: the startup is already on Playbook';\n  else {\n    const recDomain = rec.email.split('@')[1];\n    if (FREE.test(recDomain) || recDomain === 'pnptc.com') problem = 'Recipient uses a personal or Plug and Play email (' + recDomain + '): Playbook will not accept it in the Team. Put the founder company email in Meeting contact';\n  }\n  const ed = rec.email.split('@')[1] || '';\n  out.push({ json: { row_number: r.row_number, name, domain, website: 'https://' + domain,\n    email: rec.email, fullName: rec.name, problem,\n    domainNote: (!problem && ed !== domain && !ed.endsWith('.' + domain)) ? ed : '' } });\n  if (out.length >= cfg.perRunCap) break;\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "85399962-4360-40ea-842e-9114a7db0d9f",
+      "name": "Loop Create",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "dbb0a051-50b1-44b5-8237-790738bf4ace",
+      "name": "Claim Create Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        100
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Loop Create').first().json;\nreturn [{ json: { row_number: e.row_number, 'Playbook Invite Status': 'Creating profile ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "d4960988-51f5-4809-821f-922ace968c58",
+      "name": "Live? (claim)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6b6001e1-233b-445b-a947-ba66d6e217b9",
+              "leftValue": "={{ !$('Config').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "a9b53e7c-75c8-4c6c-b72f-6f0bb0636a03",
+      "name": "Pipeline - Claim Create",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "3f91284a-34e8-4d2a-ba32-d62306be76b5",
+      "name": "Playbook - Search Domain",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        100
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "search_startups",
+          "cachedResultName": "search_startups"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ { query: $('Loop Create').first().json.domain || 'none', max_results: 10 } }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "mcpOAuth2Api": {
+          "id": "TerVDTem462Rn6TK",
+          "name": "Playbook MCP - Iacopo Bon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "21ef23aa-fc4a-4018-b82b-b7438bf154f6",
+      "name": "Pre-check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// Stop before any Playbook write if the row has a problem or Playbook already has this exact domain.\nconst e = $('Loop Create').first().json;\nconst host = u => String(u || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split(/[\\/?#]/)[0];\nif (e.problem) return [{ json: { ...e, ok: false, reason: e.problem } }];\nconst it = $input.first();\nlet sc = it.json.structuredContent;\nif (!sc) sc = (it.json.content || []).map(c => c.text).find(t => t && typeof t === 'object');\nif (it.json.error || !sc || !Array.isArray(sc.results))\n  return [{ json: { ...e, ok: false, reason: 'Playbook search failed (MCP login expired?): ' + JSON.stringify(it.json.error || it.json).slice(0, 150) } }];\nconst hit = sc.results.find(s => host(s.website) === e.domain || host(s.domain_name) === e.domain);\nif (hit) return [{ json: { ...e, ok: false, reason: 'Already on Playbook: ' + (hit.url || hit.name || hit.company_name || '') } }];\nreturn [{ json: { ...e, ok: true } }];\n"
+      }
+    },
+    {
+      "id": "d686ad33-5e54-4b00-9d3f-baca3b6394ec",
+      "name": "Pre-check OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "1f61389d-bb32-4845-aecc-ec4ca799bcbe",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "6123f86a-d317-46b5-85a8-b8de92378c63",
+      "name": "Fetch Startup Homepage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $('Loop Create').first().json.website }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "neverError": true
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "a735e8b4-89a1-48d8-9a20-ddd12577989d",
+      "name": "Playbook - List Countries",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        0
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "list_countries",
+          "cachedResultName": "list_countries"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ {} }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "mcpOAuth2Api": {
+          "id": "TerVDTem462Rn6TK",
+          "name": "Playbook MCP - Iacopo Bon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "8fe6b8f2-76d8-4670-84b8-dd997f7adbbc",
+      "name": "Playbook - List Verticals",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        2860,
+        0
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "list_verticals",
+          "cachedResultName": "list_verticals"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ {} }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "mcpOAuth2Api": {
+          "id": "TerVDTem462Rn6TK",
+          "name": "Playbook MCP - Iacopo Bon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ddc3906d-e55e-49bd-b6f1-f892319e78e9",
+      "name": "Build Profile Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        0
+      ],
+      "parameters": {
+        "jsCode": "\n// MCP list tools: collect every {id, name} object, wherever it sits in the response.\nfunction idNames(it) {\n  if (!it || !it.json || it.json.error) return null;\n  const out = [];\n  const walk = o => {\n    if (Array.isArray(o)) return o.forEach(walk);\n    if (o && typeof o === 'object') {\n      const nm = o.name || o.title || o.label;\n      if ((typeof o.id === 'number' || /^\\d+$/.test(String(o.id))) && typeof nm === 'string') out.push({ id: Number(o.id), name: nm.trim() });\n      Object.values(o).forEach(v => { if (v && typeof v === 'object') walk(v); });\n    }\n  };\n  walk(it.json.structuredContent || it.json.content || it.json);\n  const seen = new Set();\n  return out.filter(x => !seen.has(x.id) && seen.add(x.id));\n}\nconst e = $('Pre-check').first().json;\nconst countries = idNames($('Playbook - List Countries').first());\nconst verticals = idNames($('Playbook - List Verticals').first());\nconst html = String($('Fetch Startup Homepage').first().json.data || $('Fetch Startup Homepage').first().json.body || '');\nconst strip = s => s.replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n  .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, \"'\").replace(/\\s+/g, ' ').trim();\nconst meta = n => { const m = new RegExp('<meta[^>]+(?:name|property)=[\"\\']' + n + '[\"\\'][^>]+content=[\"\\']([^\"\\']*)', 'i').exec(html); return m ? strip(m[1]) : ''; };\nconst title = (/<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html) || [])[1] || '';\nconst body = strip(html).slice(0, 3500);\nconst site = [strip(title), meta('description'), meta('og:description'), body].filter(Boolean).join('\\n').slice(0, 4500);\nlet reason = '';\nif (!countries || !countries.length) reason = 'Could not read the country list from Playbook';\nelse if (!verticals || !verticals.length) reason = 'Could not read the vertical list from Playbook';\nelse if (site.length < 200) reason = 'Homepage not readable (too little text): profile not created to avoid inventing it';\nif (reason) return [{ json: { ...e, ok: false, reason } }];\nconst prompt = 'You write a startup profile for Playbook, the startup database of Plug and Play Tech Center.\\n'\n  + 'Use ONLY facts stated in the homepage text below. No hype, no superlatives, no guesses.\\n\\n'\n  + 'Startup: ' + e.name + '\\nWebsite: ' + e.website + '\\n\\nHomepage text:\\n' + site + '\\n\\n'\n  + 'Allowed verticals (copy names exactly): ' + JSON.stringify(verticals.map(v => v.name)) + '\\n'\n  + 'Allowed countries (copy names exactly): ' + JSON.stringify(countries.map(c => c.name)) + '\\n\\n'\n  + 'Return ONLY JSON (no prose, no markdown fences):\\n'\n  + '{\"one_liner\": \"what the company does, max 120 characters\", '\n  + '\"description\": \"2-4 factual sentences: product, customers, how it works\", '\n  + '\"verticals\": [\"1 or 2 names from the allowed list\"], '\n  + '\"country\": \"HQ country from the allowed list, or empty string if the homepage does not say\", '\n  + '\"hq_city\": \"HQ city if stated, else empty string\", \"founded\": \"4-digit year if stated, else empty string\"}';\nreturn [{ json: { ...e, ok: true, prompt, max_tokens: 700 } }];\n"
+      }
+    },
+    {
+      "id": "a3d05779-00af-4e30-8e3a-d8e35edb0bfd",
+      "name": "Prompt OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3300,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ef1c1593-0448-4e94-8d5f-ba8aa4d4cfca",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "2b0a47ed-7a47-4845-8be5-8d93f9714906",
+      "name": "Call Claude",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3520,
+        -100
+      ],
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "V5wGQ55LdYLhSCmf",
+          "mode": "list",
+          "cachedResultName": "Util - Claude Messages API"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ $json.prompt }}",
+            "max_tokens": "={{ $json.max_tokens }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "c82b75b0-d4e8-4450-ae9b-2c1398bcafc8",
+      "name": "Validate Profile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "\n// MCP list tools: collect every {id, name} object, wherever it sits in the response.\nfunction idNames(it) {\n  if (!it || !it.json || it.json.error) return null;\n  const out = [];\n  const walk = o => {\n    if (Array.isArray(o)) return o.forEach(walk);\n    if (o && typeof o === 'object') {\n      const nm = o.name || o.title || o.label;\n      if ((typeof o.id === 'number' || /^\\d+$/.test(String(o.id))) && typeof nm === 'string') out.push({ id: Number(o.id), name: nm.trim() });\n      Object.values(o).forEach(v => { if (v && typeof v === 'object') walk(v); });\n    }\n  };\n  walk(it.json.structuredContent || it.json.content || it.json);\n  const seen = new Set();\n  return out.filter(x => !seen.has(x.id) && seen.add(x.id));\n}\nconst e = $('Build Profile Prompt').first().json;\nconst info = $input.first().json || {};\nconst countries = idNames($('Playbook - List Countries').first()) || [];\nconst verticals = idNames($('Playbook - List Verticals').first()) || [];\nconst byName = (list, n) => list.find(x => x.name.toLowerCase() === String(n || '').trim().toLowerCase());\nconst one = String(info.one_liner || '').trim(), desc = String(info.description || '').trim();\nconst vs = (Array.isArray(info.verticals) ? info.verticals : [info.verticals]).filter(Boolean).map(v => byName(verticals, v));\nconst country = byName(countries, info.country);\nconst city = String(info.hq_city || '').trim(), founded = String(info.founded || '').trim();\nlet reason = '';\nif (info.error || !one || !desc) reason = 'Claude returned no usable profile';\nelse if (one.length < 10 || one.length > 160) reason = 'One-liner has an odd length: ' + one.slice(0, 80);\nelse if (desc.length < 60 || desc.length > 1500) reason = 'Description has an odd length';\nelse if (!vs.length || vs.length > 2 || vs.some(v => !v)) reason = 'Vertical not in the Playbook list: ' + JSON.stringify(info.verticals).slice(0, 80);\nelse if (!country) reason = 'HQ country not stated on the homepage or not in the Playbook list: ' + String(info.country || '(empty)').slice(0, 40);\nelse if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}|lorem ipsum/i.test(one + desc + city)) reason = 'Profile text contains a placeholder';\nif (reason) return [{ json: { ...e, ok: false, reason } }];\nconst create = { company_name: e.name, website: e.website, one_liner: one, description: desc,\n  country_id: country.id, vertical_ids: vs.map(v => v.id) };\nif (city && city.length <= 60) create.hq_city = city;\nif (/^(19|20)\\d\\d$/.test(founded)) create.founded = founded;\nreturn [{ json: { ...e, ok: true, create, countryName: country.name, verticalNames: vs.map(v => v.name) } }];\n"
+      }
+    },
+    {
+      "id": "403cacb7-0841-480b-9b7f-c4ff7bc9bfd7",
+      "name": "Profile OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "61c69b16-d312-477c-ba5b-9b7871615974",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "71f17324-6099-4720-a0ac-4a8ce73b2af4",
+      "name": "Dry Run? (create)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "082a430b-e90b-46d9-8f11-bf88a2fe9d22",
+              "leftValue": "={{ $('Config').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "71f75acb-7736-493b-bf89-1cad76b367b1",
+      "name": "Dry Preview Create",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        -320
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Validate Profile').first().json;\nreturn [{ json: { kind: 'create', row_number: e.row_number, name: e.name, email: e.email, create: e.create,\n  countryName: e.countryName, verticalNames: e.verticalNames, domainNote: e.domainNote } }];\n"
+      }
+    },
+    {
+      "id": "4520e60d-7e45-463c-ad5f-73ab765b83e1",
+      "name": "Playbook - Create Startup",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        4400,
+        -120
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "create_startup",
+          "cachedResultName": "create_startup"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ $json.create }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "mcpOAuth2Api": {
+          "id": "TerVDTem462Rn6TK",
+          "name": "Playbook MCP - Iacopo Bon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e11df652-2e83-49b2-94b7-829bc886e9ba",
+      "name": "Parse Created Startup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Validate Profile').first().json;\nconst it = $input.first();\nconst find = o => {\n  if (!o || typeof o !== 'object') return null;\n  if (Array.isArray(o)) { for (const x of o) { const f = find(x); if (f) return f; } return null; }\n  const id = o.id ?? o.startup_id;\n  if ((typeof id === 'number' || /^\\d+$/.test(String(id))) && (o.company_name || o.name || o.website || o.startup_id)) return Number(id);\n  for (const v of Object.values(o)) { const f = find(v); if (f) return f; }\n  return null;\n};\nconst id = it.json.error ? null : find(it.json.structuredContent || it.json.content || it.json);\nif (!id) return [{ json: { ...e, ok: false, created: !it.json.error,\n  reason: it.json.error ? 'create_startup failed: ' + JSON.stringify(it.json.error).slice(0, 150)\n                        : 'create_startup answered without a startup id - check Playbook before retrying' } }];\nreturn [{ json: { ...e, ok: true, startupId: id,\n  profileUrl: 'https://app.playbook.vc/discover/startups/' + id + '/overview',\n  teamUrl: 'https://app.playbook.vc/discover/startups/' + id + '/team' } }];\n"
+      }
+    },
+    {
+      "id": "0d130862-aa65-438b-937e-0a5348ebc26e",
+      "name": "Created?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4840,
+        -120
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "3a5c55cf-16ad-41aa-9639-9fb10140a43c",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c16aea8b-c3f6-45d0-a6a8-7f9ddb502ef7",
+      "name": "Playbook - Set Logo",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        5060,
+        -220
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://playbook-backend-prod01.cloud.playbook.vc/v3/mcp/playbook/",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "list",
+          "value": "set_startup_logo",
+          "cachedResultName": "set_startup_logo"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ { startup_id: $json.startupId } }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "mcpOAuth2Api": {
+          "id": "TerVDTem462Rn6TK",
+          "name": "Playbook MCP - Iacopo Bon"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "6fdaa8fc-839b-4981-9296-d38bb87e3fbc",
+      "name": "Created Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5280,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Parse Created Startup').first().json;\nreturn [{ json: { row_number: e.row_number, 'Playbook Profile URL': e.profileUrl,\n  'Playbook Invite Status': 'Profile created ' + new Date().toISOString() + ' - add the founder in Team, then set Team Added = YES' } }];\n"
+      }
+    },
+    {
+      "id": "34d1edbd-808a-41ae-9bb6-6f951d0b666f",
+      "name": "Pipeline - Write Created",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        5500,
+        -220
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "88c11213-fcb0-4e2a-bd25-09b8c4052b3c",
+      "name": "Notify Created",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5720,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Parse Created Startup').first().json;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst [first, ...rest] = String(e.fullName || '').split(/\\s+/);\nlet html = `<p>Profilo Playbook creato per <b>${esc(e.name)}</b> (riga ${e.row_number}).</p>`;\nif (e.domainNote) html += `<p><b>Prima:</b> ACTIONS &gt; Manage domains &gt; Add domain <b>${esc(e.domainNote)}</b> (l'email del founder non e' sul dominio del sito).</p>`;\nhtml += `<ol><li>Apri il Team: <a href=\"${e.teamUrl}\">${e.teamUrl}</a></li>`\n  + `<li>Premi <b>+</b> accanto a \"Startup Team\" (Member Profile) e inserisci:<br>First name: <b>${esc(first || '')}</b> &nbsp; Last name: <b>${esc(rest.join(' '))}</b><br>Email: <b>${esc(e.email)}</b> &nbsp; Job role: <b>CEO</b> &gt; SUBMIT</li>`\n  + `<li>Controlla che la scheda dica \"Invitation sent\", poi metti <b>Team Added = YES</b> sulla riga ${e.row_number}: la nostra email parte da sola.</li></ol>`\n  + `<p>Testo del profilo (controllalo su Playbook):<br><i>${esc(e.create.one_liner)}</i><br>${esc(e.create.description)}<br>`\n  + `Paese: ${esc(e.countryName)} - Settore: ${esc(e.verticalNames.join(', '))}${e.create.hq_city ? ' - Citta: ' + esc(e.create.hq_city) : ''}</p>`;\nreturn [{ json: { subject: 'Playbook: aggiungi ' + (e.fullName || e.email) + ' nel Team di ' + e.name, html } }];\n"
+      }
+    },
+    {
+      "id": "97306bf3-fb08-4e6c-a3d2-9963081837e4",
+      "name": "Email Me - Add Founder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        5940,
+        -220
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "d828b360-adb5-4779-8d43-dbcf9178b2ec"
+    },
+    {
+      "id": "95db463f-69c0-4cf4-accf-2f2e4ee690b8",
+      "name": "Review Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Any stop in branch A. Live: written on the row + email to me. Dry run: only collected for the preview.\nconst src = $input.first().json;\nreturn [{ json: { row_number: src.row_number, name: src.name, email: src.email,\n  'Playbook Invite Status': 'Needs review: ' + String(src.reason || 'unknown').slice(0, 300) } }];\n"
+      }
+    },
+    {
+      "id": "a1652458-9819-455e-bcae-510492d4ae38",
+      "name": "Live? (review)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4620,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b3040d06-144a-45af-8269-a0c10c823c0f",
+              "leftValue": "={{ !$('Config').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "69d564e1-7e98-4fe1-ad33-a06e95ac1937",
+      "name": "Pipeline - Write Review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4840,
+        260
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ad9ad1fe-a33d-4896-abe4-7bd58e80e61d",
+      "name": "Notify Review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5060,
+        260
+      ],
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nreturn [{ json: { subject: 'Playbook invite da rivedere: ' + e.name,\n  html: `<p><b>${esc(e.name)}</b> (riga ${e.row_number}, ${esc(e.email)}): nessun profilo creato, nessuna email inviata.</p><p>${esc(e['Playbook Invite Status'])}</p><p>Sistema la riga e svuota 'Playbook Invite Status' per riprovare.</p>` } }];\n"
+      }
+    },
+    {
+      "id": "f1525b4b-63ac-4e01-91a6-9d6dfc170e1a",
+      "name": "Email Me - Review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        5280,
+        260
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "2a45fdf6-5afd-45fb-ae70-6890e1ca067a"
+    },
+    {
+      "id": "fa5b45ed-b2fd-41d4-a45c-97aa6f41c4ff",
+      "name": "Gmail - Invites Sent Today",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        700
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'in:sent subject:\"Playbook invite\" after:' + $('Config').first().json.dayStartEpoch }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "executeOnce": true
+    },
+    {
+      "id": "189591a8-eff7-4892-9b87-662e36a37a46",
+      "name": "Select Emails To Send",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        700
+      ],
+      "parameters": {
+        "jsCode": "\nconst isYes = v => typeof v === 'boolean' ? v : ['TRUE', 'YES'].includes(String(v || '').trim().toUpperCase());\nconst norm = e => String(e || '').trim().toLowerCase();\nconst EMAIL_RE = /^[^@\\s,;<>]+@[^@\\s,;<>]+\\.[a-z]{2,}$/;\nconst FREE = /^(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|aol|proton|protonmail|gmx|mail|yandex|zoho)\\./;\nconst host = u => String(u || '').trim().toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split(/[\\/?#]/)[0];\nconst nowIso = () => new Date().toISOString();\nfunction recipientOf(r) {\n  const mc = norm(r['Meeting contact']);\n  if (mc) return { email: mc, name: String(r['Meeting contact name'] || '').trim() };\n  return { email: norm(r['Email']), name: String(r['Full Name'] || '').trim() };\n}\nconst cfg = $('Config').first().json;\nconst rows = $('Pipeline - Get Rows').all().map(it => it.json);\nconst sentGmail = ($('Gmail - Invites Sent Today').first().json.messages || []).length;\nconst sentSheet = rows.filter(r => String(r['Date Playbook Invite'] || '').slice(0, 10) === cfg.today).length;\nconst sentToday = Math.max(sentGmail, sentSheet);\nconst room = Math.max(0, cfg.dailyCap - sentToday);\nconst limit = cfg.dryRun ? cfg.perRunCap : Math.min(cfg.perRunCap, room);\nconst out = [];\nfor (const r of rows) {\n  if (out.length >= limit) break;\n  if (!isYes(r['Team Added']) || !isYes(r['Playbook Invite'])) continue;\n  if (!/^Profile created /.test(String(r['Playbook Invite Status'] || ''))) continue;\n  const rec = recipientOf(r);\n  if (!EMAIL_RE.test(rec.email)) continue;\n  if (cfg.testOnlyEmail && rec.email !== cfg.testOnlyEmail) continue;\n  out.push({ json: { row_number: r.row_number, name: String(r['Startup name'] || '').trim(), email: rec.email,\n    fullName: rec.name, sentToday } });\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "8fc9611a-1db3-4637-9cc6-7406acae5f37",
+      "name": "Loop Send",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1100,
+        700
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "373c8b1a-cf52-4432-a2f1-ecb6c7e92d12",
+      "name": "Gmail - Invite Already Sent?",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        800
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'in:sent to:' + $('Loop Send').first().json.email + ' subject:\"Playbook invite\"' }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "817e7549-df2a-4964-9e4b-db6d726462a0",
+      "name": "Build Invite Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        800
+      ],
+      "parameters": {
+        "jsCode": "const SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst SENDER = \"Iacopo Bon <i.bon@pnptc.com>\";\nconst PLAYBOOK = \"https://app.playbook.vc\";\nconst PARTNERS = \"https://www.plugandplaytechcenter.com/innovation-services/corporations/our-corporate-partners\";\nconst e = $('Loop Send').first().json;\nconst g = $input.first().json;\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst base = { row_number: e.row_number, name: e.name, email: e.email };\n// Hard block: any earlier \"Playbook invite\" email to this address in Gmail Sent (fail closed on errors).\nif (g.error || !g || typeof g !== 'object') return [{ json: { ...base, ok: false, reason: 'Gmail check failed - not sent' } }];\nif ((g.messages || []).length) return [{ json: { ...base, ok: false, reason: 'Blocked: a Playbook invite email to this address is already in Gmail Sent' } }];\nconst first = (String(e.fullName || '').split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\nconst greeting = /^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first) ? first : e.name + ' team';\nconst subject = 'Plug and Play - ' + e.name + ' Playbook invite';\nconst text = `Hi ${greeting},\\n\\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\\n\\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\\n\\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\\n\\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\\n\\nBest,\\n\\nIacopo`;\nconst html = `<p>Hi ${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href=\"${PLAYBOOK}\">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href=\"${PARTNERS}\">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;\nif (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(text + html + subject)) return [{ json: { ...base, ok: false, reason: 'Rendered email contains a placeholder' } }];\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\nconst mime = ['From: ' + SENDER, 'To: ' + e.email, 'Subject: =?UTF-8?B?' + b64(subject) + '?=', 'MIME-Version: 1.0',\n  'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n  '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n  '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),\n  '--' + boundary + '--', ''].join('\\r\\n');\nreturn [{ json: { ...base, ok: true, subject, htmlBody: html, sendBody: { raw: b64url(mime) } } }];\n"
+      }
+    },
+    {
+      "id": "576aeb3d-5cc9-4587-8d21-6251e9b805da",
+      "name": "Dry Run? (send)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        800
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "a2ec068c-bf57-474b-a540-404870cf1aed",
+              "leftValue": "={{ $('Config').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "59587a41-f2ce-4d85-b72a-d1bc096bf6e6",
+      "name": "Dry Preview Send",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        700
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Build Invite Email').first().json;\nreturn [{ json: { kind: 'send', row_number: e.row_number, name: e.name, email: e.email, ok: e.ok, reason: e.reason || '',\n  subject: e.subject || '', htmlBody: e.htmlBody || '' } }];\n"
+      }
+    },
+    {
+      "id": "082e5ba4-6690-4955-8d70-232833bbd96d",
+      "name": "Email OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        900
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "21db37df-ae2f-4d5a-a132-83e030137cd1",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "987e22c3-c6cc-42de-af54-44e8979232b7",
+      "name": "Claim Send Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        860
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Build Invite Email').first().json;\nreturn [{ json: { row_number: e.row_number, 'Playbook Invite Status': 'Sending ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "e73ec16a-c8c2-4af5-9a9f-686cf775c38b",
+      "name": "Pipeline - Claim Send",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2420,
+        860
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "b508583d-a28c-4067-9a25-06be46e8f54b",
+      "name": "Send Invite Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        860
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Build Invite Email').first().json.sendBody) }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "91677a05-6a63-4086-949e-dcd72c5edace",
+      "name": "Mark Invite Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        800
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Build Invite Email').first().json;\nconst g = $input.first().json;\nconst today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(new Date());\nreturn [{ json: { row_number: e.row_number, 'Playbook Invite Status': 'Sent ' + new Date().toISOString(),\n  'Date Playbook Invite': today, 'Playbook Invite Message ID': g.id || '' } }];\n"
+      }
+    },
+    {
+      "id": "b670cf15-f4d8-4ff5-848e-89d4f3ab06b0",
+      "name": "Mark Invite Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        960
+      ],
+      "parameters": {
+        "jsCode": "// Not retried automatically: check Gmail Sent, then set the status back to 'Profile created ...' to retry.\nconst e = $('Build Invite Email').first().json;\nconst err = $input.first().json.error;\nconst msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');\nreturn [{ json: { row_number: e.row_number, 'Playbook Invite Status': 'Send failed: ' + String(msg).slice(0, 150) } }];\n"
+      }
+    },
+    {
+      "id": "d6d9e788-4385-4a33-ac24-58ecb3773761",
+      "name": "Mark Invite Blocked",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        1060
+      ],
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nreturn [{ json: { row_number: e.row_number, 'Playbook Invite Status': e.reason + ' ' + new Date().toISOString() } }];\n"
+      }
+    },
+    {
+      "id": "64d4ac19-c4fe-4ada-b802-121053c2b9bd",
+      "name": "Pipeline - Write Send Result",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3080,
+        900
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc",
+          "mode": "list",
+          "cachedResultName": "Sourcing - N8N Cloud",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "114224284",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {
+          "handlingExtraData": "insertInNewColumn",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "c18b3138-4e97-4b6e-b5e4-dd96a4a6d824",
+      "name": "Build Dry-Run Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        1300
+      ],
+      "parameters": {
+        "jsCode": "if (!$('Config').first().json.dryRun) return [];\n// Nodes inside the loops run once per row: read every run, not only the last one.\nconst pick = n => { const all = []; for (let run = 0; run < 50; run++) { let items;\n  try { items = $(n).all(0, run); } catch (e) { break; } if (!items || !items.length) break;\n  all.push(...items.map(i => i.json)); } return all; };\nconst creates = pick('Dry Preview Create'), reviews = pick('Review Payload'), sends = pick('Dry Preview Send');\nif (!creates.length && !reviews.length && !sends.length) return [];\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nlet html = '<p><b>DRY RUN Playbook invite - niente creato su Playbook, nessuna email ai founder, niente scritto nel foglio.</b></p>';\nif (creates.length) html += '<h3>Profili che verrebbero creati</h3>' + creates.map(c => `<p><b>${esc(c.name)}</b> (riga ${c.row_number}, founder ${esc(c.email)})${c.domainNote ? ' - dominio email da aggiungere: ' + esc(c.domainNote) : ''}<br><i>${esc(c.create.one_liner)}</i><br>${esc(c.create.description)}<br>Paese: ${esc(c.countryName)} - Settore: ${esc(c.verticalNames.join(', '))}${c.create.hq_city ? ' - Citta: ' + esc(c.create.hq_city) : ''}</p>`).join('');\nif (reviews.length) html += '<h3>Da rivedere (nessun profilo)</h3><ul>' + reviews.map(r => `<li>${esc(r.name)} (riga ${r.row_number}): ${esc(r['Playbook Invite Status'])}</li>`).join('') + '</ul>';\nif (sends.length) html += '<h3>Email di invito</h3>' + sends.map(s => s.ok ? `<hr><p><b>To:</b> ${esc(s.email)}<br><b>Subject:</b> ${esc(s.subject)}</p>${s.htmlBody}` : `<p>${esc(s.name)} &lt;${esc(s.email)}&gt;: ${esc(s.reason)}</p>`).join('');\nreturn [{ json: { subject: `[DRY RUN] Playbook invite - ${creates.length} profili, ${reviews.length} da rivedere, ${sends.filter(s => s.ok).length} email`, html } }];\n"
+      }
+    },
+    {
+      "id": "f0ce17c5-8c38-4e79-880f-88e754642d49",
+      "name": "Send Digest to Me",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        1300
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "i.bon@pnptc.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "4a1e3630-a2ce-4b7c-8395-b27e7a69d2cd"
+    }
+  ],
+  "connections": {
+    "Playbook Invite Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Get Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Get Rows": {
+      "main": [
+        [
+          {
+            "node": "Reminder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Select Profiles To Create",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail - Invites Sent Today",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Dry-Run Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Profiles To Create": {
+      "main": [
+        [
+          {
+            "node": "Loop Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Create": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Claim Create Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Create Payload": {
+      "main": [
+        [
+          {
+            "node": "Live? (claim)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live? (claim)": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Claim Create",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Playbook - Search Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Claim Create": {
+      "main": [
+        [
+          {
+            "node": "Playbook - Search Domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playbook - Search Domain": {
+      "main": [
+        [
+          {
+            "node": "Pre-check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-check": {
+      "main": [
+        [
+          {
+            "node": "Pre-check OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-check OK?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Startup Homepage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Review Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Startup Homepage": {
+      "main": [
+        [
+          {
+            "node": "Playbook - List Countries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playbook - List Countries": {
+      "main": [
+        [
+          {
+            "node": "Playbook - List Verticals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playbook - List Verticals": {
+      "main": [
+        [
+          {
+            "node": "Build Profile Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Profile Prompt": {
+      "main": [
+        [
+          {
+            "node": "Prompt OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt OK?": {
+      "main": [
+        [
+          {
+            "node": "Call Claude",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Review Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Claude": {
+      "main": [
+        [
+          {
+            "node": "Validate Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Profile": {
+      "main": [
+        [
+          {
+            "node": "Profile OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profile OK?": {
+      "main": [
+        [
+          {
+            "node": "Dry Run? (create)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Review Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Run? (create)": {
+      "main": [
+        [
+          {
+            "node": "Dry Preview Create",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Playbook - Create Startup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Preview Create": {
+      "main": [
+        [
+          {
+            "node": "Loop Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playbook - Create Startup": {
+      "main": [
+        [
+          {
+            "node": "Parse Created Startup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Created Startup": {
+      "main": [
+        [
+          {
+            "node": "Created?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Created?": {
+      "main": [
+        [
+          {
+            "node": "Playbook - Set Logo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Review Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playbook - Set Logo": {
+      "main": [
+        [
+          {
+            "node": "Created Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Created Status": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Write Created": {
+      "main": [
+        [
+          {
+            "node": "Notify Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Created": {
+      "main": [
+        [
+          {
+            "node": "Email Me - Add Founder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Me - Add Founder": {
+      "main": [
+        [
+          {
+            "node": "Loop Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Payload": {
+      "main": [
+        [
+          {
+            "node": "Live? (review)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live? (review)": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Write Review": {
+      "main": [
+        [
+          {
+            "node": "Notify Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Review": {
+      "main": [
+        [
+          {
+            "node": "Email Me - Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Me - Review": {
+      "main": [
+        [
+          {
+            "node": "Loop Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Invites Sent Today": {
+      "main": [
+        [
+          {
+            "node": "Select Emails To Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Emails To Send": {
+      "main": [
+        [
+          {
+            "node": "Loop Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Send": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gmail - Invite Already Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Invite Already Sent?": {
+      "main": [
+        [
+          {
+            "node": "Build Invite Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Invite Email": {
+      "main": [
+        [
+          {
+            "node": "Dry Run? (send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Run? (send)": {
+      "main": [
+        [
+          {
+            "node": "Dry Preview Send",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dry Preview Send": {
+      "main": [
+        [
+          {
+            "node": "Loop Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email OK?": {
+      "main": [
+        [
+          {
+            "node": "Claim Send Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Invite Blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Send Payload": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Claim Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Claim Send": {
+      "main": [
+        [
+          {
+            "node": "Send Invite Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Invite Email": {
+      "main": [
+        [
+          {
+            "node": "Mark Invite Sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Invite Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Invite Sent": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Send Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Invite Failed": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Send Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Invite Blocked": {
+      "main": [
+        [
+          {
+            "node": "Pipeline - Write Send Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pipeline - Write Send Result": {
+      "main": [
+        [
+          {
+            "node": "Loop Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Dry-Run Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Digest to Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Rome",
+    "errorWorkflow": "kWaALs0g5noG4ly4"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "76383ae2-687c-4d0d-91dc-fadba79c5209",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-11-03T10:41:36.378Z",
+      "createdAt": "2026-11-03T10:41:36.378Z",
+      "role": "workflow:owner",
+      "workflowId": "HhIgZ9AEW5r0XxPB",
+      "projectId": "0Xc2vqh3ay8XF9p7",
+      "project": {
+        "updatedAt": "2026-09-17T14:57:31.253Z",
+        "createdAt": "2026-09-17T14:56:30.296Z",
+        "id": "0Xc2vqh3ay8XF9p7",
+        "name": "Iacopo Bon <i.bon@pnptc.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": null
+}
