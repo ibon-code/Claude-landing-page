@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T16:08:19.987Z",
+  "updatedAt": "2026-11-04T16:11:48.907Z",
   "createdAt": "2026-10-19T09:53:06.440Z",
   "id": "kWaALs0g5noG4ly4",
   "name": "Util - Error Alert",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "be4e34cd-280f-46ba-8eb1-504d98b09afd",
+      "id": "7a43cc6a-dc72-4358-895c-c71643f6a881",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -19,7 +19,7 @@
       "parameters": {}
     },
     {
-      "id": "ed6bf3f9-d192-4de7-9e10-1b01ef2e010f",
+      "id": "53f94628-557b-4010-8b4d-2b49230b6d18",
       "name": "Build Alert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -32,7 +32,7 @@
       }
     },
     {
-      "id": "94f311e6-377d-4762-8c7d-d43bc8a25e02",
+      "id": "2d138e69-9174-4fbf-b313-fe157e2adcb6",
       "name": "Email Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -60,7 +60,7 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000,
-      "webhookId": "17132ab6-97a6-46fb-ba39-4ae8174e9797"
+      "webhookId": "e8886311-272d-4761-aad6-4faa44c114fc"
     }
   ],
   "connections": {
@@ -94,9 +94,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "589fa95c-c322-42cc-8384-559385554f98",
+  "versionId": "ce4e0b67-6abe-4bf5-b5cc-ee27da0de844",
   "activeVersionId": null,
-  "versionCounter": 7,
+  "versionCounter": 8,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],
