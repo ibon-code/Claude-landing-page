@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T15:55:51.978Z",
+  "updatedAt": "2026-11-04T16:08:23.933Z",
   "createdAt": "2026-11-02T16:26:58.779Z",
   "id": "bGP5LlHKC9miEcps",
   "name": "Pipeline - Follow-up",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "faac276d-f887-468f-a4e4-8a41782b3832",
+      "id": "1932fa29-15ef-437b-b5d4-b61704b87868",
       "name": "Follow-up Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "b68df91a-e6a7-44cb-b751-8739f598546e",
+      "id": "380bd22e-8389-4ea1-b1ec-521d0fd83a70",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -37,11 +37,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const DRY_RUN = true;\nconst TEST_ONLY_EMAIL = null;\nconst FOLLOWUP_DAYS = TEST_ONLY_EMAIL ? 0 : 7;\nconst DAILY_CAP = 20;\nconst PER_RUN_CAP = 3;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;\nif (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, followupDays: FOLLOWUP_DAYS,\n  dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP, today, dayStartEpoch } }];\n"
+        "jsCode": "const DRY_RUN = false;\nconst TEST_ONLY_EMAIL = null;\nconst FOLLOWUP_DAYS = TEST_ONLY_EMAIL ? 0 : 7;\nconst DAILY_CAP = 20;\nconst PER_RUN_CAP = 3;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;\nif (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, followupDays: FOLLOWUP_DAYS,\n  dailyCap: DAILY_CAP, perRunCap: PER_RUN_CAP, today, dayStartEpoch } }];\n"
       }
     },
     {
-      "id": "8543b987-56ce-48c6-af00-fa378e4015f3",
+      "id": "471e9d6a-59b4-40bb-abe9-3e188782a2a3",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "814661ed-babb-40bb-aaf5-d4e65ad26e63",
+      "id": "22044b9e-9b42-4e1f-af0a-5851bdc7e8b8",
       "name": "Gmail - Follow-ups Sent Today",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -115,7 +115,7 @@
       "executeOnce": true
     },
     {
-      "id": "47b60650-c69e-40dc-b05a-4c55b19f4143",
+      "id": "92cc8459-6dc4-4e16-beca-ee2bfc124b52",
       "name": "Select Follow-up Candidates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -128,7 +128,7 @@
       }
     },
     {
-      "id": "58e1e2db-6d37-475f-a155-a1343c14eaed",
+      "id": "21906e31-0db6-4832-9825-0f6a76bd255a",
       "name": "Gmail - Get Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -155,7 +155,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "2c4f2f60-66d4-4a06-adc3-c4f30df790e2",
+      "id": "e3d393b8-c96e-4057-80d1-d39f49fcaa2f",
       "name": "Gmail - Sent To Address",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -195,7 +195,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "0a7d7801-bd1b-4957-965b-8a68a4b39732",
+      "id": "1ff1ccad-a3a1-48d9-8434-610a607a6d04",
       "name": "Gmail - Messages From Startup",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -235,7 +235,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "ada48578-8b4b-4a5b-9519-1840383cf843",
+      "id": "5aefd55b-4b66-4681-9c30-cba5550b095c",
       "name": "Gmail - Bounces",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -275,7 +275,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "762c3eb1-07bc-453b-942d-b0fd79b44aeb",
+      "id": "209ef909-250d-4c3a-af8c-4bcdcc0a23fd",
       "name": "Gmail - Signs of Life",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -315,7 +315,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "73949951-c8be-42b4-9bf2-75eb2d7ce036",
+      "id": "7af5214e-f8c3-4471-98f5-4aff4866d5ec",
       "name": "Evaluate Follow-ups",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -328,7 +328,7 @@
       }
     },
     {
-      "id": "9b446f98-103a-4cad-8549-0ac8721bcff5",
+      "id": "1e48f6da-4034-4a8e-b055-2cd32962602c",
       "name": "Dry Run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -345,7 +345,7 @@
           },
           "conditions": [
             {
-              "id": "2359eb7f-23b6-4527-aeab-4becfdf25a77",
+              "id": "d8e3341c-32f4-4b60-a71c-a753b05c6471",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -361,7 +361,7 @@
       }
     },
     {
-      "id": "ef8fc8fb-4daa-4ed4-bfbc-b295bd1d4ccf",
+      "id": "c86937d7-fdcb-4605-a607-42264a019dcb",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -374,7 +374,7 @@
       }
     },
     {
-      "id": "be1de863-51b7-4973-b21b-e5175928a6e4",
+      "id": "dbe06fad-9bc6-4e0d-8852-80c5911bb7be",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -399,10 +399,10 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "66492583-f305-4de0-b694-af7db37aaf2c"
+      "webhookId": "23d6d16f-64bd-4940-a7bc-c04714f0431d"
     },
     {
-      "id": "565d69ca-fef2-4c75-ad5b-7f7538ab6728",
+      "id": "0db1c345-ad9d-4a10-a4cb-511b740304d3",
       "name": "Send?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -419,7 +419,7 @@
           },
           "conditions": [
             {
-              "id": "2d2d1525-7cc7-4b15-bcfa-b67f4854978b",
+              "id": "ed0ceb51-7e78-4534-a2cb-355fe8f6e40c",
               "leftValue": "={{ $json.action }}",
               "rightValue": "send",
               "operator": {
@@ -434,7 +434,7 @@
       }
     },
     {
-      "id": "c8141035-673a-4f89-b905-7d0e1e272f42",
+      "id": "e5119f7e-591b-4ec1-834b-f6175d586749",
       "name": "Stop / Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -447,7 +447,7 @@
       }
     },
     {
-      "id": "d65fc510-eff6-4d0c-bce3-570ce6b9b115",
+      "id": "3232c8e3-61d2-45ee-af81-8f142ab48453",
       "name": "Pipeline - Write Stop Status",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -493,7 +493,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "de8bceec-e37c-40c2-935e-0f3c05c1d08e",
+      "id": "d3bfa4be-31fa-46c2-9c51-137950ba3ab2",
       "name": "Loop Over Follow-ups",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -507,7 +507,7 @@
       }
     },
     {
-      "id": "47a746fe-3d01-4f4e-bb1a-cbbbd5d26d8d",
+      "id": "48c86ef9-f33f-4b93-b21d-93993281af80",
       "name": "Claim Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -520,7 +520,7 @@
       }
     },
     {
-      "id": "a575b489-913f-4715-812f-10796233e517",
+      "id": "004fc39a-118d-44d7-9718-8941b0ddc7df",
       "name": "Pipeline - Claim Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -566,7 +566,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "64d80daf-6a4e-4fd6-b0e7-e2a71d292072",
+      "id": "c7c0cdb3-07cd-4c0a-bc8b-20a8f4e687b8",
       "name": "Gmail - Sent To Address (again)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -606,7 +606,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "5384af7e-00a0-4cab-8fab-811681567dea",
+      "id": "fbdaf5e4-b481-49f8-b7c7-b721476e1a18",
       "name": "Re-check Sent Count",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -619,7 +619,7 @@
       }
     },
     {
-      "id": "68cc09e9-a88a-45da-bc33-22bb04f90787",
+      "id": "df36eb78-b8f1-49d6-8071-020e9ec491d4",
       "name": "Still Exactly One?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -636,7 +636,7 @@
           },
           "conditions": [
             {
-              "id": "0ffb3aab-1e01-424d-a266-3608a1e1a68a",
+              "id": "c25a93e0-db55-4a64-bfc8-e30a71c05154",
               "leftValue": "={{ $json.okToSend }}",
               "rightValue": "",
               "operator": {
@@ -652,7 +652,7 @@
       }
     },
     {
-      "id": "4556816f-5e22-4766-9e10-5d92d4cdc5d6",
+      "id": "d58607b5-82b7-441e-8e8e-42aee6133a0c",
       "name": "Mark Blocked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -665,7 +665,7 @@
       }
     },
     {
-      "id": "2ca75cde-8529-478f-9c1d-4ba958cef701",
+      "id": "13991c9a-4de4-4a5f-a491-d794743bfb55",
       "name": "Send Follow-up",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -692,7 +692,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "9b42de8d-99a7-4e37-b213-34cba567f036",
+      "id": "9ed0a984-2787-4b88-a204-e8768b823e8a",
       "name": "Mark Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -705,7 +705,7 @@
       }
     },
     {
-      "id": "2922e305-ad51-443a-9ec4-c0911956c8ed",
+      "id": "a911c1fe-994c-4262-8466-6bfa2db10fee",
       "name": "Mark Send Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -718,7 +718,7 @@
       }
     },
     {
-      "id": "06c56433-eec9-4e61-a945-b2fae277c813",
+      "id": "ed08f6a0-e918-4b9b-a166-b322320ba55e",
       "name": "Pipeline - Write Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -1090,9 +1090,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "2355ef23-8e32-4dbf-af00-a6607a72da89",
+  "versionId": "bc203e1e-a5d2-4ae1-b819-2610d9208aab",
   "activeVersionId": null,
-  "versionCounter": 5,
+  "versionCounter": 6,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],
