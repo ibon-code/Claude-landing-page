@@ -8,7 +8,7 @@ Guardrails (agreed with the user 2026-10-19):
   (fail closed: a missing mark can never cause a second email).
 - Right before each send, Gmail Sent is searched for the same recipient + subject; a hit marks the row
   instead of sending again.
-- Greeting is deterministic (first name from 'Full Name', or '<Startup> team' for generic inboxes /
+- Greeting is deterministic ('Hi <first name>' from 'Full Name', or "Dear <Startup>'s team" for generic inboxes /
   no usable name). Claude only picks industry + partners, and partners must be real names from
   pnp_partners_reference.json. Any rendered email containing undefined/null/{{ is rejected.
 - Rows that fail validation get 'Outreach Status' = 'Needs review: ...' (clear the cell to retry).
@@ -38,6 +38,10 @@ ALERT_NAME = "Util - Error Alert"
 ME = "i.bon@pnptc.com"
 
 PARTNERS = json.load(open(os.path.join(ROOT, "pnp_partners_reference.json")))
+# Partners the user does not want named in outreach emails (2026-11-04).
+EXCLUDED_PARTNERS = {"Cirrus Logic", "European Space Agency"}
+PARTNERS = {k: [p for p in v if p not in EXCLUDED_PARTNERS] for k, v in PARTNERS.items()}
+PARTNERS = {k: v for k, v in PARTNERS.items() if v}
 DOC = {"__rl": True, "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc", "mode": "list",
        "cachedResultName": "Sourcing - N8N Cloud",
        "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"}
@@ -198,12 +202,16 @@ $input.all().forEach((item, i) => {
     if (descMatch) parts.push(stripTags(descMatch[1]));
     siteSummary = parts.join(' — ').slice(0, 400);
   }
+  // Bot walls / empty pages are not a description of the startup.
+  if (siteSummary.replace(/&#\d+;|&\w+;/g, '').trim().length < 20
+      || /just a moment|attention required|access denied|enable javascript|checking your browser|403 forbidden|404 not found/i.test(siteSummary)) siteSummary = '';
   const prompt = "You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\n\n"
     + JSON.stringify(PARTNERS)
     + "\n\nStartup: " + orig.name + "\nWebsite: " + orig.website + "\n"
     + "What the startup's own homepage says about itself: " + (siteSummary || 'not available') + "\n"
     + "Founder/contact title: " + (orig.jobTitle || 'unknown') + "\n\n"
-    + "Base the industry classification primarily on what the homepage says, not on the company name alone.\n"
+    + "Base the industry classification primarily on what the homepage says, not on the company name alone. "
+    + "If the homepage text is not available, classify from the startup name and website domain. Always answer with the JSON, never with a question or an apology.\n"
     + 'Return ONLY JSON (no prose, no markdown fences): {"industry": "...", "partners": "..."}\n'
     + "industry: a natural, human-readable phrase for the vertical (e.g. \"mobility and physical AI\"), not the all-caps category label.\n"
     + 'partners: 1-2 partner names copied EXACTLY as written in the list, joined with " and ", e.g. "BMW Group and Bosch Germany" or "PepsiCo".';
@@ -218,12 +226,20 @@ email_js = ("const PARTNERS = " + json.dumps(PARTNERS) + ";\n"
 const ALL_PARTNERS = [...new Set(Object.values(PARTNERS).flat())].sort((a, b) => b.length - a.length);
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+// Generic inbox or no usable first name: "Dear <Startup>'s team" (legal suffix and tagline dropped).
+function teamOf(name) {
+  const full = String(name || '').trim();
+  let n = full.split(/\s+[-|–—:]\s+/)[0];
+  n = n.replace(/[,\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\.l|srl|bv|b\.v|ab|oy|corp|corporation|co)\.?$/i, '').trim().replace(/[,.]+$/, '');
+  n = n || full;
+  return n + (/s$/i.test(n) ? "'" : "'s") + ' team';
+}
 function greetingFor(c) {
-  if (c.generic) return c.name + ' team';
+  if (c.generic) return 'Dear ' + teamOf(c.name);
   const first = (c.fullName.split(/\s+/)[0] || '').replace(/[,.]+$/, '');
-  if (!/^\p{L}[\p{L}'’-]{1,24}$/u.test(first)) return c.name + ' team';
+  if (!/^\p{L}[\p{L}'’-]{1,24}$/u.test(first)) return 'Dear ' + teamOf(c.name);
   const isOneCase = first === first.toUpperCase() || first === first.toLowerCase();
-  return isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first;
+  return 'Hi ' + (isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first);
 }
 function checkPartners(p) {
   let rest = String(p || ''); let found = 0;
@@ -251,7 +267,7 @@ $input.all().forEach((item, i) => {
 
   const greeting = greetingFor(c);
   const subject = 'Plug and Play <> ' + c.name;
-  const html = "<p>Hi " + esc(greeting) + ",</p><p>I came across " + esc(c.name) + " while mapping out startups in the " + esc(industry) + " space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In " + esc(industry) + " that includes " + esc(partners) + ".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\"" + CALENDLY_LINK + "\">" + CALENDLY_LINK + "</a></p><p>Best,</p>" + SIGNATURE_HTML;
+  const html = "<p>" + esc(greeting) + ",</p><p>I came across " + esc(c.name) + " while mapping out startups in the " + esc(industry) + " space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In " + esc(industry) + " that includes " + esc(partners) + ".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\"" + CALENDLY_LINK + "\">" + CALENDLY_LINK + "</a></p><p>Best,</p>" + SIGNATURE_HTML;
   if (/undefined|\bnull\b|NaN|\{\{|\}\}/.test(html + subject)) {
     out.push({ json: { ...base, valid: false, reason: 'Rendered email contains a placeholder' } }); return;
   }

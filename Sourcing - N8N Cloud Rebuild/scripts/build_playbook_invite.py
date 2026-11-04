@@ -348,10 +348,18 @@ const base = { row_number: e.row_number, name: e.name, email: e.email };
 if (g.error || !g || typeof g !== 'object') return [{ json: { ...base, ok: false, reason: 'Gmail check failed - not sent' } }];
 if ((g.messages || []).length) return [{ json: { ...base, ok: false, reason: 'Blocked: a Playbook invite email to this address is already in Gmail Sent' } }];
 const first = (String(e.fullName || '').split(/\s+/)[0] || '').replace(/[,.]+$/, '');
-const greeting = /^\p{L}[\p{L}'’-]{1,24}$/u.test(first) ? first : e.name + ' team';
+// Generic inbox or no usable first name: "Dear <Startup>'s team" (legal suffix and tagline dropped).
+function teamOf(name) {
+  const full = String(name || '').trim();
+  let n = full.split(/\s+[-|–—:]\s+/)[0];
+  n = n.replace(/[,\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\.l|srl|bv|b\.v|ab|oy|corp|corporation|co)\.?$/i, '').trim().replace(/[,.]+$/, '');
+  n = n || full;
+  return n + (/s$/i.test(n) ? "'" : "'s") + ' team';
+}
+const greeting = /^\p{L}[\p{L}'’-]{1,24}$/u.test(first) ? 'Hi ' + first : 'Dear ' + teamOf(e.name);
 const subject = 'Plug and Play - ' + e.name + ' Playbook invite';
-const text = `Hi ${greeting},\n\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\n\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\n\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\n\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\n\nBest,\n\nIacopo`;
-const html = `<p>Hi ${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href="${PLAYBOOK}">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href="${PARTNERS}">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;
+const text = `${greeting},\n\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\n\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\n\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\n\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\n\nBest,\n\nIacopo`;
+const html = `<p>${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href="${PLAYBOOK}">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href="${PARTNERS}">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;
 if (/undefined|\bnull\b|NaN|\{\{|\}\}/.test(text + html + subject)) return [{ json: { ...base, ok: false, reason: 'Rendered email contains a placeholder' } }];
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 const b64url = s => b64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

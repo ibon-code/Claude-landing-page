@@ -181,13 +181,21 @@ const GENERIC = new Set(['info', 'contact', 'contacts', 'hello', 'hi', 'hey', 't
   'sales', 'press', 'media', 'marketing', 'hr', 'jobs', 'careers', 'enquiries', 'inquiries', 'enquiry', 'inquiry',
   'general', 'mail', 'email', 'founders', 'partnerships', 'partners', 'bd', 'business', 'ciao', 'hola', 'kontakt',
   'contatti', 'investors', 'ir', 'help', 'service', 'welcome']);
+// Generic inbox or no usable first name: "Dear <Startup>'s team" (legal suffix and tagline dropped).
+function teamOf(name) {
+  const full = String(name || '').trim();
+  let n = full.split(/\s+[-|–—:]\s+/)[0];
+  n = n.replace(/[,\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\.l|srl|bv|b\.v|ab|oy|corp|corporation|co)\.?$/i, '').trim().replace(/[,.]+$/, '');
+  n = n || full;
+  return n + (/s$/i.test(n) ? "'" : "'s") + ' team';
+}
 function greetingFor(c) {
   const local = c.email.split('@')[0].replace(/[0-9]+$/, '');
-  if (GENERIC.has(local)) return c.name + ' team';
+  if (GENERIC.has(local)) return 'Dear ' + teamOf(c.name);
   const first = (c.fullName.split(/\s+/)[0] || '').replace(/[,.]+$/, '');
-  if (!/^\p{L}[\p{L}'’-]{1,24}$/u.test(first)) return c.name + ' team';
+  if (!/^\p{L}[\p{L}'’-]{1,24}$/u.test(first)) return 'Dear ' + teamOf(c.name);
   const oneCase = first === first.toUpperCase() || first === first.toLowerCase();
-  return oneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first;
+  return 'Hi ' + (oneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first);
 }
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 const b64url = s => b64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -223,8 +231,8 @@ cands.forEach((it, i) => {
   if (!(days >= cfg.followupDays)) return wait('Only ' + days.toFixed(1) + ' days since the first email');
 
   const greeting = greetingFor(c);
-  const text = `Hi ${greeting},\n\nBumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${c.name}, and see if there's potential alignment with our corporate network at Plug and Play.\n\nOpen to a quick chat? Feel free to reply directly or grab a slot here: ${CALENDLY}\n\nBest,\n\nIacopo`;
-  const html = `<p>Hi ${esc(greeting)},</p><p>Bumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${esc(c.name)}, and see if there's potential alignment with our corporate network at Plug and Play.</p><p>Open to a quick chat? Feel free to reply directly or grab a slot here: <a href="${CALENDLY}">${CALENDLY}</a></p><p>Best,</p>` + SIGNATURE_HTML;
+  const text = `${greeting},\n\nBumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${c.name}, and see if there's potential alignment with our corporate network at Plug and Play.\n\nOpen to a quick chat? Feel free to reply directly or grab a slot here: ${CALENDLY}\n\nBest,\n\nIacopo`;
+  const html = `<p>${esc(greeting)},</p><p>Bumping this in case it got buried. Still keen to grab 10 minutes, hear what you're building at ${esc(c.name)}, and see if there's potential alignment with our corporate network at Plug and Play.</p><p>Open to a quick chat? Feel free to reply directly or grab a slot here: <a href="${CALENDLY}">${CALENDLY}</a></p><p>Best,</p>` + SIGNATURE_HTML;
   if (/undefined|\bnull\b|NaN|\{\{|\}\}/.test(text + html + subject)) return review('Rendered follow-up contains a placeholder');
   const reSubject = 'Re: ' + subject;
   const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();

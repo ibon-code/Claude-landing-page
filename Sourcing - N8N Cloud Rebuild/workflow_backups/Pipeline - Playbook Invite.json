@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-03T10:41:36.378Z",
+  "updatedAt": "2026-11-04T15:55:55.695Z",
   "createdAt": "2026-11-03T10:41:36.378Z",
   "id": "HhIgZ9AEW5r0XxPB",
   "name": "Pipeline - Playbook Invite",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "852e2f31-e4af-4463-8441-4e968759ea73",
+      "id": "a83ca2e5-11b1-4c54-a1fb-96231ed9b7eb",
       "name": "Playbook Invite Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "1a4eba2f-2bdb-47ff-8df8-a8711ca6ef22",
+      "id": "0d4a4027-56ee-4226-84f6-0ef24dbb9df3",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -41,7 +41,7 @@
       }
     },
     {
-      "id": "f39315e4-c231-4128-89bb-51250ff3f473",
+      "id": "372c7234-3207-4474-be3f-9bf2a07e3638",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "810ee50f-9b73-41ab-85b0-9c953b1e576d",
+      "id": "2f8fbcc4-d20d-4b60-9aa0-63bd050f279f",
       "name": "Reminder",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -88,7 +88,7 @@
       }
     },
     {
-      "id": "7c15742c-14ad-4b68-b4ed-e7872da6e31d",
+      "id": "267e5fce-f718-4022-8a61-e565eb1f02c1",
       "name": "Send Reminder",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -114,10 +114,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "c4e4dfdc-6fbd-45ab-bc5f-c86fe754b825"
+      "webhookId": "d2aec3cf-ccfd-4f03-b64e-c499fa39db3d"
     },
     {
-      "id": "0041062d-0f2f-4fc6-9c5e-a54811c80db0",
+      "id": "952d6472-c634-473e-bd8b-287799a848a2",
       "name": "Select Profiles To Create",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -130,7 +130,7 @@
       }
     },
     {
-      "id": "85399962-4360-40ea-842e-9114a7db0d9f",
+      "id": "dc623cfb-85de-4894-bb0e-e9051e2ba5cd",
       "name": "Loop Create",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -144,7 +144,7 @@
       }
     },
     {
-      "id": "dbb0a051-50b1-44b5-8237-790738bf4ace",
+      "id": "c98d11fa-56be-4f0f-b287-0cfd68c00d49",
       "name": "Claim Create Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -157,7 +157,7 @@
       }
     },
     {
-      "id": "d4960988-51f5-4809-821f-922ace968c58",
+      "id": "345a44c8-edbf-43e0-b981-1fd570748618",
       "name": "Live? (claim)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -174,7 +174,7 @@
           },
           "conditions": [
             {
-              "id": "6b6001e1-233b-445b-a947-ba66d6e217b9",
+              "id": "1a3a6003-f5f2-4d08-b904-50d699d62604",
               "leftValue": "={{ !$('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -190,7 +190,7 @@
       }
     },
     {
-      "id": "a9b53e7c-75c8-4c6c-b72f-6f0bb0636a03",
+      "id": "a6325de3-721e-4517-9c50-cbc8ec61a770",
       "name": "Pipeline - Claim Create",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -236,7 +236,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "3f91284a-34e8-4d2a-ba32-d62306be76b5",
+      "id": "d5acbb38-5a07-4153-b691-f555d5dabc45",
       "name": "Playbook - Search Domain",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -269,7 +269,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "21ef23aa-fc4a-4018-b82b-b7438bf154f6",
+      "id": "a1df7d56-dba5-4274-9861-038b1d19e006",
       "name": "Pre-check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -282,7 +282,7 @@
       }
     },
     {
-      "id": "d686ad33-5e54-4b00-9d3f-baca3b6394ec",
+      "id": "0e4d1124-c631-4b7a-8ffc-6deb42c0734c",
       "name": "Pre-check OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -299,7 +299,7 @@
           },
           "conditions": [
             {
-              "id": "1f61389d-bb32-4845-aecc-ec4ca799bcbe",
+              "id": "bc4c97f0-c666-4b64-89b9-65ea94830406",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -315,7 +315,7 @@
       }
     },
     {
-      "id": "6123f86a-d317-46b5-85a8-b8de92378c63",
+      "id": "da0a957f-349c-43de-a12c-bcd1902e8281",
       "name": "Fetch Startup Homepage",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -347,7 +347,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "a735e8b4-89a1-48d8-9a20-ddd12577989d",
+      "id": "4d244a33-c128-4a72-b839-f4963428e2d2",
       "name": "Playbook - List Countries",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -380,7 +380,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "8fe6b8f2-76d8-4670-84b8-dd997f7adbbc",
+      "id": "6c212c7f-5240-478e-9767-603fcafc219d",
       "name": "Playbook - List Verticals",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -413,7 +413,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "ddc3906d-e55e-49bd-b6f1-f892319e78e9",
+      "id": "4318c141-615c-45e9-bb08-85adb6ea60d0",
       "name": "Build Profile Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -426,7 +426,7 @@
       }
     },
     {
-      "id": "a3d05779-00af-4e30-8e3a-d8e35edb0bfd",
+      "id": "52473d18-d68b-47a9-9cd2-e8051b9393f8",
       "name": "Prompt OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -443,7 +443,7 @@
           },
           "conditions": [
             {
-              "id": "ef1c1593-0448-4e94-8d5f-ba8aa4d4cfca",
+              "id": "6e130dd5-8bd7-484c-85fe-6a802929cf4d",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -459,7 +459,7 @@
       }
     },
     {
-      "id": "2b0a47ed-7a47-4845-8be5-8d93f9714906",
+      "id": "73a76d27-a475-4155-a8e2-6eb6daa8bc49",
       "name": "Call Claude",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
@@ -489,7 +489,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "c82b75b0-d4e8-4450-ae9b-2c1398bcafc8",
+      "id": "f783d33d-17b8-4d5a-95bd-d1333b9b0cb1",
       "name": "Validate Profile",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -502,7 +502,7 @@
       }
     },
     {
-      "id": "403cacb7-0841-480b-9b7f-c4ff7bc9bfd7",
+      "id": "999ca6cc-a19c-4ce1-916c-fe8af49236d0",
       "name": "Profile OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -519,7 +519,7 @@
           },
           "conditions": [
             {
-              "id": "61c69b16-d312-477c-ba5b-9b7871615974",
+              "id": "ff3496d0-6bb5-48b1-ba9f-997aed99acef",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -535,7 +535,7 @@
       }
     },
     {
-      "id": "71f17324-6099-4720-a0ac-4a8ce73b2af4",
+      "id": "768c5572-4dd1-4a8d-8907-6b8816db95ac",
       "name": "Dry Run? (create)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -552,7 +552,7 @@
           },
           "conditions": [
             {
-              "id": "082a430b-e90b-46d9-8f11-bf88a2fe9d22",
+              "id": "abeaa6cc-932d-4847-9d6d-a1dd742c318b",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -568,7 +568,7 @@
       }
     },
     {
-      "id": "71f75acb-7736-493b-bf89-1cad76b367b1",
+      "id": "1d8c7f9a-0458-48ac-92bb-f19582e19273",
       "name": "Dry Preview Create",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -581,7 +581,7 @@
       }
     },
     {
-      "id": "4520e60d-7e45-463c-ad5f-73ab765b83e1",
+      "id": "6ea1b635-22e3-4597-82d8-955363cb0fe2",
       "name": "Playbook - Create Startup",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -614,7 +614,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "e11df652-2e83-49b2-94b7-829bc886e9ba",
+      "id": "55d57760-557d-4915-9214-d677d23ff9fe",
       "name": "Parse Created Startup",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -627,7 +627,7 @@
       }
     },
     {
-      "id": "0d130862-aa65-438b-937e-0a5348ebc26e",
+      "id": "a2179ebd-3a5c-4465-8296-1764967c77bf",
       "name": "Created?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -644,7 +644,7 @@
           },
           "conditions": [
             {
-              "id": "3a5c55cf-16ad-41aa-9639-9fb10140a43c",
+              "id": "60d1439a-fde3-4337-8e9d-967017368486",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -660,7 +660,7 @@
       }
     },
     {
-      "id": "c16aea8b-c3f6-45d0-a6a8-7f9ddb502ef7",
+      "id": "5597063c-61c9-4579-98c7-768bd63cb16c",
       "name": "Playbook - Set Logo",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -693,7 +693,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "6fdaa8fc-839b-4981-9296-d38bb87e3fbc",
+      "id": "976488f3-570a-459c-acf5-dbb599d2b159",
       "name": "Created Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -706,7 +706,7 @@
       }
     },
     {
-      "id": "34d1edbd-808a-41ae-9bb6-6f951d0b666f",
+      "id": "7940210e-5056-4615-a964-b27fb4c16952",
       "name": "Pipeline - Write Created",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -752,7 +752,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "88c11213-fcb0-4e2a-bd25-09b8c4052b3c",
+      "id": "e20cafcb-2fa4-4752-9722-23865388d8f0",
       "name": "Notify Created",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -765,7 +765,7 @@
       }
     },
     {
-      "id": "97306bf3-fb08-4e6c-a3d2-9963081837e4",
+      "id": "b45952c1-d83c-4688-a7f2-d1d833f32286",
       "name": "Email Me - Add Founder",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -791,10 +791,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "d828b360-adb5-4779-8d43-dbcf9178b2ec"
+      "webhookId": "1937d42f-09d3-4390-9ed6-68b8d638bd14"
     },
     {
-      "id": "95db463f-69c0-4cf4-accf-2f2e4ee690b8",
+      "id": "29bf34c5-6545-4a9f-8bb4-7173a215c440",
       "name": "Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -807,7 +807,7 @@
       }
     },
     {
-      "id": "a1652458-9819-455e-bcae-510492d4ae38",
+      "id": "2e9c713a-ab32-4ff0-b1b9-5c2ef3d6099f",
       "name": "Live? (review)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -824,7 +824,7 @@
           },
           "conditions": [
             {
-              "id": "b3040d06-144a-45af-8269-a0c10c823c0f",
+              "id": "77cff33a-2097-4f7d-9d6b-65e9c73469de",
               "leftValue": "={{ !$('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -840,7 +840,7 @@
       }
     },
     {
-      "id": "69d564e1-7e98-4fe1-ad33-a06e95ac1937",
+      "id": "de97d32e-5d20-482e-b96e-b86ac9e32127",
       "name": "Pipeline - Write Review",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -886,7 +886,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "ad9ad1fe-a33d-4896-abe4-7bd58e80e61d",
+      "id": "c413c345-db8e-42ac-9379-f0ea627e8d76",
       "name": "Notify Review",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -899,7 +899,7 @@
       }
     },
     {
-      "id": "f1525b4b-63ac-4e01-91a6-9d6dfc170e1a",
+      "id": "f925a827-355d-4038-9cb4-91ee6763042b",
       "name": "Email Me - Review",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -925,10 +925,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "2a45fdf6-5afd-45fb-ae70-6890e1ca067a"
+      "webhookId": "092d67b7-b3f0-4ebb-aca2-e24993ed7d38"
     },
     {
-      "id": "fa5b45ed-b2fd-41d4-a45c-97aa6f41c4ff",
+      "id": "e0e9920c-79d9-4e06-ab5d-ac491a79550d",
       "name": "Gmail - Invites Sent Today",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -968,7 +968,7 @@
       "executeOnce": true
     },
     {
-      "id": "189591a8-eff7-4892-9b87-662e36a37a46",
+      "id": "d83f965d-4e1f-4a40-8755-75177b9007c4",
       "name": "Select Emails To Send",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -981,7 +981,7 @@
       }
     },
     {
-      "id": "8fc9611a-1db3-4637-9cc6-7406acae5f37",
+      "id": "007acd77-8a9c-4cef-9293-b8bbbafee8b5",
       "name": "Loop Send",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -995,7 +995,7 @@
       }
     },
     {
-      "id": "373c8b1a-cf52-4432-a2f1-ecb6c7e92d12",
+      "id": "3edbb6fc-158c-4845-be2b-06216f65fcc7",
       "name": "Gmail - Invite Already Sent?",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1035,7 +1035,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "817e7549-df2a-4964-9e4b-db6d726462a0",
+      "id": "7c9a369f-7f19-4fbd-9660-1f8491736a6d",
       "name": "Build Invite Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1044,11 +1044,11 @@
         800
       ],
       "parameters": {
-        "jsCode": "const SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst SENDER = \"Iacopo Bon <i.bon@pnptc.com>\";\nconst PLAYBOOK = \"https://app.playbook.vc\";\nconst PARTNERS = \"https://www.plugandplaytechcenter.com/innovation-services/corporations/our-corporate-partners\";\nconst e = $('Loop Send').first().json;\nconst g = $input.first().json;\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst base = { row_number: e.row_number, name: e.name, email: e.email };\n// Hard block: any earlier \"Playbook invite\" email to this address in Gmail Sent (fail closed on errors).\nif (g.error || !g || typeof g !== 'object') return [{ json: { ...base, ok: false, reason: 'Gmail check failed - not sent' } }];\nif ((g.messages || []).length) return [{ json: { ...base, ok: false, reason: 'Blocked: a Playbook invite email to this address is already in Gmail Sent' } }];\nconst first = (String(e.fullName || '').split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\nconst greeting = /^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first) ? first : e.name + ' team';\nconst subject = 'Plug and Play - ' + e.name + ' Playbook invite';\nconst text = `Hi ${greeting},\\n\\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\\n\\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\\n\\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\\n\\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\\n\\nBest,\\n\\nIacopo`;\nconst html = `<p>Hi ${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href=\"${PLAYBOOK}\">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href=\"${PARTNERS}\">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;\nif (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(text + html + subject)) return [{ json: { ...base, ok: false, reason: 'Rendered email contains a placeholder' } }];\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\nconst mime = ['From: ' + SENDER, 'To: ' + e.email, 'Subject: =?UTF-8?B?' + b64(subject) + '?=', 'MIME-Version: 1.0',\n  'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n  '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n  '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),\n  '--' + boundary + '--', ''].join('\\r\\n');\nreturn [{ json: { ...base, ok: true, subject, htmlBody: html, sendBody: { raw: b64url(mime) } } }];\n"
+        "jsCode": "const SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst SENDER = \"Iacopo Bon <i.bon@pnptc.com>\";\nconst PLAYBOOK = \"https://app.playbook.vc\";\nconst PARTNERS = \"https://www.plugandplaytechcenter.com/innovation-services/corporations/our-corporate-partners\";\nconst e = $('Loop Send').first().json;\nconst g = $input.first().json;\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst base = { row_number: e.row_number, name: e.name, email: e.email };\n// Hard block: any earlier \"Playbook invite\" email to this address in Gmail Sent (fail closed on errors).\nif (g.error || !g || typeof g !== 'object') return [{ json: { ...base, ok: false, reason: 'Gmail check failed - not sent' } }];\nif ((g.messages || []).length) return [{ json: { ...base, ok: false, reason: 'Blocked: a Playbook invite email to this address is already in Gmail Sent' } }];\nconst first = (String(e.fullName || '').split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n// Generic inbox or no usable first name: \"Dear <Startup>'s team\" (legal suffix and tagline dropped).\nfunction teamOf(name) {\n  const full = String(name || '').trim();\n  let n = full.split(/\\s+[-|\u2013\u2014:]\\s+/)[0];\n  n = n.replace(/[,\\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\\.l|srl|bv|b\\.v|ab|oy|corp|corporation|co)\\.?$/i, '').trim().replace(/[,.]+$/, '');\n  n = n || full;\n  return n + (/s$/i.test(n) ? \"'\" : \"'s\") + ' team';\n}\nconst greeting = /^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first) ? 'Hi ' + first : 'Dear ' + teamOf(e.name);\nconst subject = 'Plug and Play - ' + e.name + ' Playbook invite';\nconst text = `${greeting},\\n\\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\\n\\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\\n\\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\\n\\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\\n\\nBest,\\n\\nIacopo`;\nconst html = `<p>${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href=\"${PLAYBOOK}\">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href=\"${PARTNERS}\">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;\nif (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(text + html + subject)) return [{ json: { ...base, ok: false, reason: 'Rendered email contains a placeholder' } }];\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\nconst mime = ['From: ' + SENDER, 'To: ' + e.email, 'Subject: =?UTF-8?B?' + b64(subject) + '?=', 'MIME-Version: 1.0',\n  'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n  '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n  '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),\n  '--' + boundary + '--', ''].join('\\r\\n');\nreturn [{ json: { ...base, ok: true, subject, htmlBody: html, sendBody: { raw: b64url(mime) } } }];\n"
       }
     },
     {
-      "id": "576aeb3d-5cc9-4587-8d21-6251e9b805da",
+      "id": "3915cda8-6590-4819-9412-07978c48b8dc",
       "name": "Dry Run? (send)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -1065,7 +1065,7 @@
           },
           "conditions": [
             {
-              "id": "a2ec068c-bf57-474b-a540-404870cf1aed",
+              "id": "dd55ccf9-7226-4c12-a703-b66bebd4c07b",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -1081,7 +1081,7 @@
       }
     },
     {
-      "id": "59587a41-f2ce-4d85-b72a-d1bc096bf6e6",
+      "id": "38f5630d-df6b-45e7-be78-ad684a93b42b",
       "name": "Dry Preview Send",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1094,7 +1094,7 @@
       }
     },
     {
-      "id": "082e5ba4-6690-4955-8d70-232833bbd96d",
+      "id": "82f497b5-6ff6-47c0-a354-b9c6ce349ca6",
       "name": "Email OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -1111,7 +1111,7 @@
           },
           "conditions": [
             {
-              "id": "21db37df-ae2f-4d5a-a132-83e030137cd1",
+              "id": "51c12d38-8837-4ab2-a6ba-4124af34d704",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -1127,7 +1127,7 @@
       }
     },
     {
-      "id": "987e22c3-c6cc-42de-af54-44e8979232b7",
+      "id": "8265207a-b291-44ef-81cd-187972749c04",
       "name": "Claim Send Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1140,7 +1140,7 @@
       }
     },
     {
-      "id": "e73ec16a-c8c2-4af5-9a9f-686cf775c38b",
+      "id": "b923f2c8-250e-473d-98dc-80a53ec41cda",
       "name": "Pipeline - Claim Send",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -1186,7 +1186,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "b508583d-a28c-4067-9a25-06be46e8f54b",
+      "id": "69468378-fa03-43d1-9862-7ac771836c11",
       "name": "Send Invite Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1213,7 +1213,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "91677a05-6a63-4086-949e-dcd72c5edace",
+      "id": "d7037a68-4162-4f59-be15-bb6928ac0836",
       "name": "Mark Invite Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1226,7 +1226,7 @@
       }
     },
     {
-      "id": "b670cf15-f4d8-4ff5-848e-89d4f3ab06b0",
+      "id": "f7de0b33-5527-4a95-a75c-806f25afce36",
       "name": "Mark Invite Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1239,7 +1239,7 @@
       }
     },
     {
-      "id": "d6d9e788-4385-4a33-ac24-58ecb3773761",
+      "id": "638b8e8c-7383-473d-8923-7dc896d5d235",
       "name": "Mark Invite Blocked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1252,7 +1252,7 @@
       }
     },
     {
-      "id": "64d4ac19-c4fe-4ada-b802-121053c2b9bd",
+      "id": "71693730-c9c0-4e6d-9498-a2f7828fb67a",
       "name": "Pipeline - Write Send Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -1298,7 +1298,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "c18b3138-4e97-4b6e-b5e4-dd96a4a6d824",
+      "id": "60e83195-132f-4493-b515-3e0c6ae91394",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1311,7 +1311,7 @@
       }
     },
     {
-      "id": "f0ce17c5-8c38-4e79-880f-88e754642d49",
+      "id": "60f29587-071c-4256-8541-9b158a67bf99",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -1337,7 +1337,7 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "4a1e3630-a2ce-4b7c-8395-b27e7a69d2cd"
+      "webhookId": "04e7084a-2b53-4daf-92d0-e572c814ca05"
     }
   ],
   "connections": {
@@ -1999,32 +1999,11 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "76383ae2-687c-4d0d-91dc-fadba79c5209",
+  "versionId": "bd492d20-ea68-40fe-84e8-b0d6b4e36e8a",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 2,
   "triggerCount": 0,
   "sourceWorkflowId": null,
-  "shared": [
-    {
-      "updatedAt": "2026-11-03T10:41:36.378Z",
-      "createdAt": "2026-11-03T10:41:36.378Z",
-      "role": "workflow:owner",
-      "workflowId": "HhIgZ9AEW5r0XxPB",
-      "projectId": "0Xc2vqh3ay8XF9p7",
-      "project": {
-        "updatedAt": "2026-09-17T14:57:31.253Z",
-        "createdAt": "2026-09-17T14:56:30.296Z",
-        "id": "0Xc2vqh3ay8XF9p7",
-        "name": "Iacopo Bon <i.bon@pnptc.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
-      }
-    }
-  ],
   "tags": [],
-  "parentFolder": null,
   "activeVersion": null
 }
