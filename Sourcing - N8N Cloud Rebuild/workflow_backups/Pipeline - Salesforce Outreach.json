@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T15:55:48.895Z",
+  "updatedAt": "2026-11-04T16:04:27.478Z",
   "createdAt": "2026-09-25T09:46:09.000Z",
   "id": "1TkdOwL5o1WWC6a8",
   "name": "Pipeline - Salesforce Outreach",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "85c191f5-6f4e-4110-bf36-43e963affe6c",
+      "id": "1c79d20a-808d-415d-9002-4df56f1ece24",
       "name": "Outreach Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "8d3b3cd1-7156-4904-b69b-34eec0d2b017",
+      "id": "e8bf3df8-6e79-4b10-aad0-684ff16fa7bd",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -41,7 +41,7 @@
       }
     },
     {
-      "id": "1aa69b4f-4a03-4840-8858-72808f9071ea",
+      "id": "a2235c1f-9c9e-4c98-9f53-818ae283a0d5",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "ffa9f19b-e077-4b21-b029-50730df16bca",
+      "id": "e64de610-7436-4354-93a7-17243988bc42",
       "name": "Gmail - Sent Today",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -105,10 +105,10 @@
       "maxTries": 3,
       "waitBetweenTries": 5000,
       "executeOnce": true,
-      "webhookId": "4c7ab20c-ff51-4118-b989-791203255399"
+      "webhookId": "9c838c78-ab7e-4fcb-b0b7-12a687fb63dd"
     },
     {
-      "id": "3372bee3-493b-47f8-b916-7a2bcb23b1e5",
+      "id": "af1739c1-cf1c-46ec-9290-e5487f3d0c09",
       "name": "Select Candidates",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -121,7 +121,7 @@
       }
     },
     {
-      "id": "e3eec79f-7376-4c2f-9e2a-7aa75c0111e0",
+      "id": "4014989d-d1f7-46c6-a3c2-f644f6177b65",
       "name": "Fetch Startup Homepage",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -153,7 +153,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "490f8cc5-3b11-446e-bfed-1a09bfec46e8",
+      "id": "feb16d7b-47db-4b7e-b439-a4f3ec75b74b",
       "name": "Build Personalization Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -162,11 +162,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nfunction stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Select Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = originals[i].json;\n  const html = typeof item.json.data === 'string' ? item.json.data : '';\n  let siteSummary = '';\n  if (html) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(html);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    siteSummary = parts.join(' \u2014 ').slice(0, 400);\n  }\n  // Bot walls / empty pages are not a description of the startup.\n  if (siteSummary.replace(/&#\\d+;|&\\w+;/g, '').trim().length < 20\n      || /just a moment|attention required|access denied|enable javascript|checking your browser|403 forbidden|404 not found/i.test(siteSummary)) siteSummary = '';\n  const prompt = \"You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\\n\\n\"\n    + JSON.stringify(PARTNERS)\n    + \"\\n\\nStartup: \" + orig.name + \"\\nWebsite: \" + orig.website + \"\\n\"\n    + \"What the startup's own homepage says about itself: \" + (siteSummary || 'not available') + \"\\n\"\n    + \"Founder/contact title: \" + (orig.jobTitle || 'unknown') + \"\\n\\n\"\n    + \"Base the industry classification primarily on what the homepage says, not on the company name alone. \"\n    + \"If the homepage text is not available, classify from the startup name and website domain. Always answer with the JSON, never with a question or an apology.\\n\"\n    + 'Return ONLY JSON (no prose, no markdown fences): {\"industry\": \"...\", \"partners\": \"...\"}\\n'\n    + \"industry: a natural, human-readable phrase for the vertical (e.g. \\\"mobility and physical AI\\\"), not the all-caps category label.\\n\"\n    + 'partners: 1-2 partner names copied EXACTLY as written in the list, joined with \" and \", e.g. \"BMW Group and Bosch Germany\" or \"PepsiCo\".';\n  out.push({ json: { prompt, max_tokens: 200 } });\n});\nreturn out;\n"
+        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nfunction stripTags(s) {\n  return (s || '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\nconst originals = $('Select Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const orig = originals[i].json;\n  const html = typeof item.json.data === 'string' ? item.json.data : '';\n  let siteSummary = '';\n  if (html) {\n    const titleMatch = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n    const descMatch = /<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([\\s\\S]*?)[\"']/i.exec(html);\n    const parts = [];\n    if (titleMatch) parts.push(stripTags(titleMatch[1]));\n    if (descMatch) parts.push(stripTags(descMatch[1]));\n    siteSummary = parts.join(' \u2014 ').slice(0, 400);\n  }\n  // Bot walls / empty pages are not a description of the startup.\n  if (siteSummary.replace(/&#\\d+;|&\\w+;/g, '').trim().length < 20\n      || /just a moment|attention required|access denied|enable javascript|checking your browser|403 forbidden|404 not found/i.test(siteSummary)) siteSummary = '';\n  const prompt = \"You are helping personalize a VC outreach email. Given a startup, pick the single best-fitting industry category from this list of Plug and Play corporate-partner verticals, and 1-2 of the most plausibly relevant partner names from that category's list:\\n\\n\"\n    + JSON.stringify(PARTNERS)\n    + \"\\n\\nStartup: \" + orig.name + \"\\nWebsite: \" + orig.website + \"\\n\"\n    + \"What the startup's own homepage says about itself: \" + (siteSummary || 'not available') + \"\\n\"\n    + \"Founder/contact title: \" + (orig.jobTitle || 'unknown') + \"\\n\\n\"\n    + \"Base the industry classification primarily on what the homepage says, not on the company name alone.\\n\"\n    + 'Return ONLY JSON (no prose, no markdown fences): {\"industry\": \"...\", \"partners\": \"...\"}\\n'\n    + \"industry: a natural, human-readable phrase for the vertical (e.g. \\\"mobility and physical AI\\\"), not the all-caps category label.\\n\"\n    + 'partners: 1-2 partner names copied EXACTLY as written in the list, joined with \" and \", e.g. \"BMW Group and Bosch Germany\" or \"PepsiCo\".';\n  // No readable homepage: generic email, Claude is not asked to guess (tiny call keeps items aligned).\n  if (!siteSummary) { out.push({ json: { prompt: 'Reply with exactly {}', max_tokens: 5, genericEmail: true } }); return; }\n  out.push({ json: { prompt, max_tokens: 200 } });\n});\nreturn out;\n"
       }
     },
     {
-      "id": "ecb72a43-f970-4ebe-a655-1a94a6613cd6",
+      "id": "dc787e86-2fc9-4593-9198-d18ebb1b2471",
       "name": "Call Claude",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
@@ -196,7 +196,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "8772a285-c865-48b1-a5a1-aaae74e11dd4",
+      "id": "4df85b09-a75d-49ef-9472-be5851bbba0a",
       "name": "Build + Validate Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -205,11 +205,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nconst SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst CALENDLY_LINK = \"https://calendly.com/i-bon\";\nconst ALL_PARTNERS = [...new Set(Object.values(PARTNERS).flat())].sort((a, b) => b.length - a.length);\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\n// Generic inbox or no usable first name: \"Dear <Startup>'s team\" (legal suffix and tagline dropped).\nfunction teamOf(name) {\n  const full = String(name || '').trim();\n  let n = full.split(/\\s+[-|\u2013\u2014:]\\s+/)[0];\n  n = n.replace(/[,\\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\\.l|srl|bv|b\\.v|ab|oy|corp|corporation|co)\\.?$/i, '').trim().replace(/[,.]+$/, '');\n  n = n || full;\n  return n + (/s$/i.test(n) ? \"'\" : \"'s\") + ' team';\n}\nfunction greetingFor(c) {\n  if (c.generic) return 'Dear ' + teamOf(c.name);\n  const first = (c.fullName.split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n  if (!/^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first)) return 'Dear ' + teamOf(c.name);\n  const isOneCase = first === first.toUpperCase() || first === first.toLowerCase();\n  return 'Hi ' + (isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first);\n}\nfunction checkPartners(p) {\n  let rest = String(p || ''); let found = 0;\n  for (const name of ALL_PARTNERS) {\n    const idx = rest.toLowerCase().indexOf(name.toLowerCase());\n    if (idx >= 0) { rest = rest.slice(0, idx) + ' ' + rest.slice(idx + name.length); found++; }\n  }\n  rest = rest.replace(/\\band\\b/gi, '').replace(/[,&\\s]/g, '');\n  return found >= 1 && found <= 2 && rest === '';\n}\n\nconst candidates = $('Select Candidates').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const c = candidates[i].json;\n  const info = item.json || {};\n  const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount };\n  let reason = '';\n  const industry = String(info.industry || '').trim();\n  const partners = String(info.partners || '').trim();\n  if (info.error || !industry || !partners) reason = 'Claude returned no usable answer';\n  else if (!/^[\\p{L}][\\p{L}\\s&,\\/'-]{2,60}$/u.test(industry)) reason = 'Odd industry text: ' + industry.slice(0, 60);\n  else if (!checkPartners(partners)) reason = 'Partners not in the PnP list: ' + partners.slice(0, 80);\n  if (reason) { out.push({ json: { ...base, valid: false, reason } }); return; }\n\n  const greeting = greetingFor(c);\n  const subject = 'Plug and Play <> ' + c.name;\n  const html = \"<p>\" + esc(greeting) + \",</p><p>I came across \" + esc(c.name) + \" while mapping out startups in the \" + esc(industry) + \" space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + esc(industry) + \" that includes \" + esc(partners) + \".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\\\"\" + CALENDLY_LINK + \"\\\">\" + CALENDLY_LINK + \"</a></p><p>Best,</p>\" + SIGNATURE_HTML;\n  if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(html + subject)) {\n    out.push({ json: { ...base, valid: false, reason: 'Rendered email contains a placeholder' } }); return;\n  }\n  out.push({ json: { ...base, valid: true, subject, htmlBody: html, greeting, industry, partners } });\n});\nreturn out;\n"
+        "jsCode": "const PARTNERS = {\"SUSTAINABILITY\": [\"A2A\", \"Ayuntamiento de Jerez\", \"Alliance To End Plastic Waste\", \"Arizona Commerce Authority\", \"edotco Group\"], \"SMART CITIES\": [\"Abu Dhabi Ports\", \"AUPP\", \"CDP\", \"CenterPoint Energy\", \"Chiesi Farmaceutici\", \"City of Sugar Land\"], \"ENERGY\": [\"Acario Innovation LLC/Tokyo Gas Co., Ltd.\", \"Chiyoda Corporation\", \"Dentsu\", \"Duke Energy\", \"Electric Power Development\", \"ENEOS Corporation\", \"Eneva SA\", \"Eni\"], \"DEEPTECH\": [\"Acea\", \"Asahi Kasei Corporation\", \"Carbon Recycling Fund Inst.\", \"Dell Technologies\", \"DENKA\", \"Dexerials\", \"Doosan Bobcat\"], \"MOBILITY & PHYSICAL AI\": [\"ACN - Agenzia Cybersicurezza Nazionale\", \"Agrati\", \"AISIN\", \"Aspire\", \"Atlas SGR\", \"Audi\", \"BMW Group\", \"BNP Paribas\", \"BorgWarner\", \"Brightstar Lottery\", \"Dallara\", \"DXC Technology\", \"Ebersp\\u00e4cher\"], \"TRAVEL & HOSPITALITY\": [\"Advanced Propulsion Centre\", \"Amex GBT\", \"Bentley Motors\", \"Cathay Pacific Airways\", \"Edmonton International Airport\"], \"INSURTECH\": [\"Aeroporti di Roma\", \"American Family Ventures\", \"AUPP Technology Center (ATC)\", \"Auto & General Insurance Company\", \"CMG Networks\", \"CNO Financial Group\", \"Daido Life\", \"EXL Services\"], \"FINTECH\": [\"Amazon\", \"American Family Ventures\", \"Ameriprise Financial\", \"Brave Connective\", \"Bremer Bank\", \"CoBank\", \"Creand\", \"Daiwa Capital Management\", \"EA Ventures\", \"Farm Credit East\"], \"ENTERPRISE & AI\": [\"Amex GBT\", \"ASUSTeK Computer, Inc.\", \"Bosch Germany\", \"Brisa Group\", \"BRIDG\", \"City of San Jose\", \"DivcoWest\"], \"SUPPLY CHAIN\": [\"ArcBest\", \"Arkansas Economic Development Commission\", \"CHEP / Brambles\", \"Crowley Maritime\", \"Cummins\", \"Daimler Truck North America\", \"Dell Technologies\", \"Dot Foods\", \"DSV - Global Transport and Logistics\", \"Equatorial Coca-Cola Bottling Company\"], \"AEROSPACE & DEFENSE\": [\"Armaereo\", \"Auto & General Insurance Company (adj.)\", \"Avio\", \"CMG Networks\", \"European Commission DG DEFIS\"], \"HEALTH\": [\"ART-ER Attractiveness Research Territory\", \"Astemo, Ltd.\", \"Bayer\", \"Brunel\", \"Eli Lilly and Company\"], \"ADVANCED MANUFACTURING\": [\"City of Cedar Park\"], \"REAL ESTATE & CONSTRUCTION\": [\"Daikin Industries\"], \"SEMICONDUCTORS\": [\"Bremer Bank (adj. ecosystem)\"], \"FOOD & BEVERAGE\": [\"CAAS Venture Network LLP\", \"Ezaki Glico\", \"PepsiCo\"], \"CRYPTO & DIGITAL ASSETS\": [\"XDC Network\"], \"BRAND & RETAIL\": [\"Aflac\"], \"GLOBAL OVERSEAS ACCELERATION & LEARNING (GOAL)\": [\"AADF - Albanian American Development Foundation\", \"AstraZeneca\", \"ASBIS\", \"Enterprise Singapore\"]};\nconst PARTNER_SHORT = {\"AADF - Albanian American Development Foundation\": \"AADF\", \"ACN - Agenzia Cybersicurezza Nazionale\": \"ACN\", \"ART-ER Attractiveness Research Territory\": \"ART-ER\", \"ASUSTeK Computer, Inc.\": \"ASUS\", \"AUPP Technology Center (ATC)\": \"AUPP\", \"Acario Innovation LLC/Tokyo Gas Co., Ltd.\": \"Tokyo Gas\", \"Ameriprise Financial\": \"Ameriprise\", \"Asahi Kasei Corporation\": \"Asahi Kasei\", \"Astemo, Ltd.\": \"Astemo\", \"Auto & General Insurance Company\": \"Auto & General\", \"Auto & General Insurance Company (adj.)\": \"Auto & General\", \"BMW Group\": \"BMW\", \"Bentley Motors\": \"Bentley\", \"Bosch Germany\": \"Bosch\", \"Bremer Bank (adj. ecosystem)\": \"Bremer Bank\", \"Brightstar Lottery\": \"Brightstar\", \"Brisa Group\": \"Brisa\", \"CAAS Venture Network LLP\": \"CAAS Venture Network\", \"CHEP / Brambles\": \"Brambles\", \"CNO Financial Group\": \"CNO Financial\", \"Carbon Recycling Fund Inst.\": \"Carbon Recycling Fund Institute\", \"Cathay Pacific Airways\": \"Cathay Pacific\", \"Chiesi Farmaceutici\": \"Chiesi\", \"Chiyoda Corporation\": \"Chiyoda\", \"Crowley Maritime\": \"Crowley\", \"DENKA\": \"Denka\", \"DSV - Global Transport and Logistics\": \"DSV\", \"DXC Technology\": \"DXC\", \"Daikin Industries\": \"Daikin\", \"Daimler Truck North America\": \"Daimler Truck\", \"Daiwa Capital Management\": \"Daiwa\", \"Dell Technologies\": \"Dell\", \"Doosan Bobcat\": \"Bobcat\", \"ENEOS Corporation\": \"ENEOS\", \"EXL Services\": \"EXL\", \"Electric Power Development\": \"J-POWER\", \"Eli Lilly and Company\": \"Eli Lilly\", \"Eneva SA\": \"Eneva\", \"Equatorial Coca-Cola Bottling Company\": \"Equatorial Coca-Cola Bottling\", \"European Commission DG DEFIS\": \"the European Commission\", \"Ezaki Glico\": \"Glico\", \"edotco Group\": \"edotco\"};\nconst SIGNATURE_HTML = \"\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\"><strong>Iacopo Bon</strong></div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;line-height:1.5;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Senior Associate</div>\\n  <div style=\\\"line-height:1.5\\\"><strong><img src=\\\"https://3340630.fs1.hubspotusercontent-na1.net/hubfs/3340630/Email%20Signatures/PlugAndPlay%20Logo%20signature.png\\\" width=\\\"96\\\" height=\\\"34\\\"></strong></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://www.plugandplaytechcenter.com\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">plugandplaytechcenter.com</a></div>\\n  <div style=\\\"line-height:1.5\\\"><a href=\\\"https://airtable.com/appdk7eWqstAib8LW/shrgeolZqg10b1qWW\\\" style=\\\"color:rgb(17,85,204)\\\" target=\\\"_blank\\\">Meet Our Portfolio</a></div>\\n</div>\\n<div style=\\\"color:rgb(68,68,68);font-family:sans-serif;font-size:12px\\\">\\n  <div style=\\\"line-height:1.5\\\">Cell: 3409548428</div>\\n</div>\\n\";\nconst CALENDLY_LINK = \"https://calendly.com/i-bon\";\nconst ALL_PARTNERS = [...new Set(Object.values(PARTNERS).flat())].sort((a, b) => b.length - a.length);\nconst esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\n// Generic inbox or no usable first name: \"Dear <Startup>'s team\" (legal suffix and tagline dropped).\nfunction teamOf(name) {\n  const full = String(name || '').trim();\n  let n = full.split(/\\s+[-|\u2013\u2014:]\\s+/)[0];\n  n = n.replace(/[,\\s]+(inc|llc|ltd|limited|gmbh|ag|as|sa|sas|sl|s\\.l|srl|bv|b\\.v|ab|oy|corp|corporation|co)\\.?$/i, '').trim().replace(/[,.]+$/, '');\n  n = n || full;\n  return n + (/s$/i.test(n) ? \"'\" : \"'s\") + ' team';\n}\nfunction greetingFor(c) {\n  if (c.generic) return 'Dear ' + teamOf(c.name);\n  const first = (c.fullName.split(/\\s+/)[0] || '').replace(/[,.]+$/, '');\n  if (!/^\\p{L}[\\p{L}'\u2019-]{1,24}$/u.test(first)) return 'Dear ' + teamOf(c.name);\n  const isOneCase = first === first.toUpperCase() || first === first.toLowerCase();\n  return 'Hi ' + (isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first);\n}\n// Official names found in Claude's answer, in the order written; null if anything else is in it.\nfunction partnersFound(p) {\n  let rest = String(p || ''); const found = [];\n  for (const name of ALL_PARTNERS) {\n    const idx = rest.toLowerCase().indexOf(name.toLowerCase());\n    if (idx >= 0) { found.push([idx, name]); rest = rest.slice(0, idx) + ' '.repeat(name.length) + rest.slice(idx + name.length); }\n  }\n  rest = rest.replace(/\\band\\b/gi, '').replace(/[,&\\s]/g, '');\n  if (found.length < 1 || found.length > 2 || rest !== '') return null;\n  return found.sort((a, b) => a[0] - b[0]).map(f => f[1]);\n}\nconst shortName = n => PARTNER_SHORT[n] || n;\n\nconst candidates = $('Select Candidates').all();\nconst prompts = $('Build Personalization Prompt').all();\nconst out = [];\n$input.all().forEach((item, i) => {\n  const c = candidates[i].json;\n  const info = item.json || {};\n  const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount };\n  let reason = '';\n  const genericEmail = !!(prompts[i] && prompts[i].json.genericEmail);\n  const industry = String(info.industry || '').trim();\n  const partners = String(info.partners || '').trim();\n  if (genericEmail) reason = '';\n  else if (info.error || !industry || !partners) reason = 'Claude returned no usable answer';\n  else if (!/^[\\p{L}][\\p{L}\\s&,\\/'-]{2,60}$/u.test(industry)) reason = 'Odd industry text: ' + industry.slice(0, 60);\n  else if (!partnersFound(partners)) reason = 'Partners not in the PnP list: ' + partners.slice(0, 80);\n  if (reason) { out.push({ json: { ...base, valid: false, reason } }); return; }\n\n  const greeting = greetingFor(c);\n  const subject = 'Plug and Play <> ' + c.name;\n  // Homepage unreadable: a generic email, no industry and no partner names (user's rule, 2026-11-04).\n  const partnerText = genericEmail ? '' : partnersFound(partners).map(shortName).join(' and ') + ' among others';\n  const intro = genericEmail\n    ? \"<p>I came across \" + esc(c.name) + \" while mapping out early-stage startups.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners across many industries and introduce startups to the ones actively looking.</p>\"\n    : \"<p>I came across \" + esc(c.name) + \" while mapping out startups in the \" + esc(industry) + \" space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In \" + esc(industry) + \" that includes \" + esc(partnerText) + \".</p>\";\n  const html = \"<p>\" + esc(greeting) + \",</p>\" + intro + \"<p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\\\"\" + CALENDLY_LINK + \"\\\">\" + CALENDLY_LINK + \"</a></p><p>Best,</p>\" + SIGNATURE_HTML;\n  if (/undefined|\\bnull\\b|NaN|\\{\\{|\\}\\}/.test(html + subject)) {\n    out.push({ json: { ...base, valid: false, reason: 'Rendered email contains a placeholder' } }); return;\n  }\n  out.push({ json: { ...base, valid: true, subject, htmlBody: html, greeting, industry, partners } });\n});\nreturn out;\n"
       }
     },
     {
-      "id": "a5d4311f-57fd-46f7-bda3-128065825606",
+      "id": "cde42791-e525-4f2e-aef5-e2aff6372d88",
       "name": "Dry Run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -226,7 +226,7 @@
           },
           "conditions": [
             {
-              "id": "fe947122-ffc5-460c-9528-8f1e5a2959c3",
+              "id": "c30c7109-ca59-48a5-89ff-ecfd2489fc0f",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -242,7 +242,7 @@
       }
     },
     {
-      "id": "d4223b6a-7b91-4c6b-9d90-78c58e384bd1",
+      "id": "a1d3a6fe-7fcf-4044-9017-7d86878f5a07",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -255,7 +255,7 @@
       }
     },
     {
-      "id": "ff893325-37aa-4937-ab75-39e13a3198f9",
+      "id": "0ab232f1-c138-4087-ab3a-1dda4df21e9d",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -280,10 +280,10 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "024d335a-6941-4672-a836-376aba1b7f82"
+      "webhookId": "c1af254c-5c6a-4c52-9b1e-72e1a6559e4f"
     },
     {
-      "id": "bc76794d-f26d-4808-9b96-6a519b34147d",
+      "id": "1a25cd74-3580-4ee0-a5ca-d48fe548f640",
       "name": "Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -300,7 +300,7 @@
           },
           "conditions": [
             {
-              "id": "e4b924a9-2c81-4338-a3c8-73dcb60734ae",
+              "id": "b16ecbf4-eda5-4a2b-b108-9bcb40caa553",
               "leftValue": "={{ $json.valid }}",
               "rightValue": "",
               "operator": {
@@ -316,7 +316,7 @@
       }
     },
     {
-      "id": "2502ba30-f428-4f20-a305-34a0b26cb97c",
+      "id": "fd058a25-e13f-46fa-856f-13efd69a3394",
       "name": "Needs Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -329,7 +329,7 @@
       }
     },
     {
-      "id": "04374eb6-8565-46d8-a4d1-c45e32cf27fc",
+      "id": "56ae67fb-e1db-42b1-be9d-916dfca60c55",
       "name": "Pipeline - Mark Needs Review",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -375,7 +375,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "1f1ece03-fcc3-47cb-9ac3-fd21f8f590c2",
+      "id": "f3a10309-67eb-489b-bb30-5286466bd4be",
       "name": "Loop Over Emails",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -389,7 +389,7 @@
       }
     },
     {
-      "id": "1c66ecc7-5bc9-4298-936f-53544cd2b0c6",
+      "id": "01915710-3066-4006-a359-bceda858bd12",
       "name": "Claim Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -402,7 +402,7 @@
       }
     },
     {
-      "id": "d4f15e75-754b-4f3a-a169-864613e49bb2",
+      "id": "e1bf066d-b771-401a-90c0-5c3d9bf0bf09",
       "name": "Pipeline - Claim Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -448,7 +448,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "abdacdaa-0680-4b8d-9449-4848aff70572",
+      "id": "c2fbeca3-f7e0-47ef-b7fc-032265a8755b",
       "name": "Gmail - Already Sent?",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -477,10 +477,10 @@
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 5000,
-      "webhookId": "5cc66a39-b10a-42c1-9fa7-42be37ee383c"
+      "webhookId": "a2dd9a94-eb7a-4164-b134-c85afc1ead56"
     },
     {
-      "id": "0ecd348b-0da3-4c6e-acf3-fac3372fc369",
+      "id": "2e603ad7-326f-48c3-a0ab-3b550699725d",
       "name": "Already Sent Check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -493,7 +493,7 @@
       }
     },
     {
-      "id": "5564fadd-c3b1-49c6-bf4b-13b71849b536",
+      "id": "2c113ad8-4e57-4340-80c7-bad784ff8167",
       "name": "Already Sent?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -510,7 +510,7 @@
           },
           "conditions": [
             {
-              "id": "bb0bff4f-983b-4980-8331-ed389c1147e9",
+              "id": "1967dc39-5838-41cd-9223-7547dfaf3ecf",
               "leftValue": "={{ $json.alreadySent }}",
               "rightValue": "",
               "operator": {
@@ -526,7 +526,7 @@
       }
     },
     {
-      "id": "e938313f-b45a-4e46-9bb2-60bad1d740a7",
+      "id": "3595a281-2771-4fb0-b271-a0532a7d8693",
       "name": "Mark Already Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -539,7 +539,7 @@
       }
     },
     {
-      "id": "dc1d81ce-6034-4054-acf5-15e18914b672",
+      "id": "86d9025e-0db9-4df7-ad0e-3e0bbd532e29",
       "name": "Send Outreach Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -565,10 +565,10 @@
         }
       },
       "onError": "continueErrorOutput",
-      "webhookId": "839373b4-2ac6-430d-82c9-e54703e370c5"
+      "webhookId": "37fd1ef6-a8aa-47af-a4b1-c15e0b870aa8"
     },
     {
-      "id": "d850ce69-b08b-45f5-a7f1-c33cfd704c93",
+      "id": "45e9693b-2314-41ff-a1c0-7781a4c4bcee",
       "name": "Mark Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -581,7 +581,7 @@
       }
     },
     {
-      "id": "9809705a-453b-44a5-9175-9ae941f1af9e",
+      "id": "c0adec26-e849-4c16-97ad-01ab012d1eb3",
       "name": "Mark Send Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -594,7 +594,7 @@
       }
     },
     {
-      "id": "dd2b0d73-2e84-4cf4-a577-3a7ad41e351e",
+      "id": "3acd95e3-4757-45d8-b357-48ce6083436f",
       "name": "Pipeline - Write Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -944,9 +944,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "8197e475-126e-4535-8115-a6e01e6508c6",
+  "versionId": "297e6d04-0c5b-473e-94d9-9b44adfae8a6",
   "activeVersionId": null,
-  "versionCounter": 8,
+  "versionCounter": 9,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

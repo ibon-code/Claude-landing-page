@@ -42,6 +42,8 @@ PARTNERS = json.load(open(os.path.join(ROOT, "pnp_partners_reference.json")))
 EXCLUDED_PARTNERS = {"Cirrus Logic", "European Space Agency"}
 PARTNERS = {k: [p for p in v if p not in EXCLUDED_PARTNERS] for k, v in PARTNERS.items()}
 PARTNERS = {k: v for k, v in PARTNERS.items() if v}
+# How people actually call them in an email (the list keeps the official names, which Claude must copy).
+PARTNER_SHORT = {'AADF - Albanian American Development Foundation': 'AADF', 'ACN - Agenzia Cybersicurezza Nazionale': 'ACN', 'ART-ER Attractiveness Research Territory': 'ART-ER', 'ASUSTeK Computer, Inc.': 'ASUS', 'AUPP Technology Center (ATC)': 'AUPP', 'Acario Innovation LLC/Tokyo Gas Co., Ltd.': 'Tokyo Gas', 'Ameriprise Financial': 'Ameriprise', 'Asahi Kasei Corporation': 'Asahi Kasei', 'Astemo, Ltd.': 'Astemo', 'Auto & General Insurance Company': 'Auto & General', 'Auto & General Insurance Company (adj.)': 'Auto & General', 'BMW Group': 'BMW', 'Bentley Motors': 'Bentley', 'Bosch Germany': 'Bosch', 'Bremer Bank (adj. ecosystem)': 'Bremer Bank', 'Brightstar Lottery': 'Brightstar', 'Brisa Group': 'Brisa', 'CAAS Venture Network LLP': 'CAAS Venture Network', 'CHEP / Brambles': 'Brambles', 'CNO Financial Group': 'CNO Financial', 'Carbon Recycling Fund Inst.': 'Carbon Recycling Fund Institute', 'Cathay Pacific Airways': 'Cathay Pacific', 'Chiesi Farmaceutici': 'Chiesi', 'Chiyoda Corporation': 'Chiyoda', 'Crowley Maritime': 'Crowley', 'DENKA': 'Denka', 'DSV - Global Transport and Logistics': 'DSV', 'DXC Technology': 'DXC', 'Daikin Industries': 'Daikin', 'Daimler Truck North America': 'Daimler Truck', 'Daiwa Capital Management': 'Daiwa', 'Dell Technologies': 'Dell', 'Doosan Bobcat': 'Bobcat', 'ENEOS Corporation': 'ENEOS', 'EXL Services': 'EXL', 'Electric Power Development': 'J-POWER', 'Eli Lilly and Company': 'Eli Lilly', 'Eneva SA': 'Eneva', 'Equatorial Coca-Cola Bottling Company': 'Equatorial Coca-Cola Bottling', 'European Commission DG DEFIS': 'the European Commission', 'Ezaki Glico': 'Glico', 'edotco Group': 'edotco'}
 DOC = {"__rl": True, "value": "1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc", "mode": "list",
        "cachedResultName": "Sourcing - N8N Cloud",
        "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LpPqSKXOvB2FdqNGNnlVBpPDvnfDrYml7npHJEZpKxc/edit?usp=drivesdk"}
@@ -210,17 +212,18 @@ $input.all().forEach((item, i) => {
     + "\n\nStartup: " + orig.name + "\nWebsite: " + orig.website + "\n"
     + "What the startup's own homepage says about itself: " + (siteSummary || 'not available') + "\n"
     + "Founder/contact title: " + (orig.jobTitle || 'unknown') + "\n\n"
-    + "Base the industry classification primarily on what the homepage says, not on the company name alone. "
-    + "If the homepage text is not available, classify from the startup name and website domain. Always answer with the JSON, never with a question or an apology.\n"
+    + "Base the industry classification primarily on what the homepage says, not on the company name alone.\n"
     + 'Return ONLY JSON (no prose, no markdown fences): {"industry": "...", "partners": "..."}\n'
     + "industry: a natural, human-readable phrase for the vertical (e.g. \"mobility and physical AI\"), not the all-caps category label.\n"
     + 'partners: 1-2 partner names copied EXACTLY as written in the list, joined with " and ", e.g. "BMW Group and Bosch Germany" or "PepsiCo".';
+  // No readable homepage: generic email, Claude is not asked to guess (tiny call keeps items aligned).
+  if (!siteSummary) { out.push({ json: { prompt: 'Reply with exactly {}', max_tokens: 5, genericEmail: true } }); return; }
   out.push({ json: { prompt, max_tokens: 200 } });
 });
 return out;
 """
 
-email_js = ("const PARTNERS = " + json.dumps(PARTNERS) + ";\n"
+email_js = ("const PARTNERS = " + json.dumps(PARTNERS) + ";\nconst PARTNER_SHORT = " + json.dumps(PARTNER_SHORT) + ";\n"
             + "const SIGNATURE_HTML = " + json.dumps(SIGNATURE_HTML) + ";\n"
             + r"""const CALENDLY_LINK = "https://calendly.com/i-bon";
 const ALL_PARTNERS = [...new Set(Object.values(PARTNERS).flat())].sort((a, b) => b.length - a.length);
@@ -241,33 +244,44 @@ function greetingFor(c) {
   const isOneCase = first === first.toUpperCase() || first === first.toLowerCase();
   return 'Hi ' + (isOneCase ? first[0].toUpperCase() + first.slice(1).toLowerCase() : first);
 }
-function checkPartners(p) {
-  let rest = String(p || ''); let found = 0;
+// Official names found in Claude's answer, in the order written; null if anything else is in it.
+function partnersFound(p) {
+  let rest = String(p || ''); const found = [];
   for (const name of ALL_PARTNERS) {
     const idx = rest.toLowerCase().indexOf(name.toLowerCase());
-    if (idx >= 0) { rest = rest.slice(0, idx) + ' ' + rest.slice(idx + name.length); found++; }
+    if (idx >= 0) { found.push([idx, name]); rest = rest.slice(0, idx) + ' '.repeat(name.length) + rest.slice(idx + name.length); }
   }
   rest = rest.replace(/\band\b/gi, '').replace(/[,&\s]/g, '');
-  return found >= 1 && found <= 2 && rest === '';
+  if (found.length < 1 || found.length > 2 || rest !== '') return null;
+  return found.sort((a, b) => a[0] - b[0]).map(f => f[1]);
 }
+const shortName = n => PARTNER_SHORT[n] || n;
 
 const candidates = $('Select Candidates').all();
+const prompts = $('Build Personalization Prompt').all();
 const out = [];
 $input.all().forEach((item, i) => {
   const c = candidates[i].json;
   const info = item.json || {};
   const base = { row_number: c.row_number, email: c.email, name: c.name, outreachCount: c.outreachCount };
   let reason = '';
+  const genericEmail = !!(prompts[i] && prompts[i].json.genericEmail);
   const industry = String(info.industry || '').trim();
   const partners = String(info.partners || '').trim();
-  if (info.error || !industry || !partners) reason = 'Claude returned no usable answer';
+  if (genericEmail) reason = '';
+  else if (info.error || !industry || !partners) reason = 'Claude returned no usable answer';
   else if (!/^[\p{L}][\p{L}\s&,\/'-]{2,60}$/u.test(industry)) reason = 'Odd industry text: ' + industry.slice(0, 60);
-  else if (!checkPartners(partners)) reason = 'Partners not in the PnP list: ' + partners.slice(0, 80);
+  else if (!partnersFound(partners)) reason = 'Partners not in the PnP list: ' + partners.slice(0, 80);
   if (reason) { out.push({ json: { ...base, valid: false, reason } }); return; }
 
   const greeting = greetingFor(c);
   const subject = 'Plug and Play <> ' + c.name;
-  const html = "<p>" + esc(greeting) + ",</p><p>I came across " + esc(c.name) + " while mapping out startups in the " + esc(industry) + " space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In " + esc(industry) + " that includes " + esc(partners) + ".</p><p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\"" + CALENDLY_LINK + "\">" + CALENDLY_LINK + "</a></p><p>Best,</p>" + SIGNATURE_HTML;
+  // Homepage unreadable: a generic email, no industry and no partner names (user's rule, 2026-11-04).
+  const partnerText = genericEmail ? '' : partnersFound(partners).map(shortName).join(' and ') + ' among others';
+  const intro = genericEmail
+    ? "<p>I came across " + esc(c.name) + " while mapping out early-stage startups.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners across many industries and introduce startups to the ones actively looking.</p>"
+    : "<p>I came across " + esc(c.name) + " while mapping out startups in the " + esc(industry) + " space.</p><p>I'm on the Ventures team at Plug and Play Tech Center. We invest at the early stage (early backers of Dropbox, PayPal and Honey), but the bigger part of our model is commercial: we run innovation programs for corporate partners and introduce startups to the ones actively looking. In " + esc(industry) + " that includes " + esc(partnerText) + ".</p>";
+  const html = "<p>" + esc(greeting) + ",</p>" + intro + "<p>Even if you aren't currently fundraising, I'd love to learn more about what you're building and see if there might be potential alignment with our ecosystem down the line.</p><p>Are you open to a quick 30 minute intro chat this week? Feel free to reply directly, or grab a slot on my calendar here: <a href=\"" + CALENDLY_LINK + "\">" + CALENDLY_LINK + "</a></p><p>Best,</p>" + SIGNATURE_HTML;
   if (/undefined|\bnull\b|NaN|\{\{|\}\}/.test(html + subject)) {
     out.push({ json: { ...base, valid: false, reason: 'Rendered email contains a placeholder' } }); return;
   }
