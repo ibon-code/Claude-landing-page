@@ -217,8 +217,10 @@ const strip = s => s.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style
   .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, ' ').trim();
 const meta = n => { const m = new RegExp('<meta[^>]+(?:name|property)=["\']' + n + '["\'][^>]+content=["\']([^"\']*)', 'i').exec(html); return m ? strip(m[1]) : ''; };
 const title = (/<title[^>]*>([\s\S]*?)<\/title>/i.exec(html) || [])[1] || '';
-const body = strip(html).slice(0, 3500);
-const site = [strip(title), meta('description'), meta('og:description'), body].filter(Boolean).join('\n').slice(0, 4500);
+// Keep the start and the footer of the page: HQ country/address usually sit in the footer.
+const full = strip(html);
+const body = full.length > 5000 ? full.slice(0, 3500) + ' [...] ' + full.slice(-1500) : full;
+const site = [strip(title), meta('description'), meta('og:description'), body].filter(Boolean).join('\n').slice(0, 6000);
 let reason = '';
 if (!countries || !countries.length) reason = 'Could not read the country list from Playbook';
 else if (!verticals || !verticals.length) reason = 'Could not read the vertical list from Playbook';
