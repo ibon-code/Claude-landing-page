@@ -198,7 +198,7 @@ function idNames(it) {
   const walk = o => {
     if (Array.isArray(o)) return o.forEach(walk);
     if (o && typeof o === 'object') {
-      const nm = o.name || o.title || o.label;
+      const nm = o.name || o.country_name || o.vertical_name || o.title || o.label;
       if ((typeof o.id === 'number' || /^\d+$/.test(String(o.id))) && typeof nm === 'string') out.push({ id: Number(o.id), name: nm.trim() });
       Object.values(o).forEach(v => { if (v && typeof v === 'object') walk(v); });
     }
