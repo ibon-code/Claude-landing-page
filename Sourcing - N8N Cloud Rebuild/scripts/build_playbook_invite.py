@@ -17,7 +17,7 @@ Guardrails:
   Empty homepage = review (never invent a profile).
 - Our email: only after 'Team Added' = YES on a row whose profile n8n created; hard block if Gmail Sent
   already has a "Playbook invite" email to that address (all time); max PER_RUN_CAP per run, DAILY_CAP a day.
-- Mon-Fri 09:00-17:59 Europe/Rome. DRY_RUN: nothing created on Playbook, nothing written, no founder email,
+- Mon-Fri 09:00-18:29 Europe/Rome. DRY_RUN: nothing created on Playbook, nothing written, no founder email,
   one preview email to me. TEST_ONLY_EMAIL: live, but only for rows whose recipient is that address.
 
 Usage: python3 build_playbook_invite.py <out_dir> [--live] [--test-email ADDR] [--deploy]  (created/updated INACTIVE)
@@ -130,9 +130,10 @@ const TEST_ONLY_EMAIL = {json.dumps(TEST_ONLY_EMAIL)};
 const now = new Date();
 const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {{
   timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',
-  hour: '2-digit', weekday: 'short', hour12: false }}).formatToParts(now).map(p => [p.type, p.value]));
+  hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false }}).formatToParts(now).map(p => [p.type, p.value]));
 const hour = Number(parts.hour);
-const inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;
+const hm = hour * 60 + Number(parts.minute);
+const inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hm >= 9 * 60 && hm < 18 * 60 + 30;
 if (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];
 const today = `${{parts.year}}-${{parts.month}}-${{parts.day}}`;
 const probe = new Date(`${{today}}T00:00:00Z`);
@@ -435,7 +436,7 @@ DRY = "={{ $('Config').first().json.dryRun }}"
 LIVE = "={{ !$('Config').first().json.dryRun }}"
 nodes = [
     node("Playbook Invite Trigger", "n8n-nodes-base.scheduleTrigger", 1.2, [0, 0],
-         {"rule": {"interval": [{"field": "cronExpression", "expression": "4,19,34,49 9-17 * * 1-5"}]}}),
+         {"rule": {"interval": [{"field": "cronExpression", "expression": "4,19,34,49 9-18 * * 1-5"}]}}),
     code("Config", [220, 0], config_js),
     node("Pipeline - Get Rows", "n8n-nodes-base.googleSheets", 4.5, [440, 0],
          {"documentId": DOC, "sheetName": PIPELINE, "options": {}}, credentials=GS_CRED, **RETRY),

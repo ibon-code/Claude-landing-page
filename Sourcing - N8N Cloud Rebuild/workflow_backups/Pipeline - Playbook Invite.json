@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05T16:50:20.750Z",
+  "updatedAt": "2026-11-05T16:52:04.407Z",
   "createdAt": "2026-11-03T10:41:36.378Z",
   "id": "HhIgZ9AEW5r0XxPB",
   "name": "Pipeline - Playbook Invite",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "e31668eb-95bf-44fe-97e5-23388a47db3b",
+      "id": "35b7a477-abd8-438e-bf81-507c8579b2e9",
       "name": "Playbook Invite Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -21,14 +21,14 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "4,19,34,49 9-17 * * 1-5"
+              "expression": "4,19,34,49 9-18 * * 1-5"
             }
           ]
         }
       }
     },
     {
-      "id": "884eaa86-dc49-40ef-99df-9cda6cd35a96",
+      "id": "9d0b2e74-3c31-46c6-ab3f-fdabd9750eaa",
       "name": "Config",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -37,11 +37,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const DRY_RUN = false;\nconst TEST_ONLY_EMAIL = null;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hour >= 9 && hour < 18;\nif (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, dailyCap: 20, perRunCap: 3,\n  today, dayStartEpoch } }];\n"
+        "jsCode": "const DRY_RUN = false;\nconst TEST_ONLY_EMAIL = null;\nconst now = new Date();\nconst parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false }).formatToParts(now).map(p => [p.type, p.value]));\nconst hour = Number(parts.hour);\nconst hm = hour * 60 + Number(parts.minute);\nconst inWindow = !['Sat', 'Sun'].includes(parts.weekday) && hm >= 9 * 60 && hm < 18 * 60 + 30;\nif (!DRY_RUN && !inWindow && !TEST_ONLY_EMAIL) return [];\nconst today = `${parts.year}-${parts.month}-${parts.day}`;\nconst probe = new Date(`${today}T00:00:00Z`);\nconst romeAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Rome' }));\nconst utcAtProbe = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\nconst dayStartEpoch = Math.floor((probe.getTime() - (romeAtProbe - utcAtProbe)) / 1000);\nreturn [{ json: { dryRun: DRY_RUN, testOnlyEmail: TEST_ONLY_EMAIL, dailyCap: 20, perRunCap: 3,\n  today, dayStartEpoch } }];\n"
       }
     },
     {
-      "id": "57be85c0-0095-4c52-a5b9-a177292799d6",
+      "id": "438fd8f4-7144-4a18-b84d-ba0f1c711836",
       "name": "Pipeline - Get Rows",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -75,7 +75,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "6812b2f0-4547-4349-95da-241d12baae55",
+      "id": "bbfded97-3201-4cbd-8fea-586225692e19",
       "name": "Reminder",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -88,7 +88,7 @@
       }
     },
     {
-      "id": "3bca9127-7d12-48a2-a796-8944d80f6122",
+      "id": "3af7e7b7-11ba-4035-9f87-ac16f2809022",
       "name": "Send Reminder",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -114,10 +114,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "dc9f386e-d3e9-453d-85a3-bd7b68d62712"
+      "webhookId": "dc2b8bae-30c4-41c1-8454-389ebdf26925"
     },
     {
-      "id": "4e0317bb-a72f-4257-a637-9bfb8f95f191",
+      "id": "6cb8a136-44ee-4585-a697-a7b0ca16d89b",
       "name": "Select Profiles To Create",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -130,7 +130,7 @@
       }
     },
     {
-      "id": "9463de7d-761c-4bf8-b7b9-6ea74a90d26e",
+      "id": "44812220-0534-4e23-b4df-5ab8b7f99471",
       "name": "Loop Create",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -144,7 +144,7 @@
       }
     },
     {
-      "id": "b345507a-2dcd-4232-b739-928f80d4400e",
+      "id": "56aaa641-a25d-4da8-b90d-bd63bb382b8d",
       "name": "Claim Create Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -157,7 +157,7 @@
       }
     },
     {
-      "id": "f55d4d32-67d4-4942-8234-acb0e69c2825",
+      "id": "165c135e-4a8e-4d34-ba53-82e5c0d91729",
       "name": "Live? (claim)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -174,7 +174,7 @@
           },
           "conditions": [
             {
-              "id": "7a2af5d7-3985-40ff-a33e-92fd88429b52",
+              "id": "48cb952c-c78b-4644-92b2-b9139a03ac07",
               "leftValue": "={{ !$('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -190,7 +190,7 @@
       }
     },
     {
-      "id": "551222b5-6d51-4e9f-813e-ba6b96327689",
+      "id": "0c52d6f4-66c1-4bc3-97a8-7fd972b38c9f",
       "name": "Pipeline - Claim Create",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -236,7 +236,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "0af10be9-b3a9-4f72-9a75-79dfd873abdc",
+      "id": "5b737d67-7874-4154-a0a1-7be2e2e3c305",
       "name": "Playbook - Search Domain",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -269,7 +269,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "d72462a9-2e5b-4110-aea1-5c6e7d9ebed9",
+      "id": "e149b6d9-6a5f-419f-b039-b5eda21fdc48",
       "name": "Pre-check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -282,7 +282,7 @@
       }
     },
     {
-      "id": "74e50c8d-ef09-4ecf-b963-977a7a4f514c",
+      "id": "d5f11ad6-e96e-4b87-b0c6-74c01e7c9814",
       "name": "Pre-check OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -299,7 +299,7 @@
           },
           "conditions": [
             {
-              "id": "2b1d1834-9771-4c2c-b63f-160b6ef6e0f0",
+              "id": "cd1e54a9-461b-43b9-9490-0b39dbff9914",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -315,7 +315,7 @@
       }
     },
     {
-      "id": "4fc4d0a7-1953-447f-a266-0a5c496b91f7",
+      "id": "171c6f19-70be-44ab-844e-f4a187302b67",
       "name": "Fetch Startup Homepage",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -347,7 +347,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "e2ed107c-f4f1-46e8-a779-c04b7749c65c",
+      "id": "ad10c277-bd62-48c1-a5de-80667e7a9624",
       "name": "Playbook - List Countries",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -380,7 +380,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "8c762fa0-1070-4403-8352-2cbdc8eecdde",
+      "id": "3d3575cf-061c-43ad-9506-16fcfcaebf2a",
       "name": "Playbook - List Verticals",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -413,7 +413,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "1f5b95d2-a4ad-4c33-9602-e85ce99e195c",
+      "id": "8bdc84ce-baa8-4f95-a3af-d08dbe0a69fd",
       "name": "Build Profile Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -426,7 +426,7 @@
       }
     },
     {
-      "id": "233d12c8-21ff-423e-baa0-085798b783f4",
+      "id": "f5f8644b-e879-4bef-b0ea-6364c3eb4f6b",
       "name": "Prompt OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -443,7 +443,7 @@
           },
           "conditions": [
             {
-              "id": "c1fde32e-b503-4ee6-92e6-9e2f6767bf36",
+              "id": "2b55bab9-4e27-45a0-ae11-ceca04752811",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -459,7 +459,7 @@
       }
     },
     {
-      "id": "4adb8ad8-37e5-478b-9ce6-53e88bccd10b",
+      "id": "747e584e-05de-4ed5-81ed-54a387499dc9",
       "name": "Call Claude",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
@@ -489,7 +489,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "68c98def-9583-493b-bc0a-00558bff0e30",
+      "id": "d05a0a07-2dcb-4f43-a627-ba9a640ec862",
       "name": "Validate Profile",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -502,7 +502,7 @@
       }
     },
     {
-      "id": "8430d8d9-6392-469e-887e-122b722b23f0",
+      "id": "31ae975f-26d3-4aad-a84e-a43826657d3a",
       "name": "Profile OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -519,7 +519,7 @@
           },
           "conditions": [
             {
-              "id": "5c73ca5b-008f-4232-a476-61b4aa6c39c0",
+              "id": "88fc6261-f9c1-4c3a-ab15-6360ae968a60",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -535,7 +535,7 @@
       }
     },
     {
-      "id": "2eff8cf3-982d-4ffb-b421-2e42ce37a4ba",
+      "id": "04005b47-e077-4601-9010-c643e768ed4f",
       "name": "Dry Run? (create)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -552,7 +552,7 @@
           },
           "conditions": [
             {
-              "id": "b8539b1c-1466-4e63-a0a1-b839f807b746",
+              "id": "aa5f51f1-1f23-493f-a321-ca421c5f85c2",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -568,7 +568,7 @@
       }
     },
     {
-      "id": "5041bc8a-933f-4d11-8ba6-4c390ac4491b",
+      "id": "f7e9d6ca-1e9c-4e04-97c8-522e4777a8b4",
       "name": "Dry Preview Create",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -581,7 +581,7 @@
       }
     },
     {
-      "id": "7889ad59-5c68-4c78-8fae-1606bd945405",
+      "id": "a014983b-34fd-41f4-b2e7-88ab5caa154e",
       "name": "Playbook - Create Startup",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -614,7 +614,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "0354b98e-fb55-4724-a01b-729762ad89b0",
+      "id": "ce59d4f9-9ca5-4816-8c59-7c96fd378d09",
       "name": "Parse Created Startup",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -627,7 +627,7 @@
       }
     },
     {
-      "id": "5cc04973-bb3c-4fcb-be78-0e34522a8819",
+      "id": "eb8d0020-44f6-47bf-a63b-f94b11af6e0e",
       "name": "Created?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -644,7 +644,7 @@
           },
           "conditions": [
             {
-              "id": "c8cff5f0-9a07-400b-93dd-18f2b8cd62f9",
+              "id": "1b7ff1c4-e5ca-45d4-9f74-e80bbdaecb9f",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -660,7 +660,7 @@
       }
     },
     {
-      "id": "d10531fd-5b1f-46c4-b24f-50d14db6612e",
+      "id": "3d8b64e7-3eff-4ef9-9d0f-299c53bdaf73",
       "name": "Playbook - Set Logo",
       "type": "@n8n/n8n-nodes-langchain.mcpClient",
       "typeVersion": 1.1,
@@ -693,7 +693,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "88ea9ffc-42ff-4617-a046-e691f84cfbf0",
+      "id": "fc40b475-f71e-442b-be0f-1484c49bd302",
       "name": "Created Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -706,7 +706,7 @@
       }
     },
     {
-      "id": "be6405df-cad1-449a-a7e5-b95246136b46",
+      "id": "61457f4f-5f24-40ed-ac3b-422c5ecbc696",
       "name": "Pipeline - Write Created",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -752,7 +752,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "c170d750-4fb8-4bc3-a677-e5024864f05a",
+      "id": "bd837c7b-d18c-41c5-8271-ed2b5b7d140a",
       "name": "Notify Created",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -765,7 +765,7 @@
       }
     },
     {
-      "id": "6e0ac102-b581-4033-aa18-92fbb2805ef7",
+      "id": "18aec0d2-607b-40a3-b725-79fa9a15fe9b",
       "name": "Email Me - Add Founder",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -791,10 +791,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "d5229df7-5567-4791-b8d6-7f48b24d6f7f"
+      "webhookId": "323d643d-ab85-44b6-aecd-319f69ff2f80"
     },
     {
-      "id": "ab41529f-a500-40f9-8366-cd7ea7fdb452",
+      "id": "176f644a-b590-40b9-ab61-46a4f6b11e30",
       "name": "Review Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -807,7 +807,7 @@
       }
     },
     {
-      "id": "78f503af-ac42-4482-a95e-e6f34dd67002",
+      "id": "da75c631-88d4-4a7d-9c46-de1139070463",
       "name": "Live? (review)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -824,7 +824,7 @@
           },
           "conditions": [
             {
-              "id": "9c6d4d04-689f-4496-a8a3-6a123a8a0352",
+              "id": "efa5bb98-e1d5-4dcd-818e-dd72869495ed",
               "leftValue": "={{ !$('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -840,7 +840,7 @@
       }
     },
     {
-      "id": "5e02e8a8-abd5-4f45-a8e3-5e901c1bf088",
+      "id": "a066dd69-d395-4be9-bbd7-35675d3d4386",
       "name": "Pipeline - Write Review",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -886,7 +886,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "eae8d51c-aabb-4bbe-bc09-cfe2053a325a",
+      "id": "b6b2beee-c75a-4b3b-a5af-0e674d947669",
       "name": "Notify Review",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -899,7 +899,7 @@
       }
     },
     {
-      "id": "9cf4ef0e-ecfc-4465-adeb-915921f7c417",
+      "id": "e6475039-8878-4890-bdc0-d197eea101ca",
       "name": "Email Me - Review",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -925,10 +925,10 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "ef2ca1a7-7788-48a8-a468-4c8ac203c2a7"
+      "webhookId": "2093a5fe-d0ad-447a-8ce0-e3132e0ef479"
     },
     {
-      "id": "7908fc8c-398e-4244-8b4f-837edc286006",
+      "id": "e03f83c0-a8e6-4513-8cda-79aea1de2467",
       "name": "Gmail - Invites Sent Today",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -968,7 +968,7 @@
       "executeOnce": true
     },
     {
-      "id": "59e90247-49cc-41df-9421-b9a883aeab31",
+      "id": "be66e7ef-bafc-4670-a9a4-e4d0b96bf7de",
       "name": "Select Emails To Send",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -981,7 +981,7 @@
       }
     },
     {
-      "id": "7eb5f3d7-457d-460c-805a-f44393f46c39",
+      "id": "6af92c2e-00c1-44c4-ba2d-d4eb6c7ca0ea",
       "name": "Loop Send",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -995,7 +995,7 @@
       }
     },
     {
-      "id": "934d387c-901e-49c4-b449-b884f1c63a87",
+      "id": "7e620584-3871-410f-a564-5c2f5dcb06f7",
       "name": "Gmail - Invite Already Sent?",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1035,7 +1035,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "4bb3e370-ec60-4cd1-9c4a-8daa2165497d",
+      "id": "725ab122-ca21-4003-a319-2711ee09b5d0",
       "name": "Build Invite Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1048,7 +1048,7 @@
       }
     },
     {
-      "id": "bc38529b-098a-43a2-8da5-45b6483df3e4",
+      "id": "e9a5fd04-a1f5-489f-a882-97a82652793f",
       "name": "Dry Run? (send)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -1065,7 +1065,7 @@
           },
           "conditions": [
             {
-              "id": "62f002d0-b97e-4cc9-a241-76094f0839dc",
+              "id": "46385086-9234-4e6d-8a91-70aa915ee34f",
               "leftValue": "={{ $('Config').first().json.dryRun }}",
               "rightValue": "",
               "operator": {
@@ -1081,7 +1081,7 @@
       }
     },
     {
-      "id": "95aeacb0-b82d-441b-9d11-74e6c6d1ae84",
+      "id": "45c410c5-4aed-4701-83d8-bdda2eca8d7e",
       "name": "Dry Preview Send",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1094,7 +1094,7 @@
       }
     },
     {
-      "id": "4f3a072a-dab8-4a1d-84be-6471bfb8b7c3",
+      "id": "48038460-bb81-4878-bd55-e93c4782aeca",
       "name": "Email OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -1111,7 +1111,7 @@
           },
           "conditions": [
             {
-              "id": "4f6f8080-3c7e-4ed1-bab8-f635615c3ad1",
+              "id": "60e94e4c-8aab-4206-b43d-5b33cb849eb6",
               "leftValue": "={{ $json.ok }}",
               "rightValue": "",
               "operator": {
@@ -1127,7 +1127,7 @@
       }
     },
     {
-      "id": "ef0022f8-ac28-478b-8bc0-d03b58a68f2e",
+      "id": "4d0b5e01-f6b0-4612-ad56-1be8c6cb3235",
       "name": "Claim Send Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1140,7 +1140,7 @@
       }
     },
     {
-      "id": "1c9cd2a1-9dbf-42c3-a9ec-25a67d6edf1f",
+      "id": "38ec4f4c-61ea-45b0-a5cc-954e6333998f",
       "name": "Pipeline - Claim Send",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -1186,7 +1186,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "b16e4df2-f366-430d-b428-bb7614643a85",
+      "id": "43f74567-8c60-4cc0-905b-a8148eb63bb7",
       "name": "Send Invite Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1213,7 +1213,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "f86dd4a0-b2df-4f0a-85a6-ba316d1b4241",
+      "id": "1ed805a0-b546-42b9-b3c9-4ae157098b39",
       "name": "Mark Invite Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1226,7 +1226,7 @@
       }
     },
     {
-      "id": "40b8ee72-618b-464a-95dd-5a490e9cfc59",
+      "id": "634c9a3c-3ecc-4a68-99f6-84d4a2a55a39",
       "name": "Mark Invite Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1239,7 +1239,7 @@
       }
     },
     {
-      "id": "61811dd9-b55e-4ede-8c3b-8ddc80e5362f",
+      "id": "8b48e397-a8ce-4e94-8264-154d63dc5456",
       "name": "Mark Invite Blocked",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1252,7 +1252,7 @@
       }
     },
     {
-      "id": "62a01de5-4c35-435e-ba53-f6c3ca03a256",
+      "id": "9efa408b-0b12-49c7-9f45-de7fa4fd5d6f",
       "name": "Pipeline - Write Send Result",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -1298,7 +1298,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "5e0ed806-41fb-4a1d-88b3-e4ef8cb15acd",
+      "id": "25d069fc-f20b-47e6-ac6f-c585f7ea14b4",
       "name": "Build Dry-Run Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1311,7 +1311,7 @@
       }
     },
     {
-      "id": "90038d26-abef-4a9c-999c-99cac5eb3f55",
+      "id": "2e715d66-3f28-441d-a209-d594306f983f",
       "name": "Send Digest to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -1337,7 +1337,7 @@
         }
       },
       "onError": "continueRegularOutput",
-      "webhookId": "de1a9e1a-1d65-462f-8ede-ac5abab68dd7"
+      "webhookId": "db697c7c-d010-4475-8a50-2aa933d1e830"
     }
   ],
   "connections": {
@@ -1999,9 +1999,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "94f027e0-0e70-43b8-bd85-8e3fe757eaa2",
+  "versionId": "800e9c95-3a6c-4776-92be-a6c64d7bf68c",
   "activeVersionId": null,
-  "versionCounter": 5,
+  "versionCounter": 6,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "shared": [
