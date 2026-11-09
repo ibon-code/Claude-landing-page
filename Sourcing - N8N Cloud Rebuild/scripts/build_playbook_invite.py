@@ -16,9 +16,11 @@ Guardrails:
 - Claude may only use countries/verticals from Playbook's lists, and only facts from the homepage.
   Empty homepage = review (never invent a profile).
 - Our email: only after 'Team Added' = YES on a row whose profile n8n created; hard block if Gmail Sent
-  already has a "Playbook invite" email to that address (all time); max PER_RUN_CAP per run, DAILY_CAP a day.
+  already has a "Playbook invite" / "Invito Playbook" email to that address (all time); max PER_RUN_CAP per run, DAILY_CAP a day.
 - Mon-Fri 09:00-18:29 Europe/Rome. DRY_RUN: nothing created on Playbook, nothing written, no founder email,
   one preview email to me. TEST_ONLY_EMAIL: live, but only for rows whose recipient is that address.
+
+Language: column 'Language' = IT -> Italian email (subject "... | Invito Playbook"); empty/EN -> English.
 
 Usage: python3 build_playbook_invite.py <out_dir> [--live] [--test-email ADDR] [--deploy]  (created/updated INACTIVE)
 """
@@ -336,7 +338,7 @@ for (const r of rows) {
   if (!EMAIL_RE.test(rec.email)) continue;
   if (cfg.testOnlyEmail && rec.email !== cfg.testOnlyEmail) continue;
   out.push({ json: { row_number: r.row_number, name: String(r['Startup name'] || '').trim(), email: rec.email,
-    fullName: rec.name, sentToday } });
+    fullName: rec.name, sentToday, lang: /^it/i.test(String(r['Language'] || '').trim()) ? 'it' : 'en' } });
 }
 return out;
 """
@@ -359,10 +361,19 @@ function teamOf(name) {
   n = n || full;
   return n + (/s$/i.test(n) ? "'" : "'s") + ' team';
 }
-const greeting = /^\p{L}[\p{L}'’-]{1,24}$/u.test(first) ? 'Hi ' + first : 'Dear ' + teamOf(e.name);
-const subject = 'Plug and Play - ' + e.name + ' Playbook invite';
-const text = `${greeting},\n\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\n\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\n\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\n\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\n\nBest,\n\nIacopo`;
-const html = `<p>${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href="${PLAYBOOK}">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href="${PARTNERS}">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;
+// Italian name: the startup name without legal suffix/tagline ("Gentile team di <Startup>").
+const shortName = teamOf(e.name).replace(/'s? team$/, '');
+const IT = e.lang === 'it';
+const okFirst = /^\p{L}[\p{L}'’-]{1,24}$/u.test(first);
+const greeting = IT ? (okFirst ? 'Ciao ' + first : 'Gentile team di ' + shortName)
+                    : (okFirst ? 'Hi ' + first : 'Dear ' + teamOf(e.name));
+const subject = IT ? 'Plug and Play - ' + e.name + ' | Invito Playbook' : 'Plug and Play - ' + e.name + ' Playbook invite';
+const textEn = `${greeting},\n\nIt was a pleasure speaking with you, I really enjoyed learning about ${e.name} and your team.\n\nI sent you an invitation to complete the profile at ${PLAYBOOK}. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. The invitation expires after 48 hours.\n\nAdditionally, here is the list of our corporate partners for reference: ${PARTNERS}\n\nPlease keep me posted on your project's progress, and I would love to receive your deck if you have one!\n\nBest,\n\nIacopo`;
+const htmlEn = `<p>${esc(greeting)},</p><p>It was a pleasure speaking with you, I really enjoyed learning about ${esc(e.name)} and your team.</p><p>I sent you an invitation to complete the profile at <a href="${PLAYBOOK}">${PLAYBOOK}</a>. Can you check to see if you can log in? Your profile there should serve as a starting point to apply your company to meet with our partners and network. <strong>The invitation expires after 48 hours.</strong></p><p>Additionally, <a href="${PARTNERS}">here is the list of our corporate partners</a> for reference.</p><p>Please keep me posted on your project's progress, and I would love to receive your deck if you have one!</p><p>Best,</p>` + SIGNATURE_HTML;
+const textIt = `${greeting},\n\nè stato un piacere parlare con te, mi ha fatto molto piacere conoscere ${e.name} e il vostro team.\n\nTi ho inviato un invito per completare il profilo su ${PLAYBOOK}. Riesci a verificare se puoi accedere? Il profilo sarà il punto di partenza per candidare la vostra azienda agli incontri con i nostri partner e il nostro network. L'invito scade dopo 48 ore.\n\nQui trovi anche la lista dei nostri partner corporate: ${PARTNERS}\n\nTienimi aggiornato sui progressi del progetto, e mi farebbe molto piacere ricevere il vostro deck se ne avete uno!\n\nA presto,\n\nIacopo`;
+const htmlIt = `<p>${esc(greeting)},</p><p>è stato un piacere parlare con te, mi ha fatto molto piacere conoscere ${esc(e.name)} e il vostro team.</p><p>Ti ho inviato un invito per completare il profilo su <a href="${PLAYBOOK}">${PLAYBOOK}</a>. Riesci a verificare se puoi accedere? Il profilo sarà il punto di partenza per candidare la vostra azienda agli incontri con i nostri partner e il nostro network. <strong>L'invito scade dopo 48 ore.</strong></p><p>Qui trovi anche <a href="${PARTNERS}">la lista dei nostri partner corporate</a>.</p><p>Tienimi aggiornato sui progressi del progetto, e mi farebbe molto piacere ricevere il vostro deck se ne avete uno!</p><p>A presto,</p>` + SIGNATURE_HTML;
+const text = IT ? textIt : textEn;
+const html = IT ? htmlIt : htmlEn;
 if (/undefined|\bnull\b|NaN|\{\{|\}\}/.test(text + html + subject)) return [{ json: { ...base, ok: false, reason: 'Rendered email contains a placeholder' } }];
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 const b64url = s => b64(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -373,7 +384,7 @@ const mime = ['From: ' + SENDER, 'To: ' + e.email, 'Subject: =?UTF-8?B?' + b64(s
   '--' + boundary, 'Content-Type: text/plain; charset="UTF-8"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),
   '--' + boundary, 'Content-Type: text/html; charset="UTF-8"', 'Content-Transfer-Encoding: base64', '', wrap(b64(html)),
   '--' + boundary + '--', ''].join('\r\n');
-return [{ json: { ...base, ok: true, subject, htmlBody: html, sendBody: { raw: b64url(mime) } } }];
+return [{ json: { ...base, ok: true, lang: e.lang, subject, htmlBody: html, sendBody: { raw: b64url(mime) } } }];
 """)
 
 claim_send_js = """const e = $('Build Invite Email').first().json;
@@ -488,12 +499,12 @@ nodes = [
     gmail_send_me("Email Me - Review", [5280, 260], "={{ $json.subject }}", "={{ $json.html }}"),
     # B
     gmail_api("Gmail - Invites Sent Today", [660, 700], f"{GAPI}/messages",
-              [("q", "={{ 'in:sent subject:\"Playbook invite\" after:' + $('Config').first().json.dayStartEpoch }}"),
+              [("q", "={{ 'in:sent {subject:\"Playbook invite\" subject:\"Invito Playbook\"} after:' + $('Config').first().json.dayStartEpoch }}"),
                ("maxResults", "100")], executeOnce=True),
     code("Select Emails To Send", [880, 700], select_send_js),
     node(LB, "n8n-nodes-base.splitInBatches", 3, [1100, 700], {"batchSize": 1, "options": {}}),
     gmail_api("Gmail - Invite Already Sent?", [1320, 800], f"{GAPI}/messages",
-              [("q", "={{ 'in:sent to:' + $('" + LB + "').first().json.email + ' subject:\"Playbook invite\"' }}"),
+              [("q", "={{ 'in:sent to:' + $('" + LB + "').first().json.email + ' {subject:\"Playbook invite\" subject:\"Invito Playbook\"}' }}"),
                ("maxResults", "5")], onError="continueRegularOutput"),
     code("Build Invite Email", [1540, 800], build_email_js),
     if_true("Dry Run? (send)", [1760, 800], DRY),
