@@ -258,7 +258,8 @@ else if (one.length < 10 || one.length > 160) reason = 'One-liner has an odd len
 else if (desc.length < 60 || desc.length > 1500) reason = 'Description has an odd length';
 else if (!vs.length || vs.length > 2 || vs.some(v => !v)) reason = 'Vertical not in the Playbook list: ' + JSON.stringify(info.verticals).slice(0, 80);
 else if (!country) reason = 'HQ country not stated on the homepage or not in the Playbook list: ' + String(info.country || '(empty)').slice(0, 40);
-else if (/undefined|\bnull\b|NaN|\{\{|\}\}|lorem ipsum/i.test(one + desc + city)) reason = 'Profile text contains a placeholder';
+// Case-sensitive tokens on word boundaries: /NaN/i used to match "fiNANcial" and block every fintech profile.
+else if (/\bundefined\b|\bnull\b|\bNaN\b|\{\{|\}\}/.test(one + desc + city) || /lorem ipsum/i.test(one + desc + city)) reason = 'Profile text contains a placeholder';
 if (reason) return [{ json: { ...e, ok: false, reason } }];
 const create = { company_name: e.name, website: e.website, one_liner: one, description: desc,
   country_id: country.id, vertical_ids: vs.map(v => v.id) };
