@@ -1,0 +1,160 @@
+{
+  "updatedAt": "2026-11-11T17:54:42.452Z",
+  "createdAt": "2026-11-11T17:54:42.452Z",
+  "id": "x9NFxOpa4CT3unBl",
+  "name": "Airbus outreach | Errori",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "f95140b0-a4c9-4c59-88ee-15fcc28da556",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "50f748bf-9fd7-48b7-a698-97fd5d20f550",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf3f3767-7db8-44c9-81e0-7389621e116e",
+              "name": "ME",
+              "value": "i.bon@pnptc.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "includeOtherFields": true
+        }
+      }
+    },
+    {
+      "id": "8be02a00-b9d0-4d60-a75f-9bff6cc6df4b",
+      "name": "Build Error Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst ex = e.execution || {}, wf = e.workflow || {};\nconst err = ex.error || e.trigger?.error || {};\nconst html = `<p><b>${esc(wf.name)}</b> si e' fermato.</p><ul>`\n  + `<li>Nodo: ${esc(ex.lastNodeExecuted || err.node?.name || '?')}</li>`\n  + `<li>Errore: ${esc(err.message || JSON.stringify(err).slice(0, 300))}</li>`\n  + `<li>Esecuzione: ${esc(ex.url || ex.id || '')}</li></ul>`\n  + '<p>Le righe gia\\' scritte nel foglio sono corrette; quelle non ancora scritte non sono state inviate, '\n  + 'oppure lo sono ma il controllo su Gmail Inviati le blocca al prossimo giro. Controlla la colonna Status.</p>';\nreturn [{ json: { subject: 'Airbus outreach: errore in ' + (wf.name || 'workflow'), html } }];\n"
+      }
+    },
+    {
+      "id": "da3e0e46-7c38-41cc-bcb7-5278a4202f4b",
+      "name": "Email Error to Me",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Settings').first().json.ME }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "webhookId": "d8f2afa6-b728-46c4-9790-9bf3bf5fe61c"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Build Error Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Error Email": {
+      "main": [
+        [
+          {
+            "node": "Email Error to Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "14afc1a5-d174-4982-9a9b-7678ef3d5716",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-11-11T17:54:42.452Z",
+      "createdAt": "2026-11-11T17:54:42.452Z",
+      "role": "workflow:owner",
+      "workflowId": "x9NFxOpa4CT3unBl",
+      "projectId": "0Xc2vqh3ay8XF9p7",
+      "project": {
+        "updatedAt": "2026-09-17T14:57:31.253Z",
+        "createdAt": "2026-09-17T14:56:30.296Z",
+        "id": "0Xc2vqh3ay8XF9p7",
+        "name": "Iacopo Bon <i.bon@pnptc.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": null
+}

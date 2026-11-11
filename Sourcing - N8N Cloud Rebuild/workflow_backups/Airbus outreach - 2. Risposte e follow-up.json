@@ -1,0 +1,1109 @@
+{
+  "updatedAt": "2026-11-11T17:54:44.737Z",
+  "createdAt": "2026-11-11T17:54:44.737Z",
+  "id": "ew3T35qp6U4qWkij",
+  "name": "Airbus outreach | 2. Risposte e follow-up",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "0898efcc-c91b-4489-8c7f-58688a058147",
+      "name": "Mon-Fri 09:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -100
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 9 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dada4c77-4f8f-4669-8941-cdacf3fd4c42",
+      "name": "Run Manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        100
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f1ed18c0-4ede-4f32-97da-6ef1f5a9a375",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ecdcd329-6894-4fbd-9e36-753382d9a534",
+              "name": "TEST_MODE",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "eb87e459-163d-4f16-9c48-26cb50ea1186",
+              "name": "TEST_RECIPIENT",
+              "value": "i.bon@pnptc.com",
+              "type": "string"
+            },
+            {
+              "id": "578f00de-34e0-4699-84ab-8014e95243cb",
+              "name": "ME",
+              "value": "i.bon@pnptc.com",
+              "type": "string"
+            },
+            {
+              "id": "60e99d95-6023-4e4a-ae29-2e518a043f73",
+              "name": "SHEET_ID",
+              "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+              "type": "string"
+            },
+            {
+              "id": "055e2f69-31c2-40d8-a579-9fd453c30e14",
+              "name": "PDF_FILE_ID",
+              "value": "1Se0tZT4Bc7BfVnrLXjeqNuFoJr7Frth9",
+              "type": "string"
+            },
+            {
+              "id": "81836e39-9d43-4296-86b7-54988c56da35",
+              "name": "OWN_DOMAINS",
+              "value": "pnptc.com",
+              "type": "string"
+            },
+            {
+              "id": "3251c852-7651-4fd2-b8b6-f5cd8a70e508",
+              "name": "TEST_ROWS",
+              "value": "SPREAD AI|eccenca|Agon",
+              "type": "string"
+            },
+            {
+              "id": "1e4132a0-8cc7-42a8-8291-1f4d22ed3b1c",
+              "name": "MIN_DELAY_S",
+              "value": 60,
+              "type": "number"
+            },
+            {
+              "id": "8d02c9e4-b3b2-463e-a132-dd2eb5e9e43b",
+              "name": "MAX_DELAY_S",
+              "value": 120,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "074f5547-6a58-467d-81f9-e8ad686b9727",
+      "name": "Sheets - Get Emails",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Emails",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5d06c825-ba6f-48d5-932c-75a068f2bad2",
+      "name": "Sheets - Get Test log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Test log",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "5b9b00f3-d109-4f02-87be-8b0642893423",
+      "name": "Sheets - Get Template",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        800,
+        0
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Template",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ba526a08-0375-4b78-8c6c-49451ddd91b4",
+      "name": "Template Values",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst tpl = Object.fromEntries($('Sheets - Get Template').all().map(i => [str(i.json['Field']), str(i.json['Value'])]));\nif (!tpl['Sender name']) throw new Error('Template tab: Sender name missing');\nreturn [{ json: { senderName: tpl['Sender name'] } }];\n"
+      }
+    },
+    {
+      "id": "3b40dab3-a075-466c-b940-6d9df39efa65",
+      "name": "Select Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst emails = $('Sheets - Get Emails').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst testLog = $('Sheets - Get Test log').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst src = S.TEST_MODE ? testLog : emails;\nconst out = [];\nfor (const r of src) {\n  const status = str(r['Status']);\n  if (!['Sent', 'Follow-up sent'].includes(status) || !str(r['Thread ID'])) continue;\n  const name = str(r['Startup name']);\n  const er = emails.find(x => str(x['Startup name']) === name) || {};\n  const realTo = splitList(S.TEST_MODE ? r['Real To'] : r['To']);\n  const realCc = splitList(S.TEST_MODE ? r['Real CC'] : r['CC']);\n  // Test rows never look at the real startups' mail.\n  const domains = S.TEST_MODE ? [] : [...new Set(realTo.map(a => a.split('@')[1].toLowerCase()))]\n    .filter(d => !str(S.OWN_DOMAINS).split(',').map(x => x.trim()).includes(d));\n  const sendTo = S.TEST_MODE ? [S.TEST_RECIPIENT] : realTo;\n  const subject = S.TEST_MODE ? 'Re: ' + str(r['Subject']) : str(er['Follow-up subject']);\n  let html = str(er['Follow-up body HTML']);\n  if (S.TEST_MODE) html = `<div style=\"border:1px dashed #999;padding:8px;margin-bottom:16px;font:12px Arial;color:#555\">TEST follow-up - real To: ${esc(realTo.join(', '))}<br>real CC: ${esc(realCc.join(', '))}</div>` + html;\n  out.push({ json: {\n    key: S.TEST_MODE ? { row_number: r.row_number } : { 'Startup name': name },\n    name, status, threadId: str(r['Thread ID']), messageId: str(r['Message ID']), sentAt: str(r['Sent at']),\n    due: str(r['Follow-up due']), notes: str(r['Automation notes']), ourIds: splitList(r['Gmail IDs']),\n    domains, sendTo: sendTo.join(', '), cc: S.TEST_MODE ? '' : realCc.join(', '), subject, html,\n    testMode: S.TEST_MODE } });\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "ef868130-65f9-4400-afd4-7bf0bd4607cf",
+      "name": "Gmail - Get Thread",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://gmail.googleapis.com/gmail/v1/users/me/threads/' + $json.threadId + '?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Message-ID&metadataHeaders=Auto-Submitted&metadataHeaders=X-Autoreply&metadataHeaders=X-Autorespond' }}}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ccea8fa6-e84e-4646-9402-26a06630c176",
+      "name": "Gmail - Startup Inbox",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => { const c = $('Select Rows').item.json; if (!c.domains.length) return 'from:nobody@invalid.invalid'; return '-in:sent' + (() => { try { const ms = Number($('Gmail - Get Thread').item.json.messages[0].internalDate); return ms > 0 ? ' after:' + Math.floor(ms / 1000) : ''; } catch (e) { return ''; } })() + ' {' + c.domains.map(d => 'from:@' + d).join(' ') + '}'; })() }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4bb8d363-3e17-4b99-a767-e7dbf2e931d0",
+      "name": "Gmail - Bounces",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => { const c = $('Select Rows').item.json; const addrs = c.testMode ? c.sendTo.split(', ') : c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []); return '{from:mailer-daemon from:postmaster}' + (() => { try { const ms = Number($('Gmail - Get Thread').item.json.messages[0].internalDate); return ms > 0 ? ' after:' + Math.floor(ms / 1000) : ''; } catch (e) { return ''; } })() + ' {' + addrs.map(a => '\"' + a + '\"').join(' ') + '}'; })() }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "b7f21678-2d6e-4a39-9de3-96f3cbcfb95c",
+      "name": "Expand Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// One item per inbox / bounce message to read (max 5 + 5 per startup).\nconst out = [];\nconst inbox = $('Gmail - Startup Inbox').all(), bounces = $('Gmail - Bounces').all();\n$('Select Rows').all().forEach((it, k) => {\n  for (const m of ((inbox[k] || {}).json || {}).messages?.slice(0, 5) || []) out.push({ json: { k, id: m.id, kind: 'inbox' } });\n  for (const m of ((bounces[k] || {}).json || {}).messages?.slice(0, 5) || []) out.push({ json: { k, id: m.id, kind: 'bounce' } });\n});\nreturn out.length ? out : [{ json: { k: -1, id: 'none', kind: 'none' } }];\n"
+      }
+    },
+    {
+      "id": "88d751a8-53d8-4a70-9ce6-149b56d77710",
+      "name": "Gmail - Read Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://gmail.googleapis.com/gmail/v1/users/me/messages/' + $json.id + '?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Auto-Submitted&metadataHeaders=X-Autoreply&metadataHeaders=X-Autorespond' }}}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "2cc08fe0-74e6-4827-9638-8516329ce018",
+      "name": "Evaluate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst ME = str(S.ME).toLowerCase();\nconst OWN = str(S.OWN_DOMAINS).split(',').map(x => x.trim().toLowerCase()).filter(Boolean);\nconst cands = $('Select Rows').all(), threads = $('Gmail - Get Thread').all();\nconst extra = $('Expand Messages').all().map((it, i) => ({ ...it.json, msg: ($('Gmail - Read Message').all()[i] || {}).json || {} }));\nconst hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';\nconst fromAddr = m => { const f = hdr(m, 'From'); const x = f.match(/<([^>]+)>/); return (x ? x[1] : f).trim().toLowerCase(); };\nconst isBounce = m => /mailer-daemon|postmaster/i.test(hdr(m, 'From')) || /delivery status notification|undeliverable|delivery failure|returned mail/i.test(hdr(m, 'Subject'));\nconst isAuto = m => { const as = hdr(m, 'Auto-Submitted'); return (as && !/^no$/i.test(as)) || !!hdr(m, 'X-Autoreply') || !!hdr(m, 'X-Autorespond')\n  || /auto-?reply|automatic reply|out of (the )?office|abwesenheit|absence|automatische antwort|r[\u00e9e]ponse automatique|respuesta autom[\u00e1a]tica|risposta automatica/i.test(hdr(m, 'Subject')); };\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst today = madrid(new Date()).date;\n\nconst out = [];\ncands.forEach((it, k) => {\n  const c = it.json;\n  const t = (threads[k] || {}).json || {};\n  const notes = new Set(c.notes ? c.notes.split(' | ') : []);\n  const before = notes.size;\n  const row = { ...c.key };\n  if (t.error || !(t.messages || []).length) {\n    notes.add('Thread not readable in Gmail (' + today + ')');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const msgs = t.messages, orig = msgs[0];\n  const ours = m => c.testMode ? c.ourIds.includes(m.id) : (fromAddr(m) === ME || OWN.includes(fromAddr(m).split('@')[1]));\n  let reply = null;\n  for (const m of msgs.slice(1)) {\n    if (ours(m)) continue;\n    if (isBounce(m)) { notes.add('Bounce in thread: ' + (m.snippet || '').slice(0, 80)); continue; }\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  for (const x of extra.filter(x => x.k === k)) {\n    const m = x.msg;\n    if (!m || m.error || !m.id) continue;\n    if (x.kind === 'bounce') {\n      const addr = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []).find(a => (m.snippet || '').toLowerCase().includes(a.toLowerCase()));\n      notes.add('Bounce: ' + (addr || (m.snippet || '').slice(0, 80)));\n      continue;\n    }\n    if (isBounce(m)) continue;\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  if (notes.size !== before) row['Automation notes'] = [...notes].join(' | ');\n  if (reply) {\n    row.Status = 'Replied';\n    row['Replied at'] = madrid(new Date(Number(reply.internalDate) || Date.now())).s;\n    return out.push({ json: { action: 'replied', row, name: c.name, from: fromAddr(reply) } });\n  }\n  if (c.status !== 'Sent' || !c.due || today < c.due.slice(0, 10)) {\n    return notes.size !== before ? out.push({ json: { action: 'note', row } }) : null;\n  }\n  if (msgs.filter(ours).length > 1) {\n    notes.add('Follow-up not sent: the thread already holds a second email from us');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const rfc = hdr(orig, 'Message-ID') || c.messageId;\n  const bad = [];\n  if (!rfc) bad.push('no Message-ID for the original email');\n  if (!c.subject || !c.html) bad.push('Follow-up subject or body empty');\n  if (PLACEHOLDER_RE.test(c.subject + c.html.replace(/<div style=\"border:1px dashed[\\s\\S]*?<\\/div>/, ''))) bad.push('placeholder left');\n  const addrs = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []);\n  if (addrs.some(a => !EMAIL_RE.test(a))) bad.push('invalid address');\n  if (bad.length) { row.Status = 'Error: follow-up not sent - ' + bad.join('; '); return out.push({ json: { action: 'note', row } }); }\n  const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\n  const text = c.html.replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/p>/gi, '\\n\\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim();\n  const mime = [\n    'From: ' + $('Template Values').first().json.senderName + ' <' + S.ME + '>',\n    'To: ' + c.sendTo, ...(c.cc ? ['Cc: ' + c.cc] : []),\n    'Subject: =?UTF-8?B?' + b64(c.subject) + '?=', 'In-Reply-To: ' + rfc, 'References: ' + rfc, 'MIME-Version: 1.0',\n    'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n    '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n    '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(c.html)),\n    '--' + boundary + '--', '',\n  ].join('\\r\\n');\n  out.push({ json: { action: 'send', row, name: c.name, ourIds: c.ourIds, testMode: c.testMode,\n                     sendBody: { raw: b64url(mime), threadId: c.threadId } } });\n});\nreturn out;\n"
+      }
+    },
+    {
+      "id": "af4c3404-2e71-4475-8821-b5e0a66dece6",
+      "name": "Loop Over Rows",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2600,
+        0
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "8b98aef2-7af1-479f-83a7-897d43fc1ab9",
+      "name": "Follow-up?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "77bf2de7-7e7f-48c9-b7e4-75f84abb02fe",
+              "leftValue": "={{ $json.action === 'send' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "98435169-767c-4e88-a2f5-978f98253000",
+      "name": "Gmail - Send Follow-up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3000,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.sendBody) }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "3914869f-6705-4849-a3b3-db424c863957",
+      "name": "Mark Follow-up Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst e = $('Loop Over Rows').first().json;\nconst g = $input.first().json;\nconst row = { ...e.row, Status: 'Follow-up sent', 'Follow-up sent at': madrid(new Date()).s };\nif (e.testMode) row['Gmail IDs'] = [...e.ourIds, g.id].filter(Boolean).join(', ');\nreturn [{ json: { ...row, _sent: true } }];\n"
+      }
+    },
+    {
+      "id": "da229bf1-b3d0-48ff-a9fd-26a3d6d6159d",
+      "name": "Mark Follow-up Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        50
+      ],
+      "parameters": {
+        "jsCode": "// Not retried automatically: check the thread in Gmail, then set Status back to Sent to try again.\nconst e = $('Loop Over Rows').first().json;\nconst err = $input.first().json.error;\nconst msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');\nreturn [{ json: { ...e.row, Status: 'Error: follow-up send failed - ' + String(msg).slice(0, 150), _sent: false } }];\n"
+      }
+    },
+    {
+      "id": "ec5c8b10-cc3b-44af-a4be-a097085aeb44",
+      "name": "Mark Other",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3000,
+        250
+      ],
+      "parameters": {
+        "jsCode": "const e = $('Loop Over Rows').first().json;\nreturn [{ json: { ...e.row, _sent: false } }];\n"
+      }
+    },
+    {
+      "id": "0acf9d81-1c04-4359-b6fd-0efc716432e9",
+      "name": "Row Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3400,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return $input.all();"
+      }
+    },
+    {
+      "id": "aa5e7a39-bc64-4369-83ef-915181320f34",
+      "name": "Test Mode?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "4ad240df-ba2f-4ba5-b0e0-c273b12abbcf",
+              "leftValue": "={{ $('Settings').first().json.TEST_MODE }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "e6fe2a22-2442-44f0-90a0-43155b7b41cd",
+      "name": "Test log - Update Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3800,
+        -100
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Test log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "schema": [],
+          "matchingColumns": [
+            "row_number"
+          ]
+        },
+        "options": {
+          "handlingExtraData": "ignoreIt",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "7bb5589a-365f-42c4-8efd-295592b03c4e",
+      "name": "Emails - Update Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3800,
+        100
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Emails",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "schema": [],
+          "matchingColumns": [
+            "Startup name"
+          ]
+        },
+        "options": {
+          "handlingExtraData": "ignoreIt",
+          "cellFormat": "RAW"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "f49a3839-805a-42fa-8a00-690c27fbd3e5",
+      "name": "Sent? (wait)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4000,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "7a60bc88-6c44-458a-9ae3-e4075d5cd504",
+              "leftValue": "={{ $('Row Payload').first().json._sent }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "61bf03bf-4dfb-4500-bb86-ee591283c45d",
+      "name": "Wait 60-120 s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4200,
+        -100
+      ],
+      "parameters": {
+        "amount": "={{ (() => { const s = $('Settings').first().json; return Math.round(s.MIN_DELAY_S + Math.random() * (s.MAX_DELAY_S - s.MIN_DELAY_S)); })() }}",
+        "unit": "seconds"
+      },
+      "webhookId": "c0068ff4-16a0-4e75-9ebf-1a20bda82174"
+    },
+    {
+      "id": "80496a14-1be3-4a6a-86e7-0ecf0e49d9de",
+      "name": "Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        -250
+      ],
+      "parameters": {
+        "jsCode": "const S = $('Settings').first().json;\nconst res = [];\nfor (let r = 0; r < 500; r++) {\n  let its;\n  try { its = $('Row Payload').all(0, r); } catch (e) { break; }\n  if (!its || !its.length) break;\n  res.push(...its.map(i => i.json));\n}\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst rows = res.filter(r => r.Status || r['Automation notes']);\nif (!rows.length) return [];\nconst label = r => esc(r['Startup name'] || ('Test log row ' + r.row_number));\nconst html = '<ul>' + rows.map(r => `<li>${label(r)}: ${esc(r.Status || 'note')}${r['Automation notes'] ? ' - ' + esc(r['Automation notes']) : ''}</li>`).join('') + '</ul>';\nconst fu = rows.filter(r => r.Status === 'Follow-up sent').length, rep = rows.filter(r => r.Status === 'Replied').length;\nreturn [{ json: { subject: `${S.TEST_MODE ? '[TEST] ' : ''}Airbus outreach: ${rep} risposte, ${fu} follow-up inviati`, html } }];\n"
+      }
+    },
+    {
+      "id": "21a9be23-eee7-40bc-bf1d-10db09966f27",
+      "name": "Email Summary to Me",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3000,
+        -250
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Settings').first().json.ME }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3FF4ROo5Rl75aufp",
+          "name": "Gmail (Iacopo Bon)"
+        }
+      },
+      "webhookId": "b506f940-59b9-418b-8b87-d5eab6f3eef1"
+    }
+  ],
+  "connections": {
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Get Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Get Emails": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Get Test log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Get Test log": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Get Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Get Template": {
+      "main": [
+        [
+          {
+            "node": "Template Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template Values": {
+      "main": [
+        [
+          {
+            "node": "Select Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Rows": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Get Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Get Thread": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Startup Inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Startup Inbox": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Bounces",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Bounces": {
+      "main": [
+        [
+          {
+            "node": "Expand Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Messages": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Read Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Read Message": {
+      "main": [
+        [
+          {
+            "node": "Evaluate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mon-Fri 09:30": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Manually": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Rows": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Follow-up?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary": {
+      "main": [
+        [
+          {
+            "node": "Email Summary to Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up?": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Send Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Other",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Mark Follow-up Sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Follow-up Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Follow-up Sent": {
+      "main": [
+        [
+          {
+            "node": "Row Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Follow-up Failed": {
+      "main": [
+        [
+          {
+            "node": "Row Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Other": {
+      "main": [
+        [
+          {
+            "node": "Row Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Row Payload": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Test log - Update Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Emails - Update Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test log - Update Row": {
+      "main": [
+        [
+          {
+            "node": "Sent? (wait)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emails - Update Row": {
+      "main": [
+        [
+          {
+            "node": "Sent? (wait)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sent? (wait)": {
+      "main": [
+        [
+          {
+            "node": "Wait 60-120 s",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60-120 s": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid",
+    "saveManualExecutions": true,
+    "errorWorkflow": "x9NFxOpa4CT3unBl"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": null,
+  "versionId": "ff4cebe2-25fc-49a7-bfbf-04b7fa060bc7",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "shared": [
+    {
+      "updatedAt": "2026-11-11T17:54:44.737Z",
+      "createdAt": "2026-11-11T17:54:44.737Z",
+      "role": "workflow:owner",
+      "workflowId": "ew3T35qp6U4qWkij",
+      "projectId": "0Xc2vqh3ay8XF9p7",
+      "project": {
+        "updatedAt": "2026-09-17T14:57:31.253Z",
+        "createdAt": "2026-09-17T14:56:30.296Z",
+        "id": "0Xc2vqh3ay8XF9p7",
+        "name": "Iacopo Bon <i.bon@pnptc.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
+      }
+    }
+  ],
+  "tags": [],
+  "parentFolder": null,
+  "activeVersion": null
+}
