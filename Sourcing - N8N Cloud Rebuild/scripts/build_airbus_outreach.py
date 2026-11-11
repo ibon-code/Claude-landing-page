@@ -24,7 +24,8 @@ Guardrails:
   In TEST_MODE a reply is any thread message whose Gmail id is not one we sent (column 'Gmail IDs'), so a test
   reply written from my own mailbox counts.
 
-Usage: python3 build_airbus_outreach.py <out_dir> [--live] [--deploy]
+Usage: python3 build_airbus_outreach.py <out_dir> [--live] [--test-rows 'A|B'] [--deploy]
+  --test-rows  startups used in TEST_MODE (default: SPREAD AI|eccenca|Agon)
   --live    TEST_MODE = false (real recipients). Only after the user's explicit 'OK, vai'.
   --deploy  create/update on n8n (refuses to overwrite an ACTIVE workflow). Workflows are created INACTIVE.
 """
@@ -40,7 +41,7 @@ TEST_MODE = "--live" not in sys.argv
 ME = "i.bon@pnptc.com"
 SHEET_ID = "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw"
 PDF_FILE_ID = "1Se0tZT4Bc7BfVnrLXjeqNuFoJr7Frth9"
-TEST_ROWS = "SPREAD AI|eccenca|Agon"
+TEST_ROWS = sys.argv[sys.argv.index("--test-rows") + 1] if "--test-rows" in sys.argv else "SPREAD AI|eccenca|Agon"
 TZ = "Europe/Madrid"
 
 NAME1 = "Airbus outreach | 1. Invio iniziale"
@@ -358,6 +359,8 @@ for (const r of src) {
     name, status, threadId: str(r['Thread ID']), messageId: str(r['Message ID']), sentAt: str(r['Sent at']),
     due: str(r['Follow-up due']), notes: str(r['Automation notes']), ourIds: splitList(r['Gmail IDs']),
     domains, sendTo: sendTo.join(', '), cc: S.TEST_MODE ? '' : realCc.join(', '), subject, html,
+    // Placeholder check runs on the sheet text, before the [TEST] label / banner are added.
+    checkText: str(er['Follow-up subject']) + ' ' + str(er['Follow-up body HTML']),
     testMode: S.TEST_MODE } });
 }
 return out;
@@ -449,7 +452,7 @@ cands.forEach((it, k) => {
   const bad = [];
   if (!rfc) bad.push('no Message-ID for the original email');
   if (!c.subject || !c.html) bad.push('Follow-up subject or body empty');
-  if (PLACEHOLDER_RE.test(c.subject + c.html.replace(/<div style="border:1px dashed[\s\S]*?<\/div>/, ''))) bad.push('placeholder left');
+  if (!c.checkText.trim() || PLACEHOLDER_RE.test(c.checkText)) bad.push('placeholder left or follow-up text missing');
   const addrs = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []);
   if (addrs.some(a => !EMAIL_RE.test(a))) bad.push('invalid address');
   if (bad.length) { row.Status = 'Error: follow-up not sent - ' + bad.join('; '); return out.push({ json: { action: 'note', row } }); }

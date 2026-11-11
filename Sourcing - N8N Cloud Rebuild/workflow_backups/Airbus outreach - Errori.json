@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:54:42.452Z",
+  "updatedAt": "2026-11-11T18:22:16.352Z",
   "createdAt": "2026-11-11T17:54:42.452Z",
   "id": "x9NFxOpa4CT3unBl",
   "name": "Airbus outreach | Errori",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "f95140b0-a4c9-4c59-88ee-15fcc28da556",
+      "id": "50e56c8b-3f32-4e0f-908e-a1b709b23b3a",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -19,7 +19,7 @@
       "parameters": {}
     },
     {
-      "id": "50f748bf-9fd7-48b7-a698-97fd5d20f550",
+      "id": "c57b3aaf-4031-4f62-9a75-cec43052064c",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -31,7 +31,7 @@
         "assignments": {
           "assignments": [
             {
-              "id": "cf3f3767-7db8-44c9-81e0-7389621e116e",
+              "id": "3ca8fdad-e6e7-4bb1-a002-f689d79f92b1",
               "name": "ME",
               "value": "i.bon@pnptc.com",
               "type": "string"
@@ -44,7 +44,7 @@
       }
     },
     {
-      "id": "8be02a00-b9d0-4d60-a75f-9bff6cc6df4b",
+      "id": "fd6acf65-ed7c-42e3-b77e-ad78ae343f43",
       "name": "Build Error Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
       }
     },
     {
-      "id": "da3e0e46-7c38-41cc-bcb7-5278a4202f4b",
+      "id": "76431842-30a3-4896-8756-9e54c1a04ba4",
       "name": "Email Error to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -82,7 +82,7 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "d8f2afa6-b728-46c4-9790-9bf3bf5fe61c"
+      "webhookId": "a76cc887-97b8-4021-8061-4b98025e40a1"
     }
   ],
   "connections": {
@@ -129,32 +129,11 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "14afc1a5-d174-4982-9a9b-7678ef3d5716",
+  "versionId": "31532228-92e7-46c6-84e3-140c2b2eb545",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 3,
   "triggerCount": 0,
   "sourceWorkflowId": null,
-  "shared": [
-    {
-      "updatedAt": "2026-11-11T17:54:42.452Z",
-      "createdAt": "2026-11-11T17:54:42.452Z",
-      "role": "workflow:owner",
-      "workflowId": "x9NFxOpa4CT3unBl",
-      "projectId": "0Xc2vqh3ay8XF9p7",
-      "project": {
-        "updatedAt": "2026-09-17T14:57:31.253Z",
-        "createdAt": "2026-09-17T14:56:30.296Z",
-        "id": "0Xc2vqh3ay8XF9p7",
-        "name": "Iacopo Bon <i.bon@pnptc.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
-      }
-    }
-  ],
   "tags": [],
-  "parentFolder": null,
   "activeVersion": null
 }

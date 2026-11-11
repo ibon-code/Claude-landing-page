@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T17:54:44.737Z",
+  "updatedAt": "2026-11-11T18:22:18.660Z",
   "createdAt": "2026-11-11T17:54:44.737Z",
   "id": "ew3T35qp6U4qWkij",
   "name": "Airbus outreach | 2. Risposte e follow-up",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "0898efcc-c91b-4489-8c7f-58688a058147",
+      "id": "b963fcc9-be6e-4da3-b878-b574a601b2ff",
       "name": "Mon-Fri 09:30",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "dada4c77-4f8f-4669-8941-cdacf3fd4c42",
+      "id": "993c2cfa-2279-403a-b652-9f66c7d771cd",
       "name": "Run Manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -39,7 +39,7 @@
       "parameters": {}
     },
     {
-      "id": "f1ed18c0-4ede-4f32-97da-6ef1f5a9a375",
+      "id": "6fc23d1e-f750-4c51-ab44-66fb55c093c4",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -51,55 +51,55 @@
         "assignments": {
           "assignments": [
             {
-              "id": "ecdcd329-6894-4fbd-9e36-753382d9a534",
+              "id": "d6352b66-1fe9-4094-bc45-d02869a02a5f",
               "name": "TEST_MODE",
               "value": true,
               "type": "boolean"
             },
             {
-              "id": "eb87e459-163d-4f16-9c48-26cb50ea1186",
+              "id": "786dac5f-571c-4396-a4ff-a4dba55599af",
               "name": "TEST_RECIPIENT",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "578f00de-34e0-4699-84ab-8014e95243cb",
+              "id": "bfeb9e5c-6412-4e71-b653-ac6f60914d57",
               "name": "ME",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "60e99d95-6023-4e4a-ae29-2e518a043f73",
+              "id": "e831c40d-2f85-47e7-973f-88a96f7746bb",
               "name": "SHEET_ID",
               "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
               "type": "string"
             },
             {
-              "id": "055e2f69-31c2-40d8-a579-9fd453c30e14",
+              "id": "a6423b25-5e2c-40b0-8ac1-caf864906c82",
               "name": "PDF_FILE_ID",
               "value": "1Se0tZT4Bc7BfVnrLXjeqNuFoJr7Frth9",
               "type": "string"
             },
             {
-              "id": "81836e39-9d43-4296-86b7-54988c56da35",
+              "id": "935455d5-82d8-40b5-a34e-5b289a7ea60e",
               "name": "OWN_DOMAINS",
               "value": "pnptc.com",
               "type": "string"
             },
             {
-              "id": "3251c852-7651-4fd2-b8b6-f5cd8a70e508",
+              "id": "822b8d75-5582-45ec-b6c8-1bc28928721e",
               "name": "TEST_ROWS",
-              "value": "SPREAD AI|eccenca|Agon",
+              "value": "Squirro",
               "type": "string"
             },
             {
-              "id": "1e4132a0-8cc7-42a8-8291-1f4d22ed3b1c",
+              "id": "6f45a717-f0a0-4d6a-a94b-73089522adf3",
               "name": "MIN_DELAY_S",
               "value": 60,
               "type": "number"
             },
             {
-              "id": "8d02c9e4-b3b2-463e-a132-dd2eb5e9e43b",
+              "id": "1dc7934a-99c6-47b1-8882-efeb80682174",
               "name": "MAX_DELAY_S",
               "value": 120,
               "type": "number"
@@ -110,7 +110,7 @@
       }
     },
     {
-      "id": "074f5547-6a58-467d-81f9-e8ad686b9727",
+      "id": "42c81b02-68ca-4e22-8fec-6bebf395343a",
       "name": "Sheets - Get Emails",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -144,7 +144,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "5d06c825-ba6f-48d5-932c-75a068f2bad2",
+      "id": "63508468-aa9c-432b-81fa-e8776d5f1065",
       "name": "Sheets - Get Test log",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -178,7 +178,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "5b9b00f3-d109-4f02-87be-8b0642893423",
+      "id": "d43d2f81-0bfe-4590-b9e3-be78a5542b00",
       "name": "Sheets - Get Template",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -212,7 +212,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "ba526a08-0375-4b78-8c6c-49451ddd91b4",
+      "id": "76e5169b-5c91-40cf-a685-9b0273f60279",
       "name": "Template Values",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -225,7 +225,7 @@
       }
     },
     {
-      "id": "3b40dab3-a075-466c-b940-6d9df39efa65",
+      "id": "55d0dca5-f2b0-42eb-b1d3-836939592e66",
       "name": "Select Rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -234,11 +234,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst emails = $('Sheets - Get Emails').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst testLog = $('Sheets - Get Test log').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst src = S.TEST_MODE ? testLog : emails;\nconst out = [];\nfor (const r of src) {\n  const status = str(r['Status']);\n  if (!['Sent', 'Follow-up sent'].includes(status) || !str(r['Thread ID'])) continue;\n  const name = str(r['Startup name']);\n  const er = emails.find(x => str(x['Startup name']) === name) || {};\n  const realTo = splitList(S.TEST_MODE ? r['Real To'] : r['To']);\n  const realCc = splitList(S.TEST_MODE ? r['Real CC'] : r['CC']);\n  // Test rows never look at the real startups' mail.\n  const domains = S.TEST_MODE ? [] : [...new Set(realTo.map(a => a.split('@')[1].toLowerCase()))]\n    .filter(d => !str(S.OWN_DOMAINS).split(',').map(x => x.trim()).includes(d));\n  const sendTo = S.TEST_MODE ? [S.TEST_RECIPIENT] : realTo;\n  const subject = S.TEST_MODE ? 'Re: ' + str(r['Subject']) : str(er['Follow-up subject']);\n  let html = str(er['Follow-up body HTML']);\n  if (S.TEST_MODE) html = `<div style=\"border:1px dashed #999;padding:8px;margin-bottom:16px;font:12px Arial;color:#555\">TEST follow-up - real To: ${esc(realTo.join(', '))}<br>real CC: ${esc(realCc.join(', '))}</div>` + html;\n  out.push({ json: {\n    key: S.TEST_MODE ? { row_number: r.row_number } : { 'Startup name': name },\n    name, status, threadId: str(r['Thread ID']), messageId: str(r['Message ID']), sentAt: str(r['Sent at']),\n    due: str(r['Follow-up due']), notes: str(r['Automation notes']), ourIds: splitList(r['Gmail IDs']),\n    domains, sendTo: sendTo.join(', '), cc: S.TEST_MODE ? '' : realCc.join(', '), subject, html,\n    testMode: S.TEST_MODE } });\n}\nreturn out;\n"
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst emails = $('Sheets - Get Emails').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst testLog = $('Sheets - Get Test log').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst src = S.TEST_MODE ? testLog : emails;\nconst out = [];\nfor (const r of src) {\n  const status = str(r['Status']);\n  if (!['Sent', 'Follow-up sent'].includes(status) || !str(r['Thread ID'])) continue;\n  const name = str(r['Startup name']);\n  const er = emails.find(x => str(x['Startup name']) === name) || {};\n  const realTo = splitList(S.TEST_MODE ? r['Real To'] : r['To']);\n  const realCc = splitList(S.TEST_MODE ? r['Real CC'] : r['CC']);\n  // Test rows never look at the real startups' mail.\n  const domains = S.TEST_MODE ? [] : [...new Set(realTo.map(a => a.split('@')[1].toLowerCase()))]\n    .filter(d => !str(S.OWN_DOMAINS).split(',').map(x => x.trim()).includes(d));\n  const sendTo = S.TEST_MODE ? [S.TEST_RECIPIENT] : realTo;\n  const subject = S.TEST_MODE ? 'Re: ' + str(r['Subject']) : str(er['Follow-up subject']);\n  let html = str(er['Follow-up body HTML']);\n  if (S.TEST_MODE) html = `<div style=\"border:1px dashed #999;padding:8px;margin-bottom:16px;font:12px Arial;color:#555\">TEST follow-up - real To: ${esc(realTo.join(', '))}<br>real CC: ${esc(realCc.join(', '))}</div>` + html;\n  out.push({ json: {\n    key: S.TEST_MODE ? { row_number: r.row_number } : { 'Startup name': name },\n    name, status, threadId: str(r['Thread ID']), messageId: str(r['Message ID']), sentAt: str(r['Sent at']),\n    due: str(r['Follow-up due']), notes: str(r['Automation notes']), ourIds: splitList(r['Gmail IDs']),\n    domains, sendTo: sendTo.join(', '), cc: S.TEST_MODE ? '' : realCc.join(', '), subject, html,\n    // Placeholder check runs on the sheet text, before the [TEST] label / banner are added.\n    checkText: str(er['Follow-up subject']) + ' ' + str(er['Follow-up body HTML']),\n    testMode: S.TEST_MODE } });\n}\nreturn out;\n"
       }
     },
     {
-      "id": "ef868130-65f9-4400-afd4-7bf0bd4607cf",
+      "id": "3302b6c4-2c0e-4086-820b-3004b8eae041",
       "name": "Gmail - Get Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -265,7 +265,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "ccea8fa6-e84e-4646-9402-26a06630c176",
+      "id": "250cd700-b65c-4932-a0ed-ce4bb8bfc72b",
       "name": "Gmail - Startup Inbox",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -305,7 +305,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "4bb8d363-3e17-4b99-a767-e7dbf2e931d0",
+      "id": "77c8c6e7-73d9-4b19-96ae-bcefb5c62d24",
       "name": "Gmail - Bounces",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -345,7 +345,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "b7f21678-2d6e-4a39-9de3-96f3cbcfb95c",
+      "id": "b6ebcb31-84ff-4240-a5ac-d1264c3d1a93",
       "name": "Expand Messages",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -358,7 +358,7 @@
       }
     },
     {
-      "id": "88d751a8-53d8-4a70-9ce6-149b56d77710",
+      "id": "a046d7b6-0213-4b24-98bc-f627f7336d7d",
       "name": "Gmail - Read Message",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -385,7 +385,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "2cc08fe0-74e6-4827-9638-8516329ce018",
+      "id": "f34217a1-12f1-482d-bd79-736221fda112",
       "name": "Evaluate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -394,11 +394,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst ME = str(S.ME).toLowerCase();\nconst OWN = str(S.OWN_DOMAINS).split(',').map(x => x.trim().toLowerCase()).filter(Boolean);\nconst cands = $('Select Rows').all(), threads = $('Gmail - Get Thread').all();\nconst extra = $('Expand Messages').all().map((it, i) => ({ ...it.json, msg: ($('Gmail - Read Message').all()[i] || {}).json || {} }));\nconst hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';\nconst fromAddr = m => { const f = hdr(m, 'From'); const x = f.match(/<([^>]+)>/); return (x ? x[1] : f).trim().toLowerCase(); };\nconst isBounce = m => /mailer-daemon|postmaster/i.test(hdr(m, 'From')) || /delivery status notification|undeliverable|delivery failure|returned mail/i.test(hdr(m, 'Subject'));\nconst isAuto = m => { const as = hdr(m, 'Auto-Submitted'); return (as && !/^no$/i.test(as)) || !!hdr(m, 'X-Autoreply') || !!hdr(m, 'X-Autorespond')\n  || /auto-?reply|automatic reply|out of (the )?office|abwesenheit|absence|automatische antwort|r[\u00e9e]ponse automatique|respuesta autom[\u00e1a]tica|risposta automatica/i.test(hdr(m, 'Subject')); };\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst today = madrid(new Date()).date;\n\nconst out = [];\ncands.forEach((it, k) => {\n  const c = it.json;\n  const t = (threads[k] || {}).json || {};\n  const notes = new Set(c.notes ? c.notes.split(' | ') : []);\n  const before = notes.size;\n  const row = { ...c.key };\n  if (t.error || !(t.messages || []).length) {\n    notes.add('Thread not readable in Gmail (' + today + ')');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const msgs = t.messages, orig = msgs[0];\n  const ours = m => c.testMode ? c.ourIds.includes(m.id) : (fromAddr(m) === ME || OWN.includes(fromAddr(m).split('@')[1]));\n  let reply = null;\n  for (const m of msgs.slice(1)) {\n    if (ours(m)) continue;\n    if (isBounce(m)) { notes.add('Bounce in thread: ' + (m.snippet || '').slice(0, 80)); continue; }\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  for (const x of extra.filter(x => x.k === k)) {\n    const m = x.msg;\n    if (!m || m.error || !m.id) continue;\n    if (x.kind === 'bounce') {\n      const addr = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []).find(a => (m.snippet || '').toLowerCase().includes(a.toLowerCase()));\n      notes.add('Bounce: ' + (addr || (m.snippet || '').slice(0, 80)));\n      continue;\n    }\n    if (isBounce(m)) continue;\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  if (notes.size !== before) row['Automation notes'] = [...notes].join(' | ');\n  if (reply) {\n    row.Status = 'Replied';\n    row['Replied at'] = madrid(new Date(Number(reply.internalDate) || Date.now())).s;\n    return out.push({ json: { action: 'replied', row, name: c.name, from: fromAddr(reply) } });\n  }\n  if (c.status !== 'Sent' || !c.due || today < c.due.slice(0, 10)) {\n    return notes.size !== before ? out.push({ json: { action: 'note', row } }) : null;\n  }\n  if (msgs.filter(ours).length > 1) {\n    notes.add('Follow-up not sent: the thread already holds a second email from us');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const rfc = hdr(orig, 'Message-ID') || c.messageId;\n  const bad = [];\n  if (!rfc) bad.push('no Message-ID for the original email');\n  if (!c.subject || !c.html) bad.push('Follow-up subject or body empty');\n  if (PLACEHOLDER_RE.test(c.subject + c.html.replace(/<div style=\"border:1px dashed[\\s\\S]*?<\\/div>/, ''))) bad.push('placeholder left');\n  const addrs = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []);\n  if (addrs.some(a => !EMAIL_RE.test(a))) bad.push('invalid address');\n  if (bad.length) { row.Status = 'Error: follow-up not sent - ' + bad.join('; '); return out.push({ json: { action: 'note', row } }); }\n  const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\n  const text = c.html.replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/p>/gi, '\\n\\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim();\n  const mime = [\n    'From: ' + $('Template Values').first().json.senderName + ' <' + S.ME + '>',\n    'To: ' + c.sendTo, ...(c.cc ? ['Cc: ' + c.cc] : []),\n    'Subject: =?UTF-8?B?' + b64(c.subject) + '?=', 'In-Reply-To: ' + rfc, 'References: ' + rfc, 'MIME-Version: 1.0',\n    'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n    '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n    '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(c.html)),\n    '--' + boundary + '--', '',\n  ].join('\\r\\n');\n  out.push({ json: { action: 'send', row, name: c.name, ourIds: c.ourIds, testMode: c.testMode,\n                     sendBody: { raw: b64url(mime), threadId: c.threadId } } });\n});\nreturn out;\n"
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst ME = str(S.ME).toLowerCase();\nconst OWN = str(S.OWN_DOMAINS).split(',').map(x => x.trim().toLowerCase()).filter(Boolean);\nconst cands = $('Select Rows').all(), threads = $('Gmail - Get Thread').all();\nconst extra = $('Expand Messages').all().map((it, i) => ({ ...it.json, msg: ($('Gmail - Read Message').all()[i] || {}).json || {} }));\nconst hdr = (m, n) => (((m.payload || {}).headers || []).find(h => h.name.toLowerCase() === n.toLowerCase()) || {}).value || '';\nconst fromAddr = m => { const f = hdr(m, 'From'); const x = f.match(/<([^>]+)>/); return (x ? x[1] : f).trim().toLowerCase(); };\nconst isBounce = m => /mailer-daemon|postmaster/i.test(hdr(m, 'From')) || /delivery status notification|undeliverable|delivery failure|returned mail/i.test(hdr(m, 'Subject'));\nconst isAuto = m => { const as = hdr(m, 'Auto-Submitted'); return (as && !/^no$/i.test(as)) || !!hdr(m, 'X-Autoreply') || !!hdr(m, 'X-Autorespond')\n  || /auto-?reply|automatic reply|out of (the )?office|abwesenheit|absence|automatische antwort|r[\u00e9e]ponse automatique|respuesta autom[\u00e1a]tica|risposta automatica/i.test(hdr(m, 'Subject')); };\nconst b64 = s => Buffer.from(s, 'utf8').toString('base64');\nconst b64url = s => b64(s).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, '');\nconst wrap = s => s.replace(/(.{76})/g, '$1\\r\\n');\nconst today = madrid(new Date()).date;\n\nconst out = [];\ncands.forEach((it, k) => {\n  const c = it.json;\n  const t = (threads[k] || {}).json || {};\n  const notes = new Set(c.notes ? c.notes.split(' | ') : []);\n  const before = notes.size;\n  const row = { ...c.key };\n  if (t.error || !(t.messages || []).length) {\n    notes.add('Thread not readable in Gmail (' + today + ')');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const msgs = t.messages, orig = msgs[0];\n  const ours = m => c.testMode ? c.ourIds.includes(m.id) : (fromAddr(m) === ME || OWN.includes(fromAddr(m).split('@')[1]));\n  let reply = null;\n  for (const m of msgs.slice(1)) {\n    if (ours(m)) continue;\n    if (isBounce(m)) { notes.add('Bounce in thread: ' + (m.snippet || '').slice(0, 80)); continue; }\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  for (const x of extra.filter(x => x.k === k)) {\n    const m = x.msg;\n    if (!m || m.error || !m.id) continue;\n    if (x.kind === 'bounce') {\n      const addr = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []).find(a => (m.snippet || '').toLowerCase().includes(a.toLowerCase()));\n      notes.add('Bounce: ' + (addr || (m.snippet || '').slice(0, 80)));\n      continue;\n    }\n    if (isBounce(m)) continue;\n    if (isAuto(m)) { notes.add('Auto-reply: ' + fromAddr(m)); continue; }\n    if (!reply) reply = m;\n  }\n  if (notes.size !== before) row['Automation notes'] = [...notes].join(' | ');\n  if (reply) {\n    row.Status = 'Replied';\n    row['Replied at'] = madrid(new Date(Number(reply.internalDate) || Date.now())).s;\n    return out.push({ json: { action: 'replied', row, name: c.name, from: fromAddr(reply) } });\n  }\n  if (c.status !== 'Sent' || !c.due || today < c.due.slice(0, 10)) {\n    return notes.size !== before ? out.push({ json: { action: 'note', row } }) : null;\n  }\n  if (msgs.filter(ours).length > 1) {\n    notes.add('Follow-up not sent: the thread already holds a second email from us');\n    row['Automation notes'] = [...notes].join(' | ');\n    return out.push({ json: { action: 'note', row } });\n  }\n  const rfc = hdr(orig, 'Message-ID') || c.messageId;\n  const bad = [];\n  if (!rfc) bad.push('no Message-ID for the original email');\n  if (!c.subject || !c.html) bad.push('Follow-up subject or body empty');\n  if (!c.checkText.trim() || PLACEHOLDER_RE.test(c.checkText)) bad.push('placeholder left or follow-up text missing');\n  const addrs = c.sendTo.split(', ').concat(c.cc ? c.cc.split(', ') : []);\n  if (addrs.some(a => !EMAIL_RE.test(a))) bad.push('invalid address');\n  if (bad.length) { row.Status = 'Error: follow-up not sent - ' + bad.join('; '); return out.push({ json: { action: 'note', row } }); }\n  const boundary = 'b' + Math.random().toString(36).slice(2) + Date.now();\n  const text = c.html.replace(/<br\\s*\\/?>/gi, '\\n').replace(/<\\/p>/gi, '\\n\\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim();\n  const mime = [\n    'From: ' + $('Template Values').first().json.senderName + ' <' + S.ME + '>',\n    'To: ' + c.sendTo, ...(c.cc ? ['Cc: ' + c.cc] : []),\n    'Subject: =?UTF-8?B?' + b64(c.subject) + '?=', 'In-Reply-To: ' + rfc, 'References: ' + rfc, 'MIME-Version: 1.0',\n    'Content-Type: multipart/alternative; boundary=\"' + boundary + '\"', '',\n    '--' + boundary, 'Content-Type: text/plain; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(text)),\n    '--' + boundary, 'Content-Type: text/html; charset=\"UTF-8\"', 'Content-Transfer-Encoding: base64', '', wrap(b64(c.html)),\n    '--' + boundary + '--', '',\n  ].join('\\r\\n');\n  out.push({ json: { action: 'send', row, name: c.name, ourIds: c.ourIds, testMode: c.testMode,\n                     sendBody: { raw: b64url(mime), threadId: c.threadId } } });\n});\nreturn out;\n"
       }
     },
     {
-      "id": "af4c3404-2e71-4475-8821-b5e0a66dece6",
+      "id": "f510a4e8-50b5-4b33-900f-d0dda5478bc7",
       "name": "Loop Over Rows",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -412,7 +412,7 @@
       }
     },
     {
-      "id": "8b98aef2-7af1-479f-83a7-897d43fc1ab9",
+      "id": "b702c2c4-af9e-4e6e-b424-1cf482df4af7",
       "name": "Follow-up?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -429,7 +429,7 @@
           },
           "conditions": [
             {
-              "id": "77bf2de7-7e7f-48c9-b7e4-75f84abb02fe",
+              "id": "7683d9cb-c251-4e34-8de6-212af846042e",
               "leftValue": "={{ $json.action === 'send' }}",
               "rightValue": "",
               "operator": {
@@ -445,7 +445,7 @@
       }
     },
     {
-      "id": "98435169-767c-4e88-a2f5-978f98253000",
+      "id": "88425dd9-59ed-4d5f-8ed4-73f07f06da64",
       "name": "Gmail - Send Follow-up",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -472,7 +472,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "3914869f-6705-4849-a3b3-db424c863957",
+      "id": "504a900e-d09a-46d1-83e2-fccda0be3892",
       "name": "Mark Follow-up Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -485,7 +485,7 @@
       }
     },
     {
-      "id": "da229bf1-b3d0-48ff-a9fd-26a3d6d6159d",
+      "id": "1cec2c8e-55ad-4d71-8315-066b797c9624",
       "name": "Mark Follow-up Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -498,7 +498,7 @@
       }
     },
     {
-      "id": "ec5c8b10-cc3b-44af-a4be-a097085aeb44",
+      "id": "8b5a8ee3-80d2-4c4d-af5b-31f2349cf42a",
       "name": "Mark Other",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -511,7 +511,7 @@
       }
     },
     {
-      "id": "0acf9d81-1c04-4359-b6fd-0efc716432e9",
+      "id": "515f0a81-7dfe-4fcc-aacd-8a6e96dcdc05",
       "name": "Row Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -524,7 +524,7 @@
       }
     },
     {
-      "id": "aa5e7a39-bc64-4369-83ef-915181320f34",
+      "id": "82003c9e-fd10-45f9-a541-3d9ad55d074b",
       "name": "Test Mode?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -541,7 +541,7 @@
           },
           "conditions": [
             {
-              "id": "4ad240df-ba2f-4ba5-b0e0-c273b12abbcf",
+              "id": "01d4427f-61d7-4c7a-8ebe-bb04abd490fd",
               "leftValue": "={{ $('Settings').first().json.TEST_MODE }}",
               "rightValue": "",
               "operator": {
@@ -557,7 +557,7 @@
       }
     },
     {
-      "id": "e6fe2a22-2442-44f0-90a0-43155b7b41cd",
+      "id": "ff3f18e9-06af-4489-9e04-3b8847578217",
       "name": "Test log - Update Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -601,7 +601,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "7bb5589a-365f-42c4-8efd-295592b03c4e",
+      "id": "baf0c178-baff-4187-86d7-47aec14f3b16",
       "name": "Emails - Update Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -645,7 +645,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "f49a3839-805a-42fa-8a00-690c27fbd3e5",
+      "id": "0d306562-2775-42ff-9d15-1233249db6ef",
       "name": "Sent? (wait)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -662,7 +662,7 @@
           },
           "conditions": [
             {
-              "id": "7a60bc88-6c44-458a-9ae3-e4075d5cd504",
+              "id": "59f85120-16ba-443e-a3b6-31869c07ff15",
               "leftValue": "={{ $('Row Payload').first().json._sent }}",
               "rightValue": "",
               "operator": {
@@ -678,7 +678,7 @@
       }
     },
     {
-      "id": "61bf03bf-4dfb-4500-bb86-ee591283c45d",
+      "id": "3c44c0ef-ef7c-47cd-ae9f-9145ad4e24d6",
       "name": "Wait 60-120 s",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -690,10 +690,10 @@
         "amount": "={{ (() => { const s = $('Settings').first().json; return Math.round(s.MIN_DELAY_S + Math.random() * (s.MAX_DELAY_S - s.MIN_DELAY_S)); })() }}",
         "unit": "seconds"
       },
-      "webhookId": "c0068ff4-16a0-4e75-9ebf-1a20bda82174"
+      "webhookId": "119bffc0-10d1-4209-a492-0f8be2a0f988"
     },
     {
-      "id": "80496a14-1be3-4a6a-86e7-0ecf0e49d9de",
+      "id": "4bac45df-0045-43b0-8c72-f592266b826c",
       "name": "Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -706,7 +706,7 @@
       }
     },
     {
-      "id": "21a9be23-eee7-40bc-bf1d-10db09966f27",
+      "id": "29ceb3dc-f0d8-44be-8ff5-62a07e80f58a",
       "name": "Email Summary to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -731,7 +731,7 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "b506f940-59b9-418b-8b87-d5eab6f3eef1"
+      "webhookId": "e789e4cb-4dfb-4427-b72c-08afc774cbb1"
     }
   ],
   "connections": {
@@ -1078,32 +1078,11 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "ff4cebe2-25fc-49a7-bfbf-04b7fa060bc7",
+  "versionId": "e3500245-fcc7-4f28-8eb2-8db6027ac4e8",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 3,
   "triggerCount": 0,
   "sourceWorkflowId": null,
-  "shared": [
-    {
-      "updatedAt": "2026-11-11T17:54:44.737Z",
-      "createdAt": "2026-11-11T17:54:44.737Z",
-      "role": "workflow:owner",
-      "workflowId": "ew3T35qp6U4qWkij",
-      "projectId": "0Xc2vqh3ay8XF9p7",
-      "project": {
-        "updatedAt": "2026-09-17T14:57:31.253Z",
-        "createdAt": "2026-09-17T14:56:30.296Z",
-        "id": "0Xc2vqh3ay8XF9p7",
-        "name": "Iacopo Bon <i.bon@pnptc.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "5477c294-84b6-4e01-a6f5-71df4a9b26b2"
-      }
-    }
-  ],
   "tags": [],
-  "parentFolder": null,
   "activeVersion": null
 }
