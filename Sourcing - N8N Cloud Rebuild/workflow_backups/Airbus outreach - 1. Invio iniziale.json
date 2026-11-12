@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T18:22:17.426Z",
+  "updatedAt": "2026-11-12T07:27:45.560Z",
   "createdAt": "2026-11-11T17:54:43.505Z",
   "id": "9LzbzoQlA70SRdpX",
   "name": "Airbus outreach | 1. Invio iniziale",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "ed269506-38ec-43f2-9dc6-84d8dbbb187d",
+      "id": "93012348-a953-4a1f-8738-a7ba23b21b09",
       "name": "Run Manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -19,7 +19,7 @@
       "parameters": {}
     },
     {
-      "id": "8a95d246-833b-423f-8ef2-88b4cba7e4d6",
+      "id": "34cc329a-1d6c-4557-ab12-34cf1c120464",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -31,55 +31,55 @@
         "assignments": {
           "assignments": [
             {
-              "id": "3b0d9470-fb69-48d6-9700-135e81e1fb35",
+              "id": "7ca90d7a-5350-476d-8667-da5e974b3ce4",
               "name": "TEST_MODE",
               "value": true,
               "type": "boolean"
             },
             {
-              "id": "74d48112-216f-49bc-a3af-d3d0aab7b708",
+              "id": "08c4e9e4-fdec-4cba-80d0-58433d9e5641",
               "name": "TEST_RECIPIENT",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "7c78396f-8532-40ca-ab1d-2907f1182f96",
+              "id": "cce2a85c-ac82-4e21-ba69-37d4c7fbe1b6",
               "name": "ME",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "95fcaa02-70d4-48e2-bc33-06a6cab0fc7d",
+              "id": "9131d7a1-146a-46f6-8591-70127363ae66",
               "name": "SHEET_ID",
               "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
               "type": "string"
             },
             {
-              "id": "79e21895-6215-4705-abb9-dfabd89bd8f7",
+              "id": "59843193-9c3d-4546-9613-3f6b2b72633a",
               "name": "PDF_FILE_ID",
               "value": "1Se0tZT4Bc7BfVnrLXjeqNuFoJr7Frth9",
               "type": "string"
             },
             {
-              "id": "05e4496f-65de-4011-bee9-070f250b7bce",
+              "id": "399d79c5-5ff1-4a46-8880-a7a2cd4249e7",
               "name": "OWN_DOMAINS",
               "value": "pnptc.com",
               "type": "string"
             },
             {
-              "id": "8711fcc8-f094-4494-981a-e68312a300fa",
+              "id": "4a1d351e-444a-4256-bb8b-3d9d37f5797a",
               "name": "TEST_ROWS",
               "value": "Squirro",
               "type": "string"
             },
             {
-              "id": "80ba22e8-c176-4456-99ee-1867d5ab15c0",
+              "id": "f1a69df4-9f2c-44a4-a2de-c32b908dca97",
               "name": "MIN_DELAY_S",
               "value": 60,
               "type": "number"
             },
             {
-              "id": "53a6d5ed-1a19-431f-8c57-c56f31cf709f",
+              "id": "776ed8ee-d566-49bf-b43d-57c44d722360",
               "name": "MAX_DELAY_S",
               "value": 120,
               "type": "number"
@@ -90,7 +90,7 @@
       }
     },
     {
-      "id": "f5fcb570-1688-4604-afe6-3850a59671b2",
+      "id": "361631db-de0b-4620-bef7-f056bc3db1f5",
       "name": "Sheets - Get Emails",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -124,7 +124,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "621fc485-e6e7-41e8-b1fe-94dba1e12ed9",
+      "id": "a9601e0a-72ae-434d-94e1-f06dd52cd7fd",
       "name": "Sheets - Get Template",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -158,7 +158,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "54adbb0a-1873-4f73-a78e-141e7e79111d",
+      "id": "9fa1f5bd-bf48-44e8-8c84-4d97622d3e92",
       "name": "Sheets - Get Test log",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -192,7 +192,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "b5560964-4873-42f9-aba6-0ddc8479c01b",
+      "id": "e94f1440-1ee1-4b3d-ae84-a5543bd96852",
       "name": "Drive - Download PDF",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
@@ -221,7 +221,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "1707edd9-b74a-4d4e-86d4-7061a42e6d42",
+      "id": "1420ca75-f06c-45fa-a4c7-b70f4f826952",
       "name": "Build Queue",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -230,11 +230,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst rows = $('Sheets - Get Emails').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst tpl = Object.fromEntries($('Sheets - Get Template').all().map(i => [str(i.json['Field']), str(i.json['Value'])]));\nconst followDays = Number(tpl['Follow-up after (days)']);\nconst senderName = tpl['Sender name'];\nif (!(followDays > 0) || !senderName) throw new Error('Template tab: Follow-up after (days) or Sender name missing');\nconst testLog = $('Sheets - Get Test log').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst testRows = str(S.TEST_ROWS).split('|').map(s => s.trim()).filter(Boolean);\n\n// The PDF, downloaded once. Its size is checked here; the binary itself is never logged.\nlet pdfBytes = 0, pdf = null;\ntry { pdf = $input.first().binary.data; pdfBytes = (await this.helpers.getBinaryDataBuffer(0, 'data')).length; } catch (e) {}\n\nconst queue = [], skipped = [];\nfor (const r of rows) {\n  const name = str(r['Startup name']);\n  if (S.TEST_MODE && !testRows.includes(name)) continue;\n  const status = str(r['Status']);\n  if (status !== 'Ready') { skipped.push(name + ' (' + (status || 'empty') + ')'); continue; }\n  if (str(r['Sent at'])) { skipped.push(name + ' (Sent at already set)'); continue; }\n  if (S.TEST_MODE && testLog.some(t => str(t['Startup name']) === name && str(t['Sent at']))) {\n    skipped.push(name + ' (already in Test log)'); continue;\n  }\n  const realTo = splitList(r['To']), realCc = splitList(r['CC']);\n  const subject = str(r['Subject']), html = str(r['Body HTML']), att = str(r['Attachment']);\n  const base = { name, realTo: realTo.join(', '), realCc: realCc.join(', '), followDays, senderName, testMode: S.TEST_MODE };\n  const bad = [];\n  if (!realTo.length) bad.push('To empty');\n  const badAddr = [...realTo, ...realCc].filter(a => !EMAIL_RE.test(a));\n  if (badAddr.length) bad.push('invalid address ' + badAddr.join(', '));\n  if (new Set(realTo.map(a => a.toLowerCase())).size !== realTo.length) bad.push('duplicate address in To');\n  for (const [k, v] of [['Subject', subject], ['Body HTML', html], ['Follow-up subject', r['Follow-up subject']],\n                        ['Follow-up body HTML', r['Follow-up body HTML']]]) {\n    if (!str(v)) bad.push(k + ' empty');\n    else if (PLACEHOLDER_RE.test(str(v))) bad.push('placeholder left in ' + k);\n  }\n  if (!/\\.pdf$/i.test(att)) bad.push('Attachment name is not a .pdf');\n  if (!pdf || !(pdfBytes > 0)) bad.push('PDF missing or empty on Drive');\n  if (bad.length) { queue.push({ json: { ...base, subject, action: 'error', reason: bad.join('; ') } }); continue; }\n\n  let sendTo = realTo.join(', '), cc = realCc.join(', '), subj = subject, body = html;\n  if (S.TEST_MODE) {\n    sendTo = S.TEST_RECIPIENT; cc = ''; subj = '[TEST] ' + subject;\n    body = `<div style=\"border:1px dashed #999;padding:8px;margin-bottom:16px;font:12px Arial;color:#555\">TEST - real To: ${esc(base.realTo)}<br>real CC: ${esc(base.realCc)}<br>attachment: ${esc(att)}</div>` + html;\n  }\n  // Gmail safety net: has this startup already received the Airbus email?\n  const sentQuery = S.TEST_MODE ? `in:sent subject:\"${subj.replace(/\"/g, '')}\" newer_than:7d`\n                                : `in:sent to:${realTo[0]} subject:\"Airbus Defence and Space\" newer_than:90d`;\n  queue.push({ json: { ...base, action: 'send', to: sendTo, cc, subject: subj, html: body, attachmentName: att, sentQuery },\n               binary: { pdf: { ...pdf, fileName: att, mimeType: 'application/pdf' } } });\n}\nif (!queue.length) queue.push({ json: { action: 'nothing' } });\nqueue[0].json.skippedList = skipped;\nqueue[0].json.pdfBytes = pdfBytes;\nreturn queue;\n"
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst S = $('Settings').first().json;\nconst rows = $('Sheets - Get Emails').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst tpl = Object.fromEntries($('Sheets - Get Template').all().map(i => [str(i.json['Field']), str(i.json['Value'])]));\nconst followDays = Number(tpl['Follow-up after (days)']);\nconst senderName = tpl['Sender name'];\nif (!(followDays > 0) || !senderName) throw new Error('Template tab: Follow-up after (days) or Sender name missing');\nconst testLog = $('Sheets - Get Test log').all().map(i => i.json).filter(r => str(r['Startup name']));\nconst testRows = str(S.TEST_ROWS).split('|').map(s => s.trim()).filter(Boolean);\n\n// The PDF, downloaded once. Its size is checked here; the binary itself is never logged.\nlet pdfBytes = 0, pdf = null;\ntry { pdf = $input.first().binary.data; pdfBytes = (await this.helpers.getBinaryDataBuffer(0, 'data')).length; } catch (e) {}\n\nconst queue = [], skipped = [];\nfor (const r of rows) {\n  const name = str(r['Startup name']);\n  if (S.TEST_MODE && !testRows.includes(name)) continue;\n  const status = str(r['Status']);\n  if (status !== 'Ready') { skipped.push(name + ' (' + (status || 'empty') + ')'); continue; }\n  if (str(r['Sent at'])) { skipped.push(name + ' (Sent at already set)'); continue; }\n  if (S.TEST_MODE && testLog.some(t => str(t['Startup name']) === name && str(t['Sent at']))) {\n    skipped.push(name + ' (already in Test log)'); continue;\n  }\n  const realTo = splitList(r['To']), realCc = splitList(r['CC']);\n  const subject = str(r['Subject']), html = str(r['Body HTML']), att = str(r['Attachment']);\n  const base = { name, realTo: realTo.join(', '), realCc: realCc.join(', '), followDays, senderName, testMode: S.TEST_MODE };\n  const bad = [];\n  if (!realTo.length) bad.push('To empty');\n  const badAddr = [...realTo, ...realCc].filter(a => !EMAIL_RE.test(a));\n  if (badAddr.length) bad.push('invalid address ' + badAddr.join(', '));\n  if (new Set(realTo.map(a => a.toLowerCase())).size !== realTo.length) bad.push('duplicate address in To');\n  for (const [k, v] of [['Subject', subject], ['Body HTML', html], ['Follow-up subject', r['Follow-up subject']],\n                        ['Follow-up body HTML', r['Follow-up body HTML']]]) {\n    if (!str(v)) bad.push(k + ' empty');\n    else if (PLACEHOLDER_RE.test(str(v))) bad.push('placeholder left in ' + k);\n  }\n  if (!/\\.pdf$/i.test(att)) bad.push('Attachment name is not a .pdf');\n  if (!pdf || !(pdfBytes > 0)) bad.push('PDF missing or empty on Drive');\n  if (bad.length) { queue.push({ json: { ...base, subject, action: 'error', reason: bad.join('; ') } }); continue; }\n\n  let sendTo = realTo.join(', '), cc = realCc.join(', '), subj = subject, body = html;\n  if (S.TEST_MODE) {\n    sendTo = S.TEST_RECIPIENT; cc = ''; subj = '[TEST] ' + subject;\n    body = `<div style=\"border:1px dashed #999;padding:8px;margin-bottom:16px;font:12px Arial;color:#555\">TEST - real To: ${esc(base.realTo)}<br>real CC: ${esc(base.realCc)}<br>attachment: ${esc(att)}</div>` + html;\n  }\n  // Gmail safety net: has this startup already received the Airbus email?\n  const sentQuery = S.TEST_MODE ? `in:sent subject:\"${subj.replace(/\"/g, '')}\" newer_than:7d`\n                                : `in:sent to:${realTo[0]} subject:\"Airbus Defence and Space\" newer_than:90d`;\n  queue.push({ json: { ...base, rawSubject: subject, rawHtml: html, action: 'send', to: sendTo, cc, subject: subj, html: body, attachmentName: att, sentQuery },\n               binary: { pdf: { ...pdf, fileName: att, mimeType: 'application/pdf' } } });\n}\nif (!queue.length) queue.push({ json: { action: 'nothing' } });\nqueue[0].json.skippedList = skipped;\nqueue[0].json.pdfBytes = pdfBytes;\nreturn queue;\n"
       }
     },
     {
-      "id": "0e9e7944-3642-493a-8954-69a80a64e581",
+      "id": "2831ee94-22b5-4dcd-b636-e6bff6438d4a",
       "name": "Loop Over Startups",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -248,7 +248,7 @@
       }
     },
     {
-      "id": "4e098ef3-8e4c-4fe6-bf40-20785330d5e3",
+      "id": "76a487da-8c73-4f01-8343-aa28ca49f66c",
       "name": "Send?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -265,7 +265,7 @@
           },
           "conditions": [
             {
-              "id": "2cbdfa90-ec01-4387-b8e9-55115f66dee3",
+              "id": "8f60a737-4496-4b5e-9c40-d3c8be17b662",
               "leftValue": "={{ $json.action === 'send' }}",
               "rightValue": "",
               "operator": {
@@ -281,7 +281,7 @@
       }
     },
     {
-      "id": "38c4cfac-57cb-4976-b542-880c31f474c2",
+      "id": "65c6205c-8115-4a70-bf39-e6ede6fc7c6f",
       "name": "Error?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -298,7 +298,7 @@
           },
           "conditions": [
             {
-              "id": "fce51643-d5d8-4a77-989b-657a1d1ee8e6",
+              "id": "71aac97f-affd-4bec-88ec-c594a3a379c6",
               "leftValue": "={{ $json.action === 'error' }}",
               "rightValue": "",
               "operator": {
@@ -314,7 +314,7 @@
       }
     },
     {
-      "id": "a7c9552c-449a-4a30-92b1-6f226d226acb",
+      "id": "2862d65d-1ec8-44af-8b07-d16b94c85b9d",
       "name": "Gmail - Already Sent?",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -354,7 +354,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "98f33817-7857-46e8-9488-94b64e18b231",
+      "id": "da45058c-8d74-4b02-90dc-83f4f01af513",
       "name": "Check Already Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -367,7 +367,53 @@
       }
     },
     {
-      "id": "6d4ce7ea-3614-407a-bce4-cfef736948f1",
+      "id": "e49434ac-24b6-4165-bf6d-b1e4e875233a",
+      "name": "Sheets - Re-read Emails",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2100,
+        150
+      ],
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Emails",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gRSPd8YEw5iadWsy",
+          "name": "Google Sheets (Iacopo Bon)"
+        }
+      },
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "f2850303-d2eb-4de1-8e0e-77b9d7fc2c0b",
+      "name": "Check Row Unchanged",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2150,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const TZ = 'Europe/Madrid';\nfunction madrid(d) {\n  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit',\n    day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', weekday: 'short' })\n    .formatToParts(d).map(x => [x.type, x.value]));\n  return { s: `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`, date: `${p.year}-${p.month}-${p.day}`, wd: p.weekday };\n}\nconst str = v => String(v ?? '').trim();\nconst esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst splitList = v => str(v).split(/[,;]/).map(s => s.trim()).filter(Boolean);\nconst EMAIL_RE = /^[^@\\s<>(),;:\"]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}$/;\nconst PLACEHOLDER_RE = /\\[[^\\]]*\\]|\\{\\{|\\}\\}|\\bundefined\\b|\\bNaN\\b/;\nconst e = $('Check Already Sent').first();\nif (!e.json.okToSend) return [e];\nconst r = $input.all().map(i => i.json).find(x => str(x['Startup name']) === e.json.name);\nlet why = '';\nif (!r) why = 'row not found on re-read, not sent';\nelse if (str(r['Status']) !== 'Ready') why = 'Status is now ' + (str(r['Status']) || 'empty') + ', not sent';\nelse if (str(r['Sent at'])) why = 'Sent at already set, not sent';\nelse if (splitList(r['To']).join(', ') !== e.json.realTo || splitList(r['CC']).join(', ') !== e.json.realCc\n         || str(r['Subject']) !== e.json.rawSubject || str(r['Body HTML']) !== e.json.rawHtml) why = 'row changed during the run, not sent';\nif (why) return [{ json: { ...e.json, okToSend: false, blockReason: why }, binary: e.binary }];\nreturn [e];\n"
+      }
+    },
+    {
+      "id": "fc99ab4e-fa25-4cb4-b11b-37dda1511551",
       "name": "OK to Send?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -384,7 +430,7 @@
           },
           "conditions": [
             {
-              "id": "64b51650-c351-4841-9ec4-cd94a001c655",
+              "id": "1d3d12f5-562e-4e32-be0c-a0e5aaacddd8",
               "leftValue": "={{ $json.okToSend }}",
               "rightValue": "",
               "operator": {
@@ -400,7 +446,53 @@
       }
     },
     {
-      "id": "3690178a-bf4f-44df-90f4-06269582109f",
+      "id": "8e5fc115-1782-47ee-a0f5-9d00cf6d6fa9",
+      "name": "Fatal?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3800,
+        150
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "721e2fa2-7ff7-42a2-a0d1-f72020d51a3f",
+              "leftValue": "={{ $('Row Payload').first().json._fatal === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d1248498-2b4d-434e-9f89-c34c7cb98b5b",
+      "name": "Stop Run",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4000,
+        150
+      ],
+      "parameters": {
+        "errorMessage": "Airbus outreach stopped: a send failed. Check Gmail Sent and the sheet before restarting."
+      }
+    },
+    {
+      "id": "a5dfd099-70ce-462c-bb7e-2bf372fd8ae4",
       "name": "Gmail - Send First Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -435,10 +527,10 @@
         }
       },
       "onError": "continueErrorOutput",
-      "webhookId": "5f58e05c-092f-4a99-8f44-ca584cc9fa38"
+      "webhookId": "8535896b-75b6-4181-9df3-bde829e48886"
     },
     {
-      "id": "67d2fa04-345f-4e33-93c8-9a75df63c217",
+      "id": "5238113d-e6c6-47a9-b5b1-0d5c3aa8c033",
       "name": "Gmail - Read Message-ID",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -465,7 +557,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "19b04f3b-bd21-400d-add1-2b3e5f20d6f1",
+      "id": "fc5328d3-2997-4647-95e7-2844f7322d6a",
       "name": "Mark Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -478,7 +570,7 @@
       }
     },
     {
-      "id": "3f56faa6-e58a-4166-a8c7-4448612584bb",
+      "id": "33d33650-32db-4f14-848d-a1dbf3d42f6f",
       "name": "Mark Send Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -487,11 +579,11 @@
         0
       ],
       "parameters": {
-        "jsCode": "// Never retried automatically: check Gmail Sent, then set Status back to Ready to try again.\nconst e = $('Loop Over Startups').first().json;\nconst err = $input.first().json.error;\nconst msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');\nconst row = { 'Startup name': e.name, Status: 'Error: send failed - ' + String(msg).slice(0, 150) };\nif (e.testMode) Object.assign(row, { 'Real To': e.realTo, 'Real CC': e.realCc, Subject: e.subject });\nreturn [{ json: { ...row, _sent: false } }];\n"
+        "jsCode": "// Never retried automatically: check Gmail Sent, then set Status back to Ready to try again.\nconst e = $('Loop Over Startups').first().json;\nconst err = $input.first().json.error;\nconst msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');\nconst row = { 'Startup name': e.name, Status: 'Error: send failed - ' + String(msg).slice(0, 150) };\nif (e.testMode) Object.assign(row, { 'Real To': e.realTo, 'Real CC': e.realCc, Subject: e.subject });\nreturn [{ json: { ...row, _sent: false, _fatal: true } }];\n"
       }
     },
     {
-      "id": "f50f04bc-038b-43cb-9830-dbc8b8a2c28d",
+      "id": "5c14796c-4d45-4ec8-92b0-fbb90a0333c9",
       "name": "Mark Error",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -504,7 +596,7 @@
       }
     },
     {
-      "id": "794cba3d-2200-4dc3-821f-c034ba16de8b",
+      "id": "1d1cf4d0-1a81-417d-9f8d-3db40405bf69",
       "name": "Row Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -517,7 +609,7 @@
       }
     },
     {
-      "id": "50e23196-b204-43a1-8357-168985c93a68",
+      "id": "a618009a-a912-4038-8492-c5375411f524",
       "name": "Test Mode?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -534,7 +626,7 @@
           },
           "conditions": [
             {
-              "id": "d5b18c8f-74cd-4ebc-b122-e8ae548cfa17",
+              "id": "5998dfe0-e49d-4d82-b7e4-1d7e47ad5201",
               "leftValue": "={{ $('Settings').first().json.TEST_MODE }}",
               "rightValue": "",
               "operator": {
@@ -550,7 +642,7 @@
       }
     },
     {
-      "id": "9a19847a-7b26-4850-b0c2-c6a629052796",
+      "id": "04a7c81c-2271-4b43-b7f5-41ef26ef41fb",
       "name": "Test log - Append Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -591,7 +683,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "92b1d40b-2d74-418a-afb2-c4db09400293",
+      "id": "507946ff-1751-4180-abef-6930173ff92b",
       "name": "Emails - Update Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -635,7 +727,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "3bd7474a-07ef-480c-af0e-047577dac38f",
+      "id": "52cf75c3-199a-4ebf-ba8f-ee1058945526",
       "name": "Sent? (wait)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -652,7 +744,7 @@
           },
           "conditions": [
             {
-              "id": "d15a5c20-393b-4433-b639-9360fa1a257b",
+              "id": "94e8c033-ef6b-4ffb-be1c-7f44e6505158",
               "leftValue": "={{ $('Row Payload').first().json._sent }}",
               "rightValue": "",
               "operator": {
@@ -668,7 +760,7 @@
       }
     },
     {
-      "id": "0f33d6d2-0fd5-43e0-8bde-e30c61cd10b7",
+      "id": "4d9a4a00-eea3-4d0f-ae9b-4e614a111237",
       "name": "Wait 60-120 s",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -680,10 +772,10 @@
         "amount": "={{ (() => { const s = $('Settings').first().json; return Math.round(s.MIN_DELAY_S + Math.random() * (s.MAX_DELAY_S - s.MIN_DELAY_S)); })() }}",
         "unit": "seconds"
       },
-      "webhookId": "172af322-f4f3-4835-ad24-af00652f95e4"
+      "webhookId": "f1917299-be20-4bdf-862f-62c6d814af96"
     },
     {
-      "id": "82b9b6df-1409-4416-82da-d955ce7893f7",
+      "id": "82081cd7-28f9-4825-8590-197693fb5f31",
       "name": "Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -696,7 +788,7 @@
       }
     },
     {
-      "id": "3c0741cb-a0ba-47a1-8345-25ec7195777d",
+      "id": "c55afc5e-bebb-4ad7-bced-9fcdb13fb346",
       "name": "Email Summary to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -721,7 +813,7 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "4411c92c-2e09-47de-8ecf-8f529c12b88e"
+      "webhookId": "2b33c4db-e4e7-481f-a3c8-d7202653bb95"
     }
   ],
   "connections": {
@@ -882,6 +974,28 @@
       "main": [
         [
           {
+            "node": "Sheets - Re-read Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Re-read Emails": {
+      "main": [
+        [
+          {
+            "node": "Check Row Unchanged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Row Unchanged": {
+      "main": [
+        [
+          {
             "node": "OK to Send?",
             "type": "main",
             "index": 0
@@ -1031,6 +1145,24 @@
         ],
         [
           {
+            "node": "Fatal?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fatal?": {
+      "main": [
+        [
+          {
+            "node": "Stop Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Loop Over Startups",
             "type": "main",
             "index": 0
@@ -1060,9 +1192,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "03718e21-73c4-4b20-8a89-e28191c9c45f",
+  "versionId": "9322e087-f4ab-4a06-ad23-20b668ff0cab",
   "activeVersionId": null,
-  "versionCounter": 3,
+  "versionCounter": 4,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

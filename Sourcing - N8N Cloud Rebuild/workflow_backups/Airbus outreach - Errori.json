@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T18:22:16.352Z",
+  "updatedAt": "2026-11-12T07:27:44.508Z",
   "createdAt": "2026-11-11T17:54:42.452Z",
   "id": "x9NFxOpa4CT3unBl",
   "name": "Airbus outreach | Errori",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "50e56c8b-3f32-4e0f-908e-a1b709b23b3a",
+      "id": "dc520461-3db5-4bda-aed3-c70358be85d3",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -19,7 +19,7 @@
       "parameters": {}
     },
     {
-      "id": "c57b3aaf-4031-4f62-9a75-cec43052064c",
+      "id": "34a90f30-19b4-4031-916b-34718c0a1374",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -31,7 +31,7 @@
         "assignments": {
           "assignments": [
             {
-              "id": "3ca8fdad-e6e7-4bb1-a002-f689d79f92b1",
+              "id": "455e6641-56a2-4cde-a8dc-311d4885cf97",
               "name": "ME",
               "value": "i.bon@pnptc.com",
               "type": "string"
@@ -44,7 +44,7 @@
       }
     },
     {
-      "id": "fd6acf65-ed7c-42e3-b77e-ad78ae343f43",
+      "id": "9b864daf-b189-4b98-99d8-f24e7da7179c",
       "name": "Build Error Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
       }
     },
     {
-      "id": "76431842-30a3-4896-8756-9e54c1a04ba4",
+      "id": "50ec97d7-a2b7-4d00-9c98-f2ee667ff5a9",
       "name": "Email Error to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -82,7 +82,7 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "a76cc887-97b8-4021-8061-4b98025e40a1"
+      "webhookId": "698338ed-3b58-49c3-9587-a03b3338f99d"
     }
   ],
   "connections": {
@@ -129,9 +129,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "31532228-92e7-46c6-84e3-140c2b2eb545",
+  "versionId": "6b207326-40bf-48eb-b722-6de9a5653f9f",
   "activeVersionId": null,
-  "versionCounter": 3,
+  "versionCounter": 4,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

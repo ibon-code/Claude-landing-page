@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-11T18:22:18.660Z",
+  "updatedAt": "2026-11-12T07:27:46.797Z",
   "createdAt": "2026-11-11T17:54:44.737Z",
   "id": "ew3T35qp6U4qWkij",
   "name": "Airbus outreach | 2. Risposte e follow-up",
@@ -8,7 +8,7 @@
   "isArchived": false,
   "nodes": [
     {
-      "id": "b963fcc9-be6e-4da3-b878-b574a601b2ff",
+      "id": "b98df8d6-89e5-4c87-886c-11f43bd5a421",
       "name": "Mon-Fri 09:30",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -28,7 +28,7 @@
       }
     },
     {
-      "id": "993c2cfa-2279-403a-b652-9f66c7d771cd",
+      "id": "8653540b-d5c8-439f-b266-84bd8762018c",
       "name": "Run Manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -39,7 +39,7 @@
       "parameters": {}
     },
     {
-      "id": "6fc23d1e-f750-4c51-ab44-66fb55c093c4",
+      "id": "1231fb4c-ec1c-4ccd-86ca-661d7eb01697",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -51,55 +51,55 @@
         "assignments": {
           "assignments": [
             {
-              "id": "d6352b66-1fe9-4094-bc45-d02869a02a5f",
+              "id": "d5398539-ced3-45e9-89a6-727ac9f72f03",
               "name": "TEST_MODE",
               "value": true,
               "type": "boolean"
             },
             {
-              "id": "786dac5f-571c-4396-a4ff-a4dba55599af",
+              "id": "3ebd36dd-b16a-405d-94e4-38c811c6283c",
               "name": "TEST_RECIPIENT",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "bfeb9e5c-6412-4e71-b653-ac6f60914d57",
+              "id": "117d68e4-78cb-4a5f-b146-f64f69daa940",
               "name": "ME",
               "value": "i.bon@pnptc.com",
               "type": "string"
             },
             {
-              "id": "e831c40d-2f85-47e7-973f-88a96f7746bb",
+              "id": "154191cf-a37b-442a-9a29-81a359c86583",
               "name": "SHEET_ID",
               "value": "1IR6rO48OiW0dnJNBpMDbxl85QGGdbuFoqewyCWYinzw",
               "type": "string"
             },
             {
-              "id": "a6423b25-5e2c-40b0-8ac1-caf864906c82",
+              "id": "101eaec8-a542-407e-b8c3-1791a6ebb9f0",
               "name": "PDF_FILE_ID",
               "value": "1Se0tZT4Bc7BfVnrLXjeqNuFoJr7Frth9",
               "type": "string"
             },
             {
-              "id": "935455d5-82d8-40b5-a34e-5b289a7ea60e",
+              "id": "2c23ff3d-23e6-428f-a22a-191be68c87b6",
               "name": "OWN_DOMAINS",
               "value": "pnptc.com",
               "type": "string"
             },
             {
-              "id": "822b8d75-5582-45ec-b6c8-1bc28928721e",
+              "id": "3fc88eb7-ddc5-412c-925f-bad20f32e93f",
               "name": "TEST_ROWS",
               "value": "Squirro",
               "type": "string"
             },
             {
-              "id": "6f45a717-f0a0-4d6a-a94b-73089522adf3",
+              "id": "86dad282-fe62-4857-a964-a224a9533b38",
               "name": "MIN_DELAY_S",
               "value": 60,
               "type": "number"
             },
             {
-              "id": "1dc7934a-99c6-47b1-8882-efeb80682174",
+              "id": "e4a64f9d-3b8c-4938-aa26-ae06113fceed",
               "name": "MAX_DELAY_S",
               "value": 120,
               "type": "number"
@@ -110,7 +110,7 @@
       }
     },
     {
-      "id": "42c81b02-68ca-4e22-8fec-6bebf395343a",
+      "id": "2993c9ee-7abe-499e-8564-03652b15871c",
       "name": "Sheets - Get Emails",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -144,7 +144,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "63508468-aa9c-432b-81fa-e8776d5f1065",
+      "id": "49db3c25-a98b-40cf-bacd-d1fc812e3278",
       "name": "Sheets - Get Test log",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -178,7 +178,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "d43d2f81-0bfe-4590-b9e3-be78a5542b00",
+      "id": "6afe4e81-cdd6-4a4c-a456-fe4b79d1fea2",
       "name": "Sheets - Get Template",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -212,7 +212,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "76e5169b-5c91-40cf-a685-9b0273f60279",
+      "id": "45829c59-f196-4680-bdff-b43798fd9175",
       "name": "Template Values",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -225,7 +225,7 @@
       }
     },
     {
-      "id": "55d0dca5-f2b0-42eb-b1d3-836939592e66",
+      "id": "b7ee0b54-36d7-4ea5-85a6-dd39c37b3e59",
       "name": "Select Rows",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -238,7 +238,7 @@
       }
     },
     {
-      "id": "3302b6c4-2c0e-4086-820b-3004b8eae041",
+      "id": "fbae60fd-42ed-4bd6-b403-05a3bbd6d208",
       "name": "Gmail - Get Thread",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -265,7 +265,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "250cd700-b65c-4932-a0ed-ce4bb8bfc72b",
+      "id": "ae28283f-9bca-41a2-848e-3a2453ad32d8",
       "name": "Gmail - Startup Inbox",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -305,7 +305,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "77c8c6e7-73d9-4b19-96ae-bcefb5c62d24",
+      "id": "ada9ef5a-7c79-4343-8a9e-7a1dc2834f77",
       "name": "Gmail - Bounces",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -345,7 +345,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "b6ebcb31-84ff-4240-a5ac-d1264c3d1a93",
+      "id": "19b206b4-8d3d-46c5-911d-7fff98310780",
       "name": "Expand Messages",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -358,7 +358,7 @@
       }
     },
     {
-      "id": "a046d7b6-0213-4b24-98bc-f627f7336d7d",
+      "id": "c21fbf2d-f6af-4e55-9eba-2b3c9fe522d1",
       "name": "Gmail - Read Message",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -385,7 +385,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "f34217a1-12f1-482d-bd79-736221fda112",
+      "id": "152555ed-9e41-46a9-98cd-5dabd9bc9622",
       "name": "Evaluate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -398,7 +398,7 @@
       }
     },
     {
-      "id": "f510a4e8-50b5-4b33-900f-d0dda5478bc7",
+      "id": "b9f8e7e8-3c98-4ab4-966d-73b71e27b783",
       "name": "Loop Over Rows",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -412,7 +412,7 @@
       }
     },
     {
-      "id": "b702c2c4-af9e-4e6e-b424-1cf482df4af7",
+      "id": "448207af-b13a-4667-8ec3-1f74af6a6f22",
       "name": "Follow-up?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -429,7 +429,7 @@
           },
           "conditions": [
             {
-              "id": "7683d9cb-c251-4e34-8de6-212af846042e",
+              "id": "638c9fb2-ee00-4a7e-8c1d-a133045bb1bc",
               "leftValue": "={{ $json.action === 'send' }}",
               "rightValue": "",
               "operator": {
@@ -445,7 +445,7 @@
       }
     },
     {
-      "id": "88425dd9-59ed-4d5f-8ed4-73f07f06da64",
+      "id": "4eadfdd5-05db-4e8b-a0fc-1ecde7f0747a",
       "name": "Gmail - Send Follow-up",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -472,7 +472,7 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "504a900e-d09a-46d1-83e2-fccda0be3892",
+      "id": "0a0ae9ea-6a7c-46fa-972a-1649f6b3b84d",
       "name": "Mark Follow-up Sent",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -485,7 +485,7 @@
       }
     },
     {
-      "id": "1cec2c8e-55ad-4d71-8315-066b797c9624",
+      "id": "9c2863ca-768c-40e6-8e8c-12b171e638b4",
       "name": "Mark Follow-up Failed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -498,7 +498,7 @@
       }
     },
     {
-      "id": "8b5a8ee3-80d2-4c4d-af5b-31f2349cf42a",
+      "id": "c0cfa3e8-7810-4c45-86eb-5557e584f165",
       "name": "Mark Other",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -511,7 +511,7 @@
       }
     },
     {
-      "id": "515f0a81-7dfe-4fcc-aacd-8a6e96dcdc05",
+      "id": "eae1207c-3354-4d4c-a8e6-ef4c06e20601",
       "name": "Row Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -524,7 +524,7 @@
       }
     },
     {
-      "id": "82003c9e-fd10-45f9-a541-3d9ad55d074b",
+      "id": "f0844893-1e2a-4528-a6fd-bde549e56844",
       "name": "Test Mode?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -541,7 +541,7 @@
           },
           "conditions": [
             {
-              "id": "01d4427f-61d7-4c7a-8ebe-bb04abd490fd",
+              "id": "73e7db0c-1716-4b43-ad58-26ff2a59a800",
               "leftValue": "={{ $('Settings').first().json.TEST_MODE }}",
               "rightValue": "",
               "operator": {
@@ -557,7 +557,7 @@
       }
     },
     {
-      "id": "ff3f18e9-06af-4489-9e04-3b8847578217",
+      "id": "b60a4c2d-9b11-4c50-81c5-ada78921d1fb",
       "name": "Test log - Update Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -601,7 +601,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "baf0c178-baff-4187-86d7-47aec14f3b16",
+      "id": "fce7d51b-d1e7-45cc-b590-e9ca40b5fcad",
       "name": "Emails - Update Row",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -645,7 +645,7 @@
       "waitBetweenTries": 5000
     },
     {
-      "id": "0d306562-2775-42ff-9d15-1233249db6ef",
+      "id": "58610059-87d0-4b90-ab67-32c54e4fc76d",
       "name": "Sent? (wait)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -662,7 +662,7 @@
           },
           "conditions": [
             {
-              "id": "59f85120-16ba-443e-a3b6-31869c07ff15",
+              "id": "acc7fe0a-c2d3-4a33-8e6f-22e90c739f4c",
               "leftValue": "={{ $('Row Payload').first().json._sent }}",
               "rightValue": "",
               "operator": {
@@ -678,7 +678,7 @@
       }
     },
     {
-      "id": "3c44c0ef-ef7c-47cd-ae9f-9145ad4e24d6",
+      "id": "368c2301-9b07-4ac2-996f-3a7f8a93708b",
       "name": "Wait 60-120 s",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -690,10 +690,10 @@
         "amount": "={{ (() => { const s = $('Settings').first().json; return Math.round(s.MIN_DELAY_S + Math.random() * (s.MAX_DELAY_S - s.MIN_DELAY_S)); })() }}",
         "unit": "seconds"
       },
-      "webhookId": "119bffc0-10d1-4209-a492-0f8be2a0f988"
+      "webhookId": "6b2d2c14-4c11-4318-afc2-11217a592006"
     },
     {
-      "id": "4bac45df-0045-43b0-8c72-f592266b826c",
+      "id": "0fbb6bbf-af9a-43e8-90c9-a61e00afec6b",
       "name": "Summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -706,7 +706,7 @@
       }
     },
     {
-      "id": "29ceb3dc-f0d8-44be-8ff5-62a07e80f58a",
+      "id": "98de90fa-80d3-4218-9524-f11a92e53b75",
       "name": "Email Summary to Me",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -731,7 +731,7 @@
           "name": "Gmail (Iacopo Bon)"
         }
       },
-      "webhookId": "e789e4cb-4dfb-4427-b72c-08afc774cbb1"
+      "webhookId": "7301b7d1-1b9c-48fa-bd9b-f3e9d59ae29c"
     }
   ],
   "connections": {
@@ -1078,9 +1078,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": null,
-  "versionId": "e3500245-fcc7-4f28-8eb2-8db6027ac4e8",
+  "versionId": "9e2ac1ed-89b6-498d-a5a0-e848e8910a40",
   "activeVersionId": null,
-  "versionCounter": 3,
+  "versionCounter": 4,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [],

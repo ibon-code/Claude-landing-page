@@ -197,7 +197,7 @@ for (const r of rows) {
   // Gmail safety net: has this startup already received the Airbus email?
   const sentQuery = S.TEST_MODE ? `in:sent subject:"${subj.replace(/"/g, '')}" newer_than:7d`
                                 : `in:sent to:${realTo[0]} subject:"Airbus Defence and Space" newer_than:90d`;
-  queue.push({ json: { ...base, action: 'send', to: sendTo, cc, subject: subj, html: body, attachmentName: att, sentQuery },
+  queue.push({ json: { ...base, rawSubject: subject, rawHtml: html, action: 'send', to: sendTo, cc, subject: subj, html: body, attachmentName: att, sentQuery },
                binary: { pdf: { ...pdf, fileName: att, mimeType: 'application/pdf' } } });
 }
 if (!queue.length) queue.push({ json: { action: 'nothing' } });
@@ -213,6 +213,20 @@ const ok = !res.error && n === 0;
 return [{ json: { ...e.json, okToSend: ok,
   blockReason: res.error ? 'Gmail check failed, not sent' : 'already in Gmail Sent (' + n + ' email), not sent' },
   binary: e.binary }];
+"""
+
+# Last look at the row in the sheet right before sending: Hold / edits made during the run stop the send.
+recheck_js = HELPERS + r"""const e = $('Check Already Sent').first();
+if (!e.json.okToSend) return [e];
+const r = $input.all().map(i => i.json).find(x => str(x['Startup name']) === e.json.name);
+let why = '';
+if (!r) why = 'row not found on re-read, not sent';
+else if (str(r['Status']) !== 'Ready') why = 'Status is now ' + (str(r['Status']) || 'empty') + ', not sent';
+else if (str(r['Sent at'])) why = 'Sent at already set, not sent';
+else if (splitList(r['To']).join(', ') !== e.json.realTo || splitList(r['CC']).join(', ') !== e.json.realCc
+         || str(r['Subject']) !== e.json.rawSubject || str(r['Body HTML']) !== e.json.rawHtml) why = 'row changed during the run, not sent';
+if (why) return [{ json: { ...e.json, okToSend: false, blockReason: why }, binary: e.binary }];
+return [e];
 """
 
 mark_sent_js = HELPERS + r"""const e = $('Loop Over Startups').first().json;
@@ -245,7 +259,7 @@ const err = $input.first().json.error;
 const msg = (err && (err.message || err.description)) || JSON.stringify(err || 'unknown');
 const row = { 'Startup name': e.name, Status: 'Error: send failed - ' + String(msg).slice(0, 150) };
 if (e.testMode) Object.assign(row, { 'Real To': e.realTo, 'Real CC': e.realCc, Subject: e.subject });
-return [{ json: { ...row, _sent: false } }];
+return [{ json: { ...row, _sent: false, _fatal: true } }];
 """
 
 summary1_js = r"""const S = $('Settings').first().json;
@@ -284,7 +298,14 @@ wf1_nodes = [
     gmail_api("Gmail - Already Sent?", [1800, 0], f"{GAPI}/messages",
               [("q", "={{ $json.sentQuery }}"), ("maxResults", "10")], onError="continueRegularOutput"),
     code("Check Already Sent", [2000, 0], already_js),
+    node("Sheets - Re-read Emails", "n8n-nodes-base.googleSheets", 4.5, [2100, 150],
+         {"documentId": DOC, "sheetName": tab("Emails"), "options": {}},
+         credentials=GS_CRED, alwaysOutputData=True, **RETRY),
+    code("Check Row Unchanged", [2150, 0], recheck_js),
     if_true("OK to Send?", [2200, 0], "={{ $json.okToSend }}"),
+    if_true("Fatal?", [3800, 150], "={{ $('Row Payload').first().json._fatal === true }}"),
+    node("Stop Run", "n8n-nodes-base.stopAndError", 1, [4000, 150],
+         {"errorMessage": "Airbus outreach stopped: a send failed. Check Gmail Sent and the sheet before restarting."}),
     node("Gmail - Send First Email", "n8n-nodes-base.gmail", 2.1, [2400, -100],
          {"resource": "message", "operation": "send", "sendTo": "={{ $json.to }}", "subject": "={{ $json.subject }}",
           "emailType": "html", "message": "={{ $json.html }}",
@@ -319,7 +340,9 @@ wf1_conn = {
     "Send?": {"main": [to("Gmail - Already Sent?"), to("Error?")]},
     "Error?": {"main": [to("Mark Error"), to(L1)]},
     "Gmail - Already Sent?": {"main": [to("Check Already Sent")]},
-    "Check Already Sent": {"main": [to("OK to Send?")]},
+    "Check Already Sent": {"main": [to("Sheets - Re-read Emails")]},
+    "Sheets - Re-read Emails": {"main": [to("Check Row Unchanged")]},
+    "Check Row Unchanged": {"main": [to("OK to Send?")]},
     "OK to Send?": {"main": [to("Gmail - Send First Email"), to("Mark Error")]},
     "Gmail - Send First Email": {"main": [to("Gmail - Read Message-ID"), to("Mark Send Failed")]},
     "Gmail - Read Message-ID": {"main": [to("Mark Sent")]},
@@ -330,7 +353,8 @@ wf1_conn = {
     "Test Mode?": {"main": [to("Test log - Append Row"), to("Emails - Update Row")]},
     "Test log - Append Row": {"main": [to("Sent? (wait)")]},
     "Emails - Update Row": {"main": [to("Sent? (wait)")]},
-    "Sent? (wait)": {"main": [to("Wait 60-120 s"), to(L1)]},
+    "Sent? (wait)": {"main": [to("Wait 60-120 s"), to("Fatal?")]},
+    "Fatal?": {"main": [to("Stop Run"), to(L1)]},
     "Wait 60-120 s": {"main": [to(L1)]},
 }
 

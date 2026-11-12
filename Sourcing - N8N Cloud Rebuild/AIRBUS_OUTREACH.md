@@ -17,6 +17,7 @@ Email a 30 startup per la challenge Data Management di Airbus Defence and Space:
 - I testi si cambiano nel tab **Template** (B2-B7): il tab Emails li riprende con formule, per tutte le 30 righe. Mai modificare le colonne con formule nel tab Emails.
 - WF1 (manuale) manda solo le righe con Status = Ready e Sent at vuoto, poi scrive Status, Sent at, Thread ID, Message ID, Follow-up due (+7 giorni, sabato/domenica → lunedì). 60-120 s tra un'email e l'altra. Prima di ogni invio controlla Gmail Inviati: se la startup ha già ricevuto l'email non la rimanda.
 - WF2 (lun-ven 9:30 ora di Madrid): risposta vera → Replied (mai più email); bounce e risposte automatiche → colonna Automation notes; nessuna risposta e data passata → un solo follow-up nello stesso thread, Status = Follow-up sent.
+- Prima di ogni invio WF1 rilegge la riga dal foglio: se non è più Ready (Hold) o è cambiata, non invia. Se un invio fallisce, WF1 si ferma subito (Stop Run) e arriva la mail di errore.
 - Errori di invio → Status = `Error: ...`, mai ritentati da soli. WF3 manda un'email con l'errore.
 
 ## Test (11-11-2026, tutti superati)
