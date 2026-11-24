@@ -6,7 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. **Commit and push after every meaningful unit of work.** As work progresses, stage and push changes to GitHub regularly — never leave a session without committing completed work. Use clean, descriptive commit messages that explain *what changed and why*. The remote is `https://github.com/ibon-code/Claude-landing-page.git` (branch `main`).
 
-2. **Always ask before applying the Plug and Play design system to a new project.** When starting any new design or front-end task, explicitly ask the user whether they want to use the PnP design system in this repo. Do not assume it applies — the user may want a different brand or a blank canvas.
+2. **Commit progress to GitHub regularly, also for work done outside this repo.** For projects that live in other local folders (e.g. decks in `~/Desktop/PPT Automation`), keep a sanitized guidelines file under `Deck projects/` (method, structure, rules, open points) and commit + push it whenever the project moves forward, so a new session never starts from zero. **Never push sensitive info**: no client data, source spreadsheets, contact details, exported decks, Drive IDs or local paths that reveal the client. Those stay local.
+
+3. **Always ask before applying the Plug and Play design system to a new project.** When starting any new design or front-end task, explicitly ask the user whether they want to use the PnP design system in this repo. Do not assume it applies — the user may want a different brand or a blank canvas.
 
 ## What this repo is
 
