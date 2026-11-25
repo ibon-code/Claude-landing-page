@@ -64,5 +64,21 @@ style and structure reference. We do not redesign them.
 - Crop taglines and division labels; add a small name caption under bare symbols.
 - Recolour only logos that exist solely in white, and list those for the user to review.
 
-## Open points after v2
-- User review of v2 and of the flagged logos (text stand-ins, recoloured white logos, bare symbols).
+## Rules added in v4
+- **Commercialised split**: every map splits each category into dashed boxes "Soluciones comercializadas" /
+  "No comercializadas" (source column "commercialised"), and keeps the red frame for mature companies.
+- **Segmentation slides** after the sorting map: one by identification technology, one by separation method,
+  each panel with logos and a 1 to 3 line description sharing the same bottom baseline.
+- **Speaker notes** on every slide: concise bullets from the spreadsheet only, sized for a ~30 minute talk.
+- **Cards** carry real content from the spreadsheet (like the model card slide): lead paragraph plus 2 to 4
+  bullets. When the spreadsheet's own source links show a footwear use case, one bullet describes it and links
+  that source. **No external sources** for card content; no use case in the sources means no bullet and no link.
+- **One body size**: Arial 9 for all body text (cards, descriptions, notes under matrices); bold labels 9;
+  only titles, small stickers, captions and the legend differ.
+- **Logo grid**: fixed column pitch per box, short rows centred, shared baseline per row; tinted logo
+  backdrops are removed so the "analysed before" fill shows (that fill is a light lavender).
+- Conclusions highlight what the scouting adds, not which companies were already analysed.
+- A company the user marks as "not the right use case" is not highlighted and not cited in conclusions.
+
+## Open points after v4
+- User review of v4 content (cards, notes, segmentation slides).
