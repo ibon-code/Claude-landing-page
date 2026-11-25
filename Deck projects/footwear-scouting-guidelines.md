@@ -20,20 +20,24 @@ style and structure reference. We do not redesign them.
   dash fix and the verify step for emails, dashes and forbidden template words.
 - **Done means checked**: delivery check has 0 errors, verify is clean, and every PNG preview has been looked at.
 
-## Deck structure (same order as the reference decks)
+## Deck structure (v2, modelled on the richer of the two reference decks)
 1. Cover: "Scouting / <topic> / <month year>".
-2. Full ecosystem map for the block: purple header per category, dashed boxes for
-   "Soluciones Comercializadas" / "Soluciones en desarrollo", and logos.
-3. Segmentation slides where useful, for example by technology or by method.
-4. **Punto de Partida**: the same map showing only the solutions the client already knows
-   (source column "previously analysed" = Yes). New facts about known companies go on
-   "Novedades" cards.
-5. **Ecosistema de Nuevas Tecnologías**: the map with the new solutions only.
-6. For each group of companies to present, the new-solutions map with that group highlighted
-   (others faded, boxes with no highlight covered by the grey 95% overlay), then the cards.
-7. **Cards**: at least 2 companies per slide (2-up or 3-up layouts). Each card has the logo, a category pill,
-   a lead paragraph with the company name in bold, then 3 bullets with a bold label.
-8. Conclusions for each block: 4-5 boxes, each 2-3 lines.
+2. For each block:
+   - **Classification slide**: the block's map with every sub-category covered by the grey 95% overlay
+     and a short bold description of what that category means.
+   - **One consolidated map**: purple header per category, dashed sub-category boxes, logos.
+     **Red frame = mature company** (source column "Empresa" = mature), **lavender fill = analysed
+     before** (source column "previously analysed" = Yes), and a small legend at the bottom right.
+     No separate "starting point" or "new solutions" maps: everything is on this one map.
+   - **Matrix slide** (like the reference "Inputs" slide): small header bars with the logos that
+     match each one, e.g. which materials each sorting solution recognises, or certifications.
+   - **Interlude per category**: the same map with the other categories faded out, and inside the
+     active one, the companies that are not presented faded.
+   - **Cards**: at least 2 per slide (2-up or 3-up). Purple category pill above the card (plus an
+     "analysed before" pill when it applies), logo, then stickers: green Input, blue Output, yellow
+     third fact (capacity, technology result or certification), then a lead paragraph with the company
+     name in bold and 2 or 3 bullets.
+   - **Conclusions**: 5 boxes, each 2 or 3 lines.
 
 ## Content rules
 - Copy is in Spanish.
@@ -44,12 +48,21 @@ style and structure reference. We do not redesign them.
   and white logos are recoloured dark so they read on white.
 - No en or em dashes. No personal contact details on slides.
 
+## Google Slides
+- Faded logos are baked into the PNG pixels (no picture transparency, which imports unreliably).
+- Text boxes are sized so nothing depends on shrink-on-overflow; logos are at most 800 px wide.
+- Wrapping is checked in a real renderer (Keynote PDF export), because the SVG preview does not wrap text.
+
 ## Delivery
 - Export a PPTX version (`_v1`, `_v2`, ...) and copy it into the local project folder.
 - Upload it to the shared Drive folder through the user's own Chrome session (the Drive connector is
   blocked by the organisation's admin policy). Check that the file appears in the folder.
 
-## Open points for v2
-- The user's additional details (pending).
-- Check that the conclusion boxes wrap correctly in PowerPoint or Slides (the preview renderer does not wrap).
-- Review the recoloured logos and the text stand-ins for companies without a logo.
+## Logos
+- Take them from each company's official site; when the reference decks already contain a company's
+  logo, reuse that exact file so it matches what the client has seen.
+- Crop taglines and division labels; add a small name caption under bare symbols.
+- Recolour only logos that exist solely in white, and list those for the user to review.
+
+## Open points after v2
+- User review of v2 and of the flagged logos (text stand-ins, recoloured white logos, bare symbols).
