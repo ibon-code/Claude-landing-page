@@ -87,5 +87,19 @@ style and structure reference. We do not redesign them.
 - Conclusions highlight what the scouting adds, not which companies were already analysed.
 - A company the user marks as "not the right use case" is not highlighted and not cited in conclusions.
 
-## Open points after v7
-- User to decide whether to align the spreadsheet column with the v7 sanity check.
+## Rules added in v8 (final version)
+- The user may edit a version in Google Slides; the next version starts from those edits (read them in the browser and
+  carry them into the builder, so the deck stays reproducible).
+- Classification slides keep each sub-box title readable above the overlay, and the description sits centred in the
+  space below the title.
+- Speaker notes on classification slides add a short "how it works" section (one bullet per technology or route:
+  mechanical and chemical recycling, mass balance, bio-based; NIR, hyperspectral, density, magnetic, delamination).
+- Every slide's notes end with a glossary of the acronyms used on that slide or in its notes: full English name plus
+  the Spanish version.
+- The certifications matrix carries one plain-language line per certification saying what it guarantees
+  (mass-balance accounting vs physical recycled content, social criteria or not).
+- Cards for companies analysed before carry their own description; the "analysed before" pill already says the rest.
+- Each conclusion must state a takeaway (e.g. what is ready for a short-term pilot vs medium-term watch), not a list of names.
+
+## Open points after v8
+- None: spreadsheet aligned with the commercial sanity check; v8 is the final version.
