@@ -70,7 +70,12 @@ style and structure reference. We do not redesign them.
   tried in v4 and rejected as messy.
 - **Commercial status (v6)**: inside each technique or polymer box, the logos sit under small italic subtitles
   "Comercializadas" and "No comercializadas" (an empty group is omitted); wide, short boxes place the two
-  groups side by side with a thin dashed divider. The interludes inherit the split.
+  groups side by side with a thin dashed divider. The interludes inherit the split. Subtitles are centred over
+  their own group and sit a few points below the box title.
+- **Commercialised means the product is on the market**, not that the company is mature: a mature company
+  launching a new technology can be "not commercialised", and a startup with a product on sale is "commercialised".
+  Check the spreadsheet column against its own sources, and against reliable external sources when in doubt;
+  report every change to the user so they can update the spreadsheet.
 - **Speaker notes** on every slide: concise bullets from the spreadsheet only, sized for a ~30 minute talk.
 - **Cards** carry real content from the spreadsheet (like the model card slide): lead paragraph plus 2 to 4
   bullets. When the spreadsheet's own source links show a footwear use case, one bullet describes it and links
@@ -82,5 +87,5 @@ style and structure reference. We do not redesign them.
 - Conclusions highlight what the scouting adds, not which companies were already analysed.
 - A company the user marks as "not the right use case" is not highlighted and not cited in conclusions.
 
-## Open points after v6
-- Final user review of v6.
+## Open points after v7
+- User to decide whether to align the spreadsheet column with the v7 sanity check.
