@@ -65,10 +65,9 @@ style and structure reference. We do not redesign them.
 - Recolour only logos that exist solely in white, and list those for the user to review.
 
 ## Rules added in v4
-- **Commercialised split**: every map splits each category into dashed boxes "Soluciones comercializadas" /
-  "No comercializadas" (source column "commercialised"), and keeps the red frame for mature companies.
-- **Segmentation slides** after the sorting map: one by identification technology, one by separation method,
-  each panel with logos and a 1 to 3 line description sharing the same bottom baseline.
+- **Classification model (v5, user decision)**: keep the v3 maps, with sub-boxes by technique (sorting) or by
+  polymer (materials). A commercialised / not-commercialised split and separate segmentation slides were
+  tried in v4 and rejected as messy; commercial status goes in the speaker notes instead.
 - **Speaker notes** on every slide: concise bullets from the spreadsheet only, sized for a ~30 minute talk.
 - **Cards** carry real content from the spreadsheet (like the model card slide): lead paragraph plus 2 to 4
   bullets. When the spreadsheet's own source links show a footwear use case, one bullet describes it and links
@@ -80,5 +79,5 @@ style and structure reference. We do not redesign them.
 - Conclusions highlight what the scouting adds, not which companies were already analysed.
 - A company the user marks as "not the right use case" is not highlighted and not cited in conclusions.
 
-## Open points after v4
-- User review of v4 content (cards, notes, segmentation slides).
+## Open points after v5
+- Final user review of v5.
