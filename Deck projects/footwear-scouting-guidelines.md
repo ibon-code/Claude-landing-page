@@ -101,5 +101,20 @@ style and structure reference. We do not redesign them.
 - Cards for companies analysed before carry their own description; the "analysed before" pill already says the rest.
 - Each conclusion must state a takeaway (e.g. what is ready for a short-term pilot vs medium-term watch), not a list of names.
 
-## Open points after v8
-- None: spreadsheet aligned with the commercial sanity check; v8 is the final version.
+## Rules added in v9 (review comments in Google Slides)
+- Review comments live in the Slides comment panel; read them all (plus any direct text edits) before building, and map
+  each one to its slide. The Slides "htmlpresent" view gives the full text of every slide and its notes in one page.
+- When the user asks for more detail on a card ("parece vacía", "más detalles", "¿tenemos enlace?"), external sources
+  are allowed: the company's own pages first, then reports such as the one already in the spreadsheet. Every new fact
+  gets a source link on the card, and the additions are listed for the user so the spreadsheet can be updated.
+- "Included in a report" is not enough as a use case: give implementation details (process, site, year, size, clients).
+- Not commercialised is not the whole story: name pilots (with link) and which products of a company are on the market
+  and which are still pilots.
+- Wording check: use the precise technical term (e.g. carbon black pigment, not a loose translation).
+- Card body: at most about 16 estimated lines; trim the lead before cutting facts.
+- Conclusions may carry one source link, written as "(domain)." at the end.
+
+## Open points after v9
+- Spreadsheet: add the facts introduced in v9 from external sources (listed in the delivery message).
+- The Keynote wrap check could not run in this session (the app did not answer automation); previews came from the SVG
+  render plus the line estimate.
