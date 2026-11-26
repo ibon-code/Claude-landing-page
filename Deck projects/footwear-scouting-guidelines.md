@@ -114,7 +114,17 @@ style and structure reference. We do not redesign them.
 - Card body: at most about 16 estimated lines; trim the lead before cutting facts.
 - Conclusions may carry one source link, written as "(domain)." at the end.
 
-## Open points after v9
-- Spreadsheet: add the facts introduced in v9 from external sources (listed in the delivery message).
-- The Keynote wrap check could not run in this session (the app did not answer automation); previews came from the SVG
-  render plus the line estimate.
+## Rules added in v10
+- Chemical formulas are written as formulas on slides (CO with subscript 2), applied by the builder to every slide; notes stay plain.
+- A not-commercialised company can be highlighted when the user asks: the card says "En piloto" in a second pill, names
+  the pilot site with a source link, and the card slide title becomes "Soluciones Destacadas".
+- Companies analysed before get a first bullet starting "Novedad desde el último análisis:", stating why they are back.
+- Every conclusion states the takeaway for the client (what to buy or pilot, and what to check first), and names the
+  polymer (TPU, SBS, alternative to TR) when talking about a route.
+- Claims about the client's own involvement (e.g. a partnership) are checked against the partner's own page before use.
+- After each version, the source spreadsheet gets every new fact and its source link, appended to the existing cells,
+  so the deck and the spreadsheet stay consistent.
+
+## Open points after v10
+- None known. The Keynote wrap check still could not run (the app did not answer automation); previews came from the
+  SVG render plus the line estimate.
