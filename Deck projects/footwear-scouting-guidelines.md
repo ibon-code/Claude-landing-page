@@ -125,6 +125,24 @@ style and structure reference. We do not redesign them.
 - After each version, the source spreadsheet gets every new fact and its source link, appended to the existing cells,
   so the deck and the spreadsheet stay consistent.
 
-## Open points after v10
-- None known. The Keynote wrap check still could not run (the app did not answer automation); previews came from the
-  SVG render plus the line estimate.
+## Review round on v10 (edit in place, no new version)
+- When the user says they must edit the current file themselves, don't build a new version: read every comment
+  (Slides "Show all comments" panel, then the page text), map each one to slide and section (click a comment with
+  no quoted text to see its anchor), and deliver a Word action plan: summary table, then per item the comment,
+  current text, proposed text ready to paste (deck language), why, and the spreadsheet/source check. Upload it to the
+  project Drive folder. Change nothing in the deck or spreadsheet until the user approves.
+- The spreadsheet is the north star: check every proposal against the live sheet, not only the local export. When a
+  reviewer's claim about the sheet is wrong, say so and keep the deck.
+- Anything new from outside the sheet goes in a separate "new findings" table with source and implication, plus a
+  list of the spreadsheet cells to update after approval. Flag a sheet value that public sources don't support
+  (e.g. a founding year) as a decision instead of copying it silently.
+- Client waste-origin nomenclature: post-industrial (factory scrap, never part of a finished product), pre-consumo
+  (finished but never used), post-consumo (after use). GRS "pre-consumer" (ISO 14021) = the client's post-industrial.
+- Don't frame the client as running a pilot with material suppliers: they buy material. Keep "piloto" for a
+  company's own maturity or a real consortium pilot.
+- Every sticker claim (Tecnología, Input, Output) must be backed in the same card; grade codes and acronyms are
+  explained in the notes glossary; data the source contradicts is not shown on slides.
+- Conclusions carry no source links in the end (moved to notes), contrary to the v9 rule.
+
+## Open points
+- Action plan for the v10 comments delivered (2026-11-27); waiting for the user's approval before the spreadsheet sync.
