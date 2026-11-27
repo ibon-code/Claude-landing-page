@@ -144,5 +144,16 @@ style and structure reference. We do not redesign them.
   explained in the notes glossary; data the source contradicts is not shown on slides.
 - Conclusions carry no source links in the end (moved to notes), contrary to the v9 rule.
 
+## Rules added in v11
+- Before rebuilding, compare the live Slides text (htmlpresent view) with the last build: direct edits made in Slides
+  (e.g. a note split into bullets placed in a free grid cell) must be carried into the code, or the rebuild loses them.
+- Matrix notes are company bullets with the name in bold; on a grid with a free cell they sit in that cell.
+- A company with two product ranges in different routes appears in both map categories; its card lead names both
+  ranges and the bullets detail each one; the spreadsheet category gets both values (multi-select dropdown).
+- A logo needing an extra attribute on a map (e.g. "also uses AI") gets a small caption plus a footnote on the map.
+- Overflow trims go to the lead first, then technical details move to the speaker notes.
+- Spreadsheet sync: exact wording fixes with Find and replace (check "Match entire cell contents" stays unticked);
+  overwrite single values (years) directly; append new facts and their source links.
+
 ## Open points
-- Action plan for the v10 comments delivered (2026-11-27); waiting for the user's approval before the spreadsheet sync.
+- None after v11 (2026-11-27). The wrap check still relies on the line estimate and SVG previews.
