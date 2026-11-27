@@ -155,5 +155,14 @@ style and structure reference. We do not redesign them.
 - Spreadsheet sync: exact wording fixes with Find and replace (check "Match entire cell contents" stays unticked);
   overwrite single values (years) directly; append new facts and their source links.
 
+## Rules added in v12
+- A company with ranges in several routes gets one map position per route and one card per route, each card placed
+  in that route's section (e.g. a recycled range goes on the recycled cards slide, not on the bio-based card).
+- A route's map box keeps its definition: if a range does not meet it (e.g. a GRS box and a range without GRS),
+  widen the box label ("y alternativas") and its description rather than forcing the range in.
+- Check which product a certification really covers (company-level ISCC PLUS for selected grades is not a
+  certification of a specific range's content); say "no consta" / "a aclarar" where the maker publishes nothing.
+- A slide can hold a single card (1-card width) when splitting a section by polymer.
+
 ## Open points
 - None after v11 (2026-11-27). The wrap check still relies on the line estimate and SVG previews.
